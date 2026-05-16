@@ -51,9 +51,6 @@ function ArtistsPage() {
     () => (artists.data ?? []).filter((a) => a.display_name.toLowerCase().includes(q.toLowerCase())),
     [q, artists.data],
   );
-    () => (artists.data ?? []).filter((a) => a.display_name.toLowerCase().includes(q.toLowerCase())),
-    [q, artists.data],
-  );
 
   return (
     <>
