@@ -53,7 +53,7 @@ function ArtistsPage() {
   );
 
   return (
-    <>
+    <div className="contents">
       <PageHeader
         title="Artists"
         description="Roster across all Media Rosenqvist services."
