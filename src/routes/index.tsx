@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
+import { SetupBanner } from "@/components/Setup";
 import {
-  artists, albums, tracks, releases, playlists, processingJobs, findArtist,
-} from "@/lib/mock-data";
+  useArtists, useAlbums, useTracks, useReleases, usePlaylists, useProcessingJobs, buildLookup,
+} from "@/lib/catalog";
 import {
   Users, Disc3, Music2, Send, ListMusic, Activity, ArrowUpRight,
 } from "lucide-react";
@@ -14,17 +15,34 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
+  const artists = useArtists();
+  const albums = useAlbums();
+  const tracks = useTracks();
+  const releases = useReleases();
+  const playlists = usePlaylists();
+  const jobs = useProcessingJobs();
+
+  const findArtist = buildLookup(artists.data);
+
   const stats = [
-    { label: "Artists", value: artists.length, icon: Users, to: "/artists" },
-    { label: "Albums", value: albums.length, icon: Disc3, to: "/albums" },
-    { label: "Tracks", value: tracks.length, icon: Music2, to: "/tracks" },
-    { label: "Releases", value: releases.length, icon: Send, to: "/releases" },
-    { label: "Playlists", value: playlists.length, icon: ListMusic, to: "/playlists" },
-    { label: "Active jobs", value: processingJobs.filter((j) => j.status === "running" || j.status === "queued").length, icon: Activity, to: "/processing" },
+    { label: "Artists", value: artists.data?.length ?? 0, icon: Users, to: "/artists" },
+    { label: "Albums", value: albums.data?.length ?? 0, icon: Disc3, to: "/albums" },
+    { label: "Tracks", value: tracks.data?.length ?? 0, icon: Music2, to: "/tracks" },
+    { label: "Releases", value: releases.data?.length ?? 0, icon: Send, to: "/releases" },
+    { label: "Playlists", value: playlists.data?.length ?? 0, icon: ListMusic, to: "/playlists" },
+    {
+      label: "Active jobs",
+      value: (jobs.data ?? []).filter((j) => j.status === "running" || j.status === "queued").length,
+      icon: Activity, to: "/processing",
+    },
   ] as const;
 
-  const recent = [...tracks].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 6);
-  const attention = tracks.filter((t) => t.status === "needs_metadata" || t.status === "needs_rights_check" || t.rights_status === "incomplete").slice(0, 5);
+  const recent = [...(tracks.data ?? [])]
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .slice(0, 6);
+  const attention = (tracks.data ?? []).filter(
+    (t) => t.status === "needs_metadata" || t.status === "needs_rights_check" || t.rights_status === "incomplete",
+  ).slice(0, 5);
 
   return (
     <>
@@ -32,6 +50,7 @@ function Dashboard() {
         title="Dashboard"
         description="Central source of truth for Radio Core, Music Core, distribution and Radio Uppsala."
       />
+      <SetupBanner />
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {stats.map((s) => (
@@ -57,11 +76,17 @@ function Dashboard() {
             <Link to="/tracks" className="text-xs text-primary hover:underline">View all</Link>
           </div>
           <ul className="divide-y divide-border">
+            {tracks.isLoading && <li className="px-5 py-8 text-sm text-muted-foreground">Loading…</li>}
+            {!tracks.isLoading && recent.length === 0 && (
+              <li className="px-5 py-8 text-sm text-muted-foreground">No tracks yet.</li>
+            )}
             {recent.map((t) => (
               <li key={t.id} className="flex items-center justify-between gap-3 px-5 py-3 text-sm">
                 <div className="min-w-0">
                   <div className="truncate font-medium">{t.title}</div>
-                  <div className="truncate text-xs text-muted-foreground">{findArtist(t.artist_id)?.display_name} · {t.genre}</div>
+                  <div className="truncate text-xs text-muted-foreground">
+                    {findArtist(t.artist_id)?.display_name ?? "—"} · {t.genre || "—"}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <StatusBadge status={t.rights_status} />
