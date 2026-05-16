@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { SetupBanner } from "@/components/Setup";
-import { useArtists, useTracks, useAlbums } from "@/lib/catalog";
-import { Plus, Search } from "lucide-react";
+import { useArtists, useTracks, useAlbums, queryKeys } from "@/lib/catalog";
+import { supabase } from "@/lib/supabase";
+import { Plus, Search, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/artists")({
   head: () => ({ meta: [{ title: "Artists – Music Catalog Core" }] }),
