@@ -131,6 +131,6 @@ function ArtistsPage() {
           <p className="text-sm text-muted-foreground">No artists match.</p>
         )}
       </div>
-    </>
+    </div>
   );
 }
