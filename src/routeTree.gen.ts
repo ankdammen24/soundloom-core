@@ -13,6 +13,7 @@ import { Route as UploadsRouteImport } from './routes/uploads'
 import { Route as TracksRouteImport } from './routes/tracks'
 import { Route as RightsRouteImport } from './routes/rights'
 import { Route as ReleasesRouteImport } from './routes/releases'
+import { Route as ProcessingRouteImport } from './routes/processing'
 import { Route as PlaylistsRouteImport } from './routes/playlists'
 import { Route as ArtistsRouteImport } from './routes/artists'
 import { Route as AlbumsRouteImport } from './routes/albums'
@@ -36,6 +37,11 @@ const RightsRoute = RightsRouteImport.update({
 const ReleasesRoute = ReleasesRouteImport.update({
   id: '/releases',
   path: '/releases',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProcessingRoute = ProcessingRouteImport.update({
+  id: '/processing',
+  path: '/processing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlaylistsRoute = PlaylistsRouteImport.update({
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/albums': typeof AlbumsRoute
   '/artists': typeof ArtistsRoute
   '/playlists': typeof PlaylistsRoute
+  '/processing': typeof ProcessingRoute
   '/releases': typeof ReleasesRoute
   '/rights': typeof RightsRoute
   '/tracks': typeof TracksRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/albums': typeof AlbumsRoute
   '/artists': typeof ArtistsRoute
   '/playlists': typeof PlaylistsRoute
+  '/processing': typeof ProcessingRoute
   '/releases': typeof ReleasesRoute
   '/rights': typeof RightsRoute
   '/tracks': typeof TracksRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/albums': typeof AlbumsRoute
   '/artists': typeof ArtistsRoute
   '/playlists': typeof PlaylistsRoute
+  '/processing': typeof ProcessingRoute
   '/releases': typeof ReleasesRoute
   '/rights': typeof RightsRoute
   '/tracks': typeof TracksRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/albums'
     | '/artists'
     | '/playlists'
+    | '/processing'
     | '/releases'
     | '/rights'
     | '/tracks'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/albums'
     | '/artists'
     | '/playlists'
+    | '/processing'
     | '/releases'
     | '/rights'
     | '/tracks'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/albums'
     | '/artists'
     | '/playlists'
+    | '/processing'
     | '/releases'
     | '/rights'
     | '/tracks'
@@ -128,6 +140,7 @@ export interface RootRouteChildren {
   AlbumsRoute: typeof AlbumsRoute
   ArtistsRoute: typeof ArtistsRoute
   PlaylistsRoute: typeof PlaylistsRoute
+  ProcessingRoute: typeof ProcessingRoute
   ReleasesRoute: typeof ReleasesRoute
   RightsRoute: typeof RightsRoute
   TracksRoute: typeof TracksRoute
@@ -162,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/releases'
       fullPath: '/releases'
       preLoaderRoute: typeof ReleasesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/processing': {
+      id: '/processing'
+      path: '/processing'
+      fullPath: '/processing'
+      preLoaderRoute: typeof ProcessingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/playlists': {
@@ -200,6 +220,7 @@ const rootRouteChildren: RootRouteChildren = {
   AlbumsRoute: AlbumsRoute,
   ArtistsRoute: ArtistsRoute,
   PlaylistsRoute: PlaylistsRoute,
+  ProcessingRoute: ProcessingRoute,
   ReleasesRoute: ReleasesRoute,
   RightsRoute: RightsRoute,
   TracksRoute: TracksRoute,
