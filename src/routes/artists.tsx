@@ -15,11 +15,42 @@ export const Route = createFileRoute("/artists")({
 
 function ArtistsPage() {
   const [q, setQ] = useState("");
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ name: "", display_name: "", country: "", bio: "" });
+  const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const qc = useQueryClient();
+
   const artists = useArtists();
   const tracks = useTracks();
   const albums = useAlbums();
 
+  const create = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        name: form.name || form.display_name,
+        display_name: form.display_name || form.name,
+        country: form.country,
+        bio: form.bio,
+      };
+      const { error } = await supabase.from("artists").insert(payload as never);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.artists });
+      setMsg({ kind: "ok", text: "Artist created." });
+      setForm({ name: "", display_name: "", country: "", bio: "" });
+      setOpen(false);
+      setTimeout(() => setMsg(null), 2500);
+    },
+    onError: (err: unknown) => {
+      setMsg({ kind: "err", text: err instanceof Error ? err.message : "Insert failed." });
+    },
+  });
+
   const rows = useMemo(
+    () => (artists.data ?? []).filter((a) => a.display_name.toLowerCase().includes(q.toLowerCase())),
+    [q, artists.data],
+  );
     () => (artists.data ?? []).filter((a) => a.display_name.toLowerCase().includes(q.toLowerCase())),
     [q, artists.data],
   );
