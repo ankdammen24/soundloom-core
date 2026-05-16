@@ -3,7 +3,8 @@ import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { StatusBadge } from "@/components/StatusBadge";
-import { albums, findArtist, tracks } from "@/lib/mock-data";
+import { SetupBanner, LoadingRows, EmptyRow, ErrorRow } from "@/components/Setup";
+import { useAlbums, useArtists, useTracks, buildLookup } from "@/lib/catalog";
 import type { AlbumStatus } from "@/lib/types";
 import { Plus, Search, Disc3 } from "lucide-react";
 
@@ -18,14 +19,16 @@ function AlbumsPage() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<(typeof statusFilters)[number]>("all");
 
-  const rows = useMemo(
-    () => albums.filter((a) => {
-      const matchQ = a.title.toLowerCase().includes(q.toLowerCase());
-      const matchS = status === "all" || a.status === status;
-      return matchQ && matchS;
-    }),
-    [q, status],
-  );
+  const albums = useAlbums();
+  const artists = useArtists();
+  const tracks = useTracks();
+  const findArtist = buildLookup(artists.data);
+
+  const rows = useMemo(() => (albums.data ?? []).filter((a) => {
+    const matchQ = a.title.toLowerCase().includes(q.toLowerCase());
+    const matchS = status === "all" || a.status === status;
+    return matchQ && matchS;
+  }), [q, status, albums.data]);
 
   return (
     <>
@@ -34,6 +37,7 @@ function AlbumsPage() {
         description="Album, EP and compilation containers."
         actions={<Btn><Plus className="h-4 w-4" /> New album</Btn>}
       />
+      <SetupBanner />
 
       <Toolbar
         q={q} onQ={setQ}
@@ -48,17 +52,18 @@ function AlbumsPage() {
         }
       />
 
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto rounded-lg border border-border bg-card">
+        <table className="w-full min-w-[700px] text-sm">
           <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
             <tr>
               <Th>Title</Th><Th>Artist</Th><Th>Tracks</Th><Th>Release date</Th><Th>UPC</Th><Th>Status</Th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {rows.map((a) => {
-              const artist = findArtist(a.artist_id);
-              const tc = tracks.filter((t) => t.album_id === a.id).length;
+            {albums.isLoading && <LoadingRows cols={6} />}
+            {albums.error && <ErrorRow cols={6} error={albums.error} />}
+            {!albums.isLoading && rows.map((a) => {
+              const tc = (tracks.data ?? []).filter((t) => t.album_id === a.id).length;
               return (
                 <tr key={a.id} className="hover:bg-muted/30">
                   <Td>
@@ -69,7 +74,7 @@ function AlbumsPage() {
                       <span className="font-medium">{a.title}</span>
                     </div>
                   </Td>
-                  <Td>{artist?.display_name ?? "—"}</Td>
+                  <Td>{findArtist(a.artist_id)?.display_name ?? "—"}</Td>
                   <Td>{tc}</Td>
                   <Td>{a.release_date || <span className="text-muted-foreground">—</span>}</Td>
                   <Td className="font-mono text-xs">{a.upc || <span className="text-muted-foreground">—</span>}</Td>
@@ -77,9 +82,7 @@ function AlbumsPage() {
                 </tr>
               );
             })}
-            {rows.length === 0 && (
-              <tr><td colSpan={6} className="p-8 text-center text-sm text-muted-foreground">No albums match.</td></tr>
-            )}
+            {!albums.isLoading && !albums.error && rows.length === 0 && <EmptyRow cols={6} label="No albums match." />}
           </tbody>
         </table>
       </div>

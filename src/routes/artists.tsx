@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
-import { artists, tracks, albums } from "@/lib/mock-data";
+import { SetupBanner } from "@/components/Setup";
+import { useArtists, useTracks, useAlbums } from "@/lib/catalog";
 import { Plus, Search } from "lucide-react";
 
 export const Route = createFileRoute("/artists")({
@@ -12,9 +13,13 @@ export const Route = createFileRoute("/artists")({
 
 function ArtistsPage() {
   const [q, setQ] = useState("");
+  const artists = useArtists();
+  const tracks = useTracks();
+  const albums = useAlbums();
+
   const rows = useMemo(
-    () => artists.filter((a) => a.display_name.toLowerCase().includes(q.toLowerCase())),
-    [q],
+    () => (artists.data ?? []).filter((a) => a.display_name.toLowerCase().includes(q.toLowerCase())),
+    [q, artists.data],
   );
 
   return (
@@ -24,6 +29,7 @@ function ArtistsPage() {
         description="Roster across all Media Rosenqvist services."
         actions={<Btn><Plus className="h-4 w-4" /> New artist</Btn>}
       />
+      <SetupBanner />
 
       <div className="mb-4 flex items-center gap-2">
         <div className="relative max-w-sm flex-1">
@@ -36,10 +42,13 @@ function ArtistsPage() {
         </div>
       </div>
 
+      {artists.isLoading && <p className="text-sm text-muted-foreground">Loading artists…</p>}
+      {artists.error && <p className="text-sm text-destructive">{(artists.error as Error).message}</p>}
+
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {rows.map((a) => {
-          const trackCount = tracks.filter((t) => t.artist_id === a.id).length;
-          const albumCount = albums.filter((al) => al.artist_id === a.id).length;
+          const trackCount = (tracks.data ?? []).filter((t) => t.artist_id === a.id).length;
+          const albumCount = (albums.data ?? []).filter((al) => al.artist_id === a.id).length;
           return (
             <article key={a.id} className="rounded-lg border border-border bg-card p-4">
               <div className="flex items-center gap-3">
@@ -48,7 +57,7 @@ function ArtistsPage() {
                 </div>
                 <div className="min-w-0">
                   <div className="truncate font-semibold">{a.display_name}</div>
-                  <div className="text-xs text-muted-foreground">{a.country}</div>
+                  <div className="text-xs text-muted-foreground">{a.country || "—"}</div>
                 </div>
               </div>
               <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{a.bio}</p>
@@ -59,7 +68,9 @@ function ArtistsPage() {
             </article>
           );
         })}
-        {rows.length === 0 && <p className="text-sm text-muted-foreground">No artists match.</p>}
+        {!artists.isLoading && rows.length === 0 && (
+          <p className="text-sm text-muted-foreground">No artists match.</p>
+        )}
       </div>
     </>
   );

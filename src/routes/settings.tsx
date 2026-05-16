@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { clerkConfigured } from "@/lib/auth";
+import { supabaseConfigured, SUPABASE_URL } from "@/lib/supabase";
 import { Database, Cloud, ShieldCheck, KeyRound, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
@@ -13,8 +14,10 @@ function SettingsPage() {
   const integrations = [
     {
       icon: Database, title: "Supabase",
-      desc: "Primary database for the catalog. Connect via VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.",
-      status: hasEnv("VITE_SUPABASE_URL") ? "connected" : "not_configured",
+      desc: supabaseConfigured
+        ? `Connected to ${SUPABASE_URL}. Run supabase-schema.sql in the SQL editor if you haven't.`
+        : "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to connect your existing project.",
+      status: supabaseConfigured ? "connected" : "not_configured",
     },
     {
       icon: Cloud, title: "Cloudflare R2",

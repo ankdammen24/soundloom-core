@@ -3,8 +3,9 @@ import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { StatusBadge } from "@/components/StatusBadge";
+import { SetupBanner, LoadingRows, EmptyRow, ErrorRow } from "@/components/Setup";
 import { Toolbar } from "./albums";
-import { tracks, findArtist, findAlbum } from "@/lib/mock-data";
+import { useArtists, useAlbums, useTracks, buildLookup } from "@/lib/catalog";
 import type { TrackStatus, RightsStatus } from "@/lib/types";
 import { Plus, Music2 } from "lucide-react";
 
@@ -21,13 +22,19 @@ function TracksPage() {
   const [status, setStatus] = useState<(typeof trackStatuses)[number]>("all");
   const [rights, setRights] = useState<(typeof rightsStatuses)[number]>("all");
 
-  const rows = useMemo(() => tracks.filter((t) => {
+  const tracks = useTracks();
+  const artists = useArtists();
+  const albums = useAlbums();
+  const findArtist = buildLookup(artists.data);
+  const findAlbum = buildLookup(albums.data);
+
+  const rows = useMemo(() => (tracks.data ?? []).filter((t) => {
     const a = findArtist(t.artist_id);
     const matchQ = (t.title + " " + (a?.display_name ?? "") + " " + t.isrc).toLowerCase().includes(q.toLowerCase());
     const ms = status === "all" || t.status === status;
     const mr = rights === "all" || t.rights_status === rights;
     return matchQ && ms && mr;
-  }), [q, status, rights]);
+  }), [q, status, rights, tracks.data, findArtist]);
 
   return (
     <>
@@ -36,6 +43,7 @@ function TracksPage() {
         description="Master assets, metadata, ISRC and lifecycle status."
         actions={<Btn><Plus className="h-4 w-4" /> New track</Btn>}
       />
+      <SetupBanner />
 
       <Toolbar
         q={q} onQ={setQ}
@@ -59,7 +67,9 @@ function TracksPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {rows.map((t) => (
+            {tracks.isLoading && <LoadingRows cols={8} />}
+            {tracks.error && <ErrorRow cols={8} error={tracks.error} />}
+            {!tracks.isLoading && rows.map((t) => (
               <tr key={t.id} className="hover:bg-muted/30">
                 <Td>
                   <div className="flex items-center gap-3">
@@ -76,14 +86,12 @@ function TracksPage() {
                 <Td>{findAlbum(t.album_id)?.title ?? <span className="text-muted-foreground">—</span>}</Td>
                 <Td className="font-mono text-xs">{t.isrc || <span className="text-muted-foreground">—</span>}</Td>
                 <Td>{fmtDuration(t.duration)}</Td>
-                <Td>{t.genre}</Td>
+                <Td>{t.genre || "—"}</Td>
                 <Td><StatusBadge status={t.rights_status} /></Td>
                 <Td><StatusBadge status={t.status} /></Td>
               </tr>
             ))}
-            {rows.length === 0 && (
-              <tr><td colSpan={8} className="p-8 text-center text-sm text-muted-foreground">No tracks match.</td></tr>
-            )}
+            {!tracks.isLoading && !tracks.error && rows.length === 0 && <EmptyRow cols={8} label="No tracks match." />}
           </tbody>
         </table>
       </div>
