@@ -57,7 +57,7 @@ function ArtistsPage() {
       <PageHeader
         title="Artists"
         description="Roster across all Media Rosenqvist services."
-        actions={<Btn><Plus className="h-4 w-4" /> New artist</Btn>}
+        actions={<Btn onClick={() => setOpen((v) => !v)}><Plus className="h-4 w-4" /> New artist</Btn>}
       />
       <SetupBanner />
 
