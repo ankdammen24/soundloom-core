@@ -1,56 +1,81 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { StatusBadge } from "@/components/StatusBadge";
-import { artists, albums } from "@/lib/mock-data";
-import { Upload, FileAudio, Wand2, Volume2, Radio, Download, CheckCircle2 } from "lucide-react";
+import { SetupBanner } from "@/components/Setup";
+import { useArtists, useAlbums, useTracks, queryKeys } from "@/lib/catalog";
+import { supabase, supabaseConfigured } from "@/lib/supabase";
+import { Upload, FileAudio, Wand2, Volume2, Radio, Download, CheckCircle2, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/uploads")({
   head: () => ({ meta: [{ title: "Uploads – Music Catalog Core" }] }),
   component: UploadsPage,
 });
 
-interface DraftTrack {
-  id: string;
-  title: string;
-  artist_id: string;
-  album_id: string;
-  isrc: string;
-  genre: string;
-  master_file_name: string;
-  created_at: string;
-}
-
 function UploadsPage() {
-  const [drafts, setDrafts] = useState<DraftTrack[]>([]);
+  const artists = useArtists();
+  const albums = useAlbums();
+  const tracks = useTracks();
+  const qc = useQueryClient();
+
   const [form, setForm] = useState({
-    title: "", artist_id: artists[0]?.id ?? "", album_id: "",
+    title: "", artist_id: "", album_id: "",
     isrc: "", genre: "", master_file_name: "",
   });
-  const [saved, setSaved] = useState(false);
+  const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+
+  const create = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        title: form.title,
+        artist_id: form.artist_id,
+        album_id: form.album_id || null,
+        isrc: form.isrc,
+        genre: form.genre,
+        version: "Original",
+        status: "draft" as const,
+        rights_status: "unknown" as const,
+        master_file_key: form.master_file_name ? `pending/${form.master_file_name}` : null,
+      };
+      const { error } = await supabase.from("tracks").insert(payload);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.tracks });
+      setMsg({ kind: "ok", text: "Draft track saved to Supabase." });
+      setForm({ ...form, title: "", isrc: "", master_file_name: "" });
+      setTimeout(() => setMsg(null), 2500);
+    },
+    onError: (err: unknown) => {
+      const text = err instanceof Error ? err.message : "Insert failed.";
+      setMsg({ kind: "err", text });
+    },
+  });
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title || !form.artist_id) return;
-    setDrafts((d) => [{
-      id: crypto.randomUUID(),
-      ...form,
-      created_at: new Date().toISOString(),
-    }, ...d]);
-    setForm({ ...form, title: "", isrc: "", master_file_name: "" });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+    if (!supabaseConfigured) {
+      setMsg({ kind: "err", text: "Connect Supabase first (see Settings)." });
+      return;
+    }
+    create.mutate();
   };
 
-  const artistAlbums = albums.filter((a) => a.artist_id === form.artist_id);
+  const artistAlbums = (albums.data ?? []).filter((a) => a.artist_id === form.artist_id);
+  const recentDrafts = [...(tracks.data ?? [])]
+    .filter((t) => t.status === "draft" || t.status === "uploaded")
+    .slice(0, 8);
 
   return (
     <>
       <PageHeader
         title="Uploads"
-        description="Register a new track's metadata. Real audio upload to R2 wires in next."
+        description="Register a new track in Supabase. R2 master upload runs once storage is wired."
       />
+      <SetupBanner />
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
         <form onSubmit={submit} className="rounded-lg border border-border bg-card p-5 space-y-4">
@@ -62,8 +87,14 @@ function UploadsPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Artist">
-              <select value={form.artist_id} onChange={(e) => setForm({ ...form, artist_id: e.target.value, album_id: "" })} className={input}>
-                {artists.map((a) => <option key={a.id} value={a.id}>{a.display_name}</option>)}
+              <select
+                value={form.artist_id}
+                onChange={(e) => setForm({ ...form, artist_id: e.target.value, album_id: "" })}
+                className={input}
+                required
+              >
+                <option value="">— Select artist —</option>
+                {(artists.data ?? []).map((a) => <option key={a.id} value={a.id}>{a.display_name}</option>)}
               </select>
             </Field>
             <Field label="Album (optional)">
@@ -84,7 +115,7 @@ function UploadsPage() {
               <FileAudio className="h-5 w-5 text-muted-foreground" />
               <div className="text-sm">
                 <div className="font-medium">{form.master_file_name || "Choose WAV / FLAC / AIFF"}</div>
-                <div className="text-xs text-muted-foreground">File metadata is registered now; R2 upload runs once configured.</div>
+                <div className="text-xs text-muted-foreground">Filename is saved as a placeholder key. R2 upload runs once configured.</div>
               </div>
               <input
                 type="file" accept="audio/*" className="hidden"
@@ -94,7 +125,7 @@ function UploadsPage() {
           </Field>
 
           <div className="flex flex-wrap gap-2 pt-2">
-            <Btn type="submit"><Upload className="h-4 w-4" /> Register track</Btn>
+            <Btn type="submit" disabled={create.isPending}><Upload className="h-4 w-4" /> {create.isPending ? "Saving…" : "Register track"}</Btn>
             <Btn type="button" variant="outline"><Upload className="h-4 w-4" /> Upload master file</Btn>
             <Btn type="button" variant="outline"><Wand2 className="h-4 w-4" /> Generate preview</Btn>
             <Btn type="button" variant="outline"><Volume2 className="h-4 w-4" /> Normalize audio</Btn>
@@ -102,34 +133,39 @@ function UploadsPage() {
             <Btn type="button" variant="outline"><Download className="h-4 w-4" /> Export for distribution</Btn>
           </div>
 
-          {saved && (
+          {msg?.kind === "ok" && (
             <div className="flex items-center gap-2 rounded-md bg-success/15 px-3 py-2 text-sm text-success">
-              <CheckCircle2 className="h-4 w-4" /> Draft track registered.
+              <CheckCircle2 className="h-4 w-4" /> {msg.text}
+            </div>
+          )}
+          {msg?.kind === "err" && (
+            <div className="flex items-center gap-2 rounded-md bg-destructive/15 px-3 py-2 text-sm text-destructive">
+              <AlertTriangle className="h-4 w-4" /> {msg.text}
             </div>
           )}
         </form>
 
         <div className="rounded-lg border border-border bg-card">
           <div className="border-b border-border px-5 py-3">
-            <h2 className="text-sm font-semibold">Recent registrations (this session)</h2>
-            <p className="text-xs text-muted-foreground">In-memory queue. Saves to Supabase once wired.</p>
+            <h2 className="text-sm font-semibold">Recent drafts</h2>
+            <p className="text-xs text-muted-foreground">Reads live from Supabase.</p>
           </div>
           <ul className="divide-y divide-border">
-            {drafts.length === 0 && <li className="px-5 py-8 text-sm text-muted-foreground">Nothing registered yet.</li>}
-            {drafts.map((d) => {
-              const a = artists.find((x) => x.id === d.artist_id);
-              return (
-                <li key={d.id} className="px-5 py-3 text-sm">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="truncate font-medium">{d.title}</div>
-                      <div className="truncate text-xs text-muted-foreground">{a?.display_name} · {d.master_file_name || "no file"}</div>
-                    </div>
-                    <StatusBadge status="draft" />
+            {tracks.isLoading && <li className="px-5 py-8 text-sm text-muted-foreground">Loading…</li>}
+            {!tracks.isLoading && recentDrafts.length === 0 && (
+              <li className="px-5 py-8 text-sm text-muted-foreground">No drafts yet.</li>
+            )}
+            {recentDrafts.map((d) => (
+              <li key={d.id} className="px-5 py-3 text-sm">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">{d.title}</div>
+                    <div className="truncate text-xs text-muted-foreground">{d.master_file_key ?? "no file"}</div>
                   </div>
-                </li>
-              );
-            })}
+                  <StatusBadge status={d.status} />
+                </div>
+              </li>
+            ))}
           </ul>
         </div>
       </div>
