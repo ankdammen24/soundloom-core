@@ -3,8 +3,9 @@ import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { StatusBadge } from "@/components/StatusBadge";
+import { SetupBanner, LoadingRows, ErrorRow, EmptyRow } from "@/components/Setup";
 import { Toolbar } from "./albums";
-import { rights, tracks, findArtist } from "@/lib/mock-data";
+import { useRights, useTracks, useArtists, buildLookup } from "@/lib/catalog";
 import { Check, X, Scale } from "lucide-react";
 
 export const Route = createFileRoute("/rights")({
@@ -14,10 +15,16 @@ export const Route = createFileRoute("/rights")({
 
 function RightsPage() {
   const [q, setQ] = useState("");
-  const rows = useMemo(() => rights.filter((r) => {
-    const t = tracks.find((x) => x.id === r.track_id);
+  const rights = useRights();
+  const tracks = useTracks();
+  const artists = useArtists();
+  const findTrack = buildLookup(tracks.data);
+  const findArtist = buildLookup(artists.data);
+
+  const rows = useMemo(() => (rights.data ?? []).filter((r) => {
+    const t = findTrack(r.track_id);
     return ((t?.title ?? "") + " " + r.composer + " " + r.publisher).toLowerCase().includes(q.toLowerCase());
-  }), [q]);
+  }), [q, rights.data, findTrack]);
 
   return (
     <>
@@ -26,6 +33,7 @@ function RightsPage() {
         description="Composer, publisher, label, STIM and SAMI registration."
         actions={<Btn variant="outline"><Scale className="h-4 w-4" /> Run rights check</Btn>}
       />
+      <SetupBanner />
 
       <Toolbar q={q} onQ={setQ} />
 
@@ -44,13 +52,15 @@ function RightsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {rows.map((r) => {
-              const t = tracks.find((x) => x.id === r.track_id);
+            {rights.isLoading && <LoadingRows cols={8} />}
+            {rights.error && <ErrorRow cols={8} error={rights.error} />}
+            {!rights.isLoading && rows.map((r) => {
+              const t = findTrack(r.track_id);
               return (
                 <tr key={r.id} className="hover:bg-muted/30">
                   <td className="px-4 py-3">
                     <div className="font-medium">{t?.title ?? "—"}</div>
-                    <div className="text-xs text-muted-foreground">{t && findArtist(t.artist_id)?.display_name}</div>
+                    <div className="text-xs text-muted-foreground">{t && (findArtist(t.artist_id)?.display_name ?? "—")}</div>
                   </td>
                   <td className="px-4 py-3">{r.composer || "—"}</td>
                   <td className="px-4 py-3">{r.publisher || <span className="text-muted-foreground">missing</span>}</td>
@@ -62,9 +72,7 @@ function RightsPage() {
                 </tr>
               );
             })}
-            {rows.length === 0 && (
-              <tr><td colSpan={8} className="p-8 text-center text-sm text-muted-foreground">No rights records match.</td></tr>
-            )}
+            {!rights.isLoading && !rights.error && rows.length === 0 && <EmptyRow cols={8} label="No rights records." />}
           </tbody>
         </table>
       </div>
