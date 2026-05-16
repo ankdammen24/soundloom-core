@@ -14,8 +14,10 @@ function SettingsPage() {
   const integrations = [
     {
       icon: Database, title: "Supabase",
-      desc: "Primary database for the catalog. Connect via VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.",
-      status: hasEnv("VITE_SUPABASE_URL") ? "connected" : "not_configured",
+      desc: supabaseConfigured
+        ? `Connected to ${SUPABASE_URL}. Run supabase-schema.sql in the SQL editor if you haven't.`
+        : "Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to connect your existing project.",
+      status: supabaseConfigured ? "connected" : "not_configured",
     },
     {
       icon: Cloud, title: "Cloudflare R2",
