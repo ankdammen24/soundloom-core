@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { SetupBanner } from "@/components/Setup";
-import { useArtists, useTracks, useAlbums } from "@/lib/catalog";
-import { Plus, Search } from "lucide-react";
+import { useArtists, useTracks, useAlbums, queryKeys } from "@/lib/catalog";
+import { supabase } from "@/lib/supabase";
+import { Plus, Search, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/artists")({
   head: () => ({ meta: [{ title: "Artists – Music Catalog Core" }] }),
@@ -13,9 +15,37 @@ export const Route = createFileRoute("/artists")({
 
 function ArtistsPage() {
   const [q, setQ] = useState("");
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ name: "", display_name: "", country: "", bio: "" });
+  const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const qc = useQueryClient();
+
   const artists = useArtists();
   const tracks = useTracks();
   const albums = useAlbums();
+
+  const create = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        name: form.name || form.display_name,
+        display_name: form.display_name || form.name,
+        country: form.country,
+        bio: form.bio,
+      };
+      const { error } = await supabase.from("artists").insert(payload as never);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.artists });
+      setMsg({ kind: "ok", text: "Artist created." });
+      setForm({ name: "", display_name: "", country: "", bio: "" });
+      setOpen(false);
+      setTimeout(() => setMsg(null), 2500);
+    },
+    onError: (err: unknown) => {
+      setMsg({ kind: "err", text: err instanceof Error ? err.message : "Insert failed." });
+    },
+  });
 
   const rows = useMemo(
     () => (artists.data ?? []).filter((a) => a.display_name.toLowerCase().includes(q.toLowerCase())),
@@ -27,9 +57,38 @@ function ArtistsPage() {
       <PageHeader
         title="Artists"
         description="Roster across all Media Rosenqvist services."
-        actions={<Btn><Plus className="h-4 w-4" /> New artist</Btn>}
+        actions={<Btn onClick={() => setOpen((v) => !v)}><Plus className="h-4 w-4" /> New artist</Btn>}
       />
       <SetupBanner />
+
+      {msg?.kind === "ok" && (
+        <div className="mb-4 flex items-center gap-2 rounded-md bg-success/15 px-3 py-2 text-sm text-success">
+          <CheckCircle2 className="h-4 w-4" /> {msg.text}
+        </div>
+      )}
+      {msg?.kind === "err" && (
+        <div className="mb-4 flex items-center gap-2 rounded-md bg-destructive/15 px-3 py-2 text-sm text-destructive">
+          <AlertTriangle className="h-4 w-4" /> {msg.text}
+        </div>
+      )}
+
+      {open && (
+        <form
+          onSubmit={(e) => { e.preventDefault(); if (form.display_name || form.name) create.mutate(); }}
+          className="mb-6 grid gap-3 rounded-lg border border-border bg-card p-4 sm:grid-cols-2"
+        >
+          <input required value={form.display_name} onChange={(e) => setForm({ ...form, display_name: e.target.value })}
+            placeholder="Display name *" className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          <input value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })}
+            placeholder="Country (e.g. SE)" className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          <textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })}
+            placeholder="Bio" rows={2} className="sm:col-span-2 rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          <div className="sm:col-span-2 flex gap-2">
+            <Btn type="submit" disabled={create.isPending}>{create.isPending ? "Saving…" : "Save artist"}</Btn>
+            <Btn type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Btn>
+          </div>
+        </form>
+      )}
 
       <div className="mb-4 flex items-center gap-2">
         <div className="relative max-w-sm flex-1">
