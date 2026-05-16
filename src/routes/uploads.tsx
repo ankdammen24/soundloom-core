@@ -39,7 +39,7 @@ function UploadsPage() {
         rights_status: "unknown" as const,
         master_file_key: form.master_file_name ? `pending/${form.master_file_name}` : null,
       };
-      const { error } = await supabase.from("tracks").insert(payload);
+      const { error } = await supabase.from("tracks").insert(payload as never);
       if (error) throw error;
     },
     onSuccess: () => {
