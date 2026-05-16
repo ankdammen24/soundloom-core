@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
-import { playlists, playlistTracks, tracks, findArtist } from "@/lib/mock-data";
+import { SetupBanner } from "@/components/Setup";
+import { usePlaylists, usePlaylistTracks, useTracks, useArtists, buildLookup } from "@/lib/catalog";
 import { Plus, ListMusic, Radio } from "lucide-react";
 
 export const Route = createFileRoute("/playlists")({
@@ -17,6 +18,13 @@ const scopeLabel: Record<string, string> = {
 };
 
 function PlaylistsPage() {
+  const playlists = usePlaylists();
+  const playlistTracks = usePlaylistTracks();
+  const tracks = useTracks();
+  const artists = useArtists();
+  const findTrack = buildLookup(tracks.data);
+  const findArtist = buildLookup(artists.data);
+
   return (
     <>
       <PageHeader
@@ -24,10 +32,13 @@ function PlaylistsPage() {
         description="Editorial and rotation lists consumed by Radio Core, Music Core and Radio Uppsala."
         actions={<Btn><Plus className="h-4 w-4" /> New playlist</Btn>}
       />
+      <SetupBanner />
+
+      {playlists.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
 
       <div className="grid gap-4 lg:grid-cols-2">
-        {playlists.map((p) => {
-          const items = playlistTracks
+        {(playlists.data ?? []).map((p) => {
+          const items = (playlistTracks.data ?? [])
             .filter((pt) => pt.playlist_id === p.id)
             .sort((a, b) => a.sort_order - b.sort_order);
           return (
@@ -48,7 +59,7 @@ function PlaylistsPage() {
               </header>
               <ol className="divide-y divide-border">
                 {items.map((pt, i) => {
-                  const t = tracks.find((x) => x.id === pt.track_id);
+                  const t = findTrack(pt.track_id);
                   if (!t) return null;
                   return (
                     <li key={pt.id} className="flex items-center justify-between px-5 py-2.5 text-sm">
@@ -56,7 +67,7 @@ function PlaylistsPage() {
                         <span className="w-5 text-xs text-muted-foreground">{i + 1}</span>
                         <div className="min-w-0">
                           <div className="truncate font-medium">{t.title}</div>
-                          <div className="truncate text-xs text-muted-foreground">{findArtist(t.artist_id)?.display_name}</div>
+                          <div className="truncate text-xs text-muted-foreground">{findArtist(t.artist_id)?.display_name ?? "—"}</div>
                         </div>
                       </div>
                       <span className="text-xs text-muted-foreground">{fmt(t.duration)}</span>
@@ -70,6 +81,9 @@ function PlaylistsPage() {
             </article>
           );
         })}
+        {!playlists.isLoading && (playlists.data ?? []).length === 0 && (
+          <p className="text-sm text-muted-foreground">No playlists yet.</p>
+        )}
       </div>
     </>
   );
