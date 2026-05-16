@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadsRouteImport } from './routes/uploads'
 import { Route as TracksRouteImport } from './routes/tracks'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RightsRouteImport } from './routes/rights'
 import { Route as ReleasesRouteImport } from './routes/releases'
 import { Route as ProcessingRouteImport } from './routes/processing'
@@ -27,6 +28,11 @@ const UploadsRoute = UploadsRouteImport.update({
 const TracksRoute = TracksRouteImport.update({
   id: '/tracks',
   path: '/tracks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RightsRoute = RightsRouteImport.update({
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/processing': typeof ProcessingRoute
   '/releases': typeof ReleasesRoute
   '/rights': typeof RightsRoute
+  '/settings': typeof SettingsRoute
   '/tracks': typeof TracksRoute
   '/uploads': typeof UploadsRoute
 }
@@ -84,6 +91,7 @@ export interface FileRoutesByTo {
   '/processing': typeof ProcessingRoute
   '/releases': typeof ReleasesRoute
   '/rights': typeof RightsRoute
+  '/settings': typeof SettingsRoute
   '/tracks': typeof TracksRoute
   '/uploads': typeof UploadsRoute
 }
@@ -96,6 +104,7 @@ export interface FileRoutesById {
   '/processing': typeof ProcessingRoute
   '/releases': typeof ReleasesRoute
   '/rights': typeof RightsRoute
+  '/settings': typeof SettingsRoute
   '/tracks': typeof TracksRoute
   '/uploads': typeof UploadsRoute
 }
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
     | '/processing'
     | '/releases'
     | '/rights'
+    | '/settings'
     | '/tracks'
     | '/uploads'
   fileRoutesByTo: FileRoutesByTo
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/processing'
     | '/releases'
     | '/rights'
+    | '/settings'
     | '/tracks'
     | '/uploads'
   id:
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
     | '/processing'
     | '/releases'
     | '/rights'
+    | '/settings'
     | '/tracks'
     | '/uploads'
   fileRoutesById: FileRoutesById
@@ -143,6 +155,7 @@ export interface RootRouteChildren {
   ProcessingRoute: typeof ProcessingRoute
   ReleasesRoute: typeof ReleasesRoute
   RightsRoute: typeof RightsRoute
+  SettingsRoute: typeof SettingsRoute
   TracksRoute: typeof TracksRoute
   UploadsRoute: typeof UploadsRoute
 }
@@ -161,6 +174,13 @@ declare module '@tanstack/react-router' {
       path: '/tracks'
       fullPath: '/tracks'
       preLoaderRoute: typeof TracksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rights': {
@@ -223,6 +243,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProcessingRoute: ProcessingRoute,
   ReleasesRoute: ReleasesRoute,
   RightsRoute: RightsRoute,
+  SettingsRoute: SettingsRoute,
   TracksRoute: TracksRoute,
   UploadsRoute: UploadsRoute,
 }
