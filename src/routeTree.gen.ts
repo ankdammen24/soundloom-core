@@ -9,8 +9,62 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UploadsRouteImport } from './routes/uploads'
+import { Route as TracksRouteImport } from './routes/tracks'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as RightsRouteImport } from './routes/rights'
+import { Route as ReleasesRouteImport } from './routes/releases'
+import { Route as ProcessingRouteImport } from './routes/processing'
+import { Route as PlaylistsRouteImport } from './routes/playlists'
+import { Route as ArtistsRouteImport } from './routes/artists'
+import { Route as AlbumsRouteImport } from './routes/albums'
 import { Route as IndexRouteImport } from './routes/index'
 
+const UploadsRoute = UploadsRouteImport.update({
+  id: '/uploads',
+  path: '/uploads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TracksRoute = TracksRouteImport.update({
+  id: '/tracks',
+  path: '/tracks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RightsRoute = RightsRouteImport.update({
+  id: '/rights',
+  path: '/rights',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReleasesRoute = ReleasesRouteImport.update({
+  id: '/releases',
+  path: '/releases',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProcessingRoute = ProcessingRouteImport.update({
+  id: '/processing',
+  path: '/processing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlaylistsRoute = PlaylistsRouteImport.update({
+  id: '/playlists',
+  path: '/playlists',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArtistsRoute = ArtistsRouteImport.update({
+  id: '/artists',
+  path: '/artists',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlbumsRoute = AlbumsRouteImport.update({
+  id: '/albums',
+  path: '/albums',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +73,158 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/albums': typeof AlbumsRoute
+  '/artists': typeof ArtistsRoute
+  '/playlists': typeof PlaylistsRoute
+  '/processing': typeof ProcessingRoute
+  '/releases': typeof ReleasesRoute
+  '/rights': typeof RightsRoute
+  '/settings': typeof SettingsRoute
+  '/tracks': typeof TracksRoute
+  '/uploads': typeof UploadsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/albums': typeof AlbumsRoute
+  '/artists': typeof ArtistsRoute
+  '/playlists': typeof PlaylistsRoute
+  '/processing': typeof ProcessingRoute
+  '/releases': typeof ReleasesRoute
+  '/rights': typeof RightsRoute
+  '/settings': typeof SettingsRoute
+  '/tracks': typeof TracksRoute
+  '/uploads': typeof UploadsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/albums': typeof AlbumsRoute
+  '/artists': typeof ArtistsRoute
+  '/playlists': typeof PlaylistsRoute
+  '/processing': typeof ProcessingRoute
+  '/releases': typeof ReleasesRoute
+  '/rights': typeof RightsRoute
+  '/settings': typeof SettingsRoute
+  '/tracks': typeof TracksRoute
+  '/uploads': typeof UploadsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/albums'
+    | '/artists'
+    | '/playlists'
+    | '/processing'
+    | '/releases'
+    | '/rights'
+    | '/settings'
+    | '/tracks'
+    | '/uploads'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/albums'
+    | '/artists'
+    | '/playlists'
+    | '/processing'
+    | '/releases'
+    | '/rights'
+    | '/settings'
+    | '/tracks'
+    | '/uploads'
+  id:
+    | '__root__'
+    | '/'
+    | '/albums'
+    | '/artists'
+    | '/playlists'
+    | '/processing'
+    | '/releases'
+    | '/rights'
+    | '/settings'
+    | '/tracks'
+    | '/uploads'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AlbumsRoute: typeof AlbumsRoute
+  ArtistsRoute: typeof ArtistsRoute
+  PlaylistsRoute: typeof PlaylistsRoute
+  ProcessingRoute: typeof ProcessingRoute
+  ReleasesRoute: typeof ReleasesRoute
+  RightsRoute: typeof RightsRoute
+  SettingsRoute: typeof SettingsRoute
+  TracksRoute: typeof TracksRoute
+  UploadsRoute: typeof UploadsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/uploads': {
+      id: '/uploads'
+      path: '/uploads'
+      fullPath: '/uploads'
+      preLoaderRoute: typeof UploadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tracks': {
+      id: '/tracks'
+      path: '/tracks'
+      fullPath: '/tracks'
+      preLoaderRoute: typeof TracksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rights': {
+      id: '/rights'
+      path: '/rights'
+      fullPath: '/rights'
+      preLoaderRoute: typeof RightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/releases': {
+      id: '/releases'
+      path: '/releases'
+      fullPath: '/releases'
+      preLoaderRoute: typeof ReleasesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/processing': {
+      id: '/processing'
+      path: '/processing'
+      fullPath: '/processing'
+      preLoaderRoute: typeof ProcessingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/playlists': {
+      id: '/playlists'
+      path: '/playlists'
+      fullPath: '/playlists'
+      preLoaderRoute: typeof PlaylistsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/artists': {
+      id: '/artists'
+      path: '/artists'
+      fullPath: '/artists'
+      preLoaderRoute: typeof ArtistsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/albums': {
+      id: '/albums'
+      path: '/albums'
+      fullPath: '/albums'
+      preLoaderRoute: typeof AlbumsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,17 +237,16 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AlbumsRoute: AlbumsRoute,
+  ArtistsRoute: ArtistsRoute,
+  PlaylistsRoute: PlaylistsRoute,
+  ProcessingRoute: ProcessingRoute,
+  ReleasesRoute: ReleasesRoute,
+  RightsRoute: RightsRoute,
+  SettingsRoute: SettingsRoute,
+  TracksRoute: TracksRoute,
+  UploadsRoute: UploadsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
