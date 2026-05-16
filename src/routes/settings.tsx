@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { clerkConfigured } from "@/lib/auth";
+import { supabaseConfigured, SUPABASE_URL } from "@/lib/supabase";
 import { Database, Cloud, ShieldCheck, KeyRound, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
