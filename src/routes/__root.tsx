@@ -89,7 +89,6 @@ function RootComponent() {
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <AppShell />
-        <Outlet />
       </QueryClientProvider>
     </AuthProvider>
   );
