@@ -53,7 +53,7 @@ function ArtistsPage() {
   );
 
   return (
-    <>
+    <div className="contents">
       <PageHeader
         title="Artists"
         description="Roster across all Media Rosenqvist services."
@@ -131,6 +131,6 @@ function ArtistsPage() {
           <p className="text-sm text-muted-foreground">No artists match.</p>
         )}
       </div>
-    </>
+    </div>
   );
 }
