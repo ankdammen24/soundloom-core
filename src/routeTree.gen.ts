@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UploadsRouteImport } from './routes/uploads'
 import { Route as TracksRouteImport } from './routes/tracks'
 import { Route as RightsRouteImport } from './routes/rights'
 import { Route as ReleasesRouteImport } from './routes/releases'
@@ -17,6 +18,11 @@ import { Route as ArtistsRouteImport } from './routes/artists'
 import { Route as AlbumsRouteImport } from './routes/albums'
 import { Route as IndexRouteImport } from './routes/index'
 
+const UploadsRoute = UploadsRouteImport.update({
+  id: '/uploads',
+  path: '/uploads',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TracksRoute = TracksRouteImport.update({
   id: '/tracks',
   path: '/tracks',
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/releases': typeof ReleasesRoute
   '/rights': typeof RightsRoute
   '/tracks': typeof TracksRoute
+  '/uploads': typeof UploadsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/releases': typeof ReleasesRoute
   '/rights': typeof RightsRoute
   '/tracks': typeof TracksRoute
+  '/uploads': typeof UploadsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/releases': typeof ReleasesRoute
   '/rights': typeof RightsRoute
   '/tracks': typeof TracksRoute
+  '/uploads': typeof UploadsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/releases'
     | '/rights'
     | '/tracks'
+    | '/uploads'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/releases'
     | '/rights'
     | '/tracks'
+    | '/uploads'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/releases'
     | '/rights'
     | '/tracks'
+    | '/uploads'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,10 +131,18 @@ export interface RootRouteChildren {
   ReleasesRoute: typeof ReleasesRoute
   RightsRoute: typeof RightsRoute
   TracksRoute: typeof TracksRoute
+  UploadsRoute: typeof UploadsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/uploads': {
+      id: '/uploads'
+      path: '/uploads'
+      fullPath: '/uploads'
+      preLoaderRoute: typeof UploadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tracks': {
       id: '/tracks'
       path: '/tracks'
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReleasesRoute: ReleasesRoute,
   RightsRoute: RightsRoute,
   TracksRoute: TracksRoute,
+  UploadsRoute: UploadsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
