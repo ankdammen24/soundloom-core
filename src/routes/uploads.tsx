@@ -7,6 +7,8 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { SetupBanner } from "@/components/Setup";
 import { useArtists, useAlbums, useTracks, queryKeys } from "@/lib/catalog";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
+import { useR2 } from "@/lib/r2-client";
+import { r2Keys } from "@/lib/r2.functions";
 import { Upload, FileAudio, Wand2, Volume2, Radio, Download, CheckCircle2, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/uploads")({
@@ -20,14 +22,19 @@ function UploadsPage() {
   const tracks = useTracks();
   const qc = useQueryClient();
 
+  const r2 = useR2();
+
   const [form, setForm] = useState({
     title: "", artist_id: "", album_id: "",
-    isrc: "", genre: "", master_file_name: "",
+    isrc: "", genre: "",
   });
+  const [file, setFile] = useState<File | null>(null);
+  const [progress, setProgress] = useState<number>(0);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
   const create = useMutation({
     mutationFn: async () => {
+      // 1. Insert draft track and get id back
       const payload = {
         title: form.title,
         artist_id: form.artist_id,
@@ -37,16 +44,40 @@ function UploadsPage() {
         version: "Original",
         status: "draft" as const,
         rights_status: "unknown" as const,
-        master_file_key: form.master_file_name ? `pending/${form.master_file_name}` : null,
       };
-      const { error } = await supabase.from("tracks").insert(payload as never);
+      const { data, error } = await supabase
+        .from("tracks")
+        .insert(payload as never)
+        .select("id, artist_id")
+        .single();
       if (error) throw error;
+      const trackId = (data as { id: string }).id;
+      const artistId = (data as { artist_id: string }).artist_id;
+
+      // 2. If a file is selected, upload it to R2 masters and mark uploaded.
+      if (file) {
+        const ext = (file.name.split(".").pop() || "wav").toLowerCase();
+        const key = r2Keys.master(artistId, trackId, ext);
+        setProgress(0);
+        await r2.uploadFile({
+          bucket: "masters",
+          key,
+          file,
+          trackId,
+          onProgress: setProgress,
+        });
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.tracks });
-      setMsg({ kind: "ok", text: "Draft track saved to Supabase." });
-      setForm({ ...form, title: "", isrc: "", master_file_name: "" });
-      setTimeout(() => setMsg(null), 2500);
+      setMsg({
+        kind: "ok",
+        text: file ? "Track registered and master uploaded to R2." : "Draft track saved.",
+      });
+      setForm({ ...form, title: "", isrc: "" });
+      setFile(null);
+      setProgress(0);
+      setTimeout(() => setMsg(null), 3000);
     },
     onError: (err: unknown) => {
       const text = err instanceof Error ? err.message : "Insert failed.";
@@ -113,24 +144,33 @@ function UploadsPage() {
           <Field label="Master file">
             <label className="flex items-center gap-3 rounded-md border border-dashed border-input bg-background px-4 py-6 cursor-pointer hover:border-primary/50">
               <FileAudio className="h-5 w-5 text-muted-foreground" />
-              <div className="text-sm">
-                <div className="font-medium">{form.master_file_name || "Choose WAV / FLAC / AIFF"}</div>
-                <div className="text-xs text-muted-foreground">Filename is saved as a placeholder key. R2 upload runs once configured.</div>
+              <div className="text-sm flex-1">
+                <div className="font-medium">{file?.name || "Choose WAV / FLAC / AIFF"}</div>
+                <div className="text-xs text-muted-foreground">
+                  Uploaded directly to R2 (mrq-music-masters) via presigned URL.
+                </div>
               </div>
               <input
                 type="file" accept="audio/*" className="hidden"
-                onChange={(e) => setForm({ ...form, master_file_name: e.target.files?.[0]?.name ?? "" })}
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               />
             </label>
+            {create.isPending && file && (
+              <div className="mt-2 h-1.5 w-full overflow-hidden rounded bg-muted">
+                <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+              </div>
+            )}
           </Field>
 
           <div className="flex flex-wrap gap-2 pt-2">
-            <Btn type="submit" disabled={create.isPending}><Upload className="h-4 w-4" /> {create.isPending ? "Saving…" : "Register track"}</Btn>
-            <Btn type="button" variant="outline"><Upload className="h-4 w-4" /> Upload master file</Btn>
-            <Btn type="button" variant="outline"><Wand2 className="h-4 w-4" /> Generate preview</Btn>
-            <Btn type="button" variant="outline"><Volume2 className="h-4 w-4" /> Normalize audio</Btn>
-            <Btn type="button" variant="outline"><Radio className="h-4 w-4" /> Publish to Radio Core</Btn>
-            <Btn type="button" variant="outline"><Download className="h-4 w-4" /> Export for distribution</Btn>
+            <Btn type="submit" disabled={create.isPending}>
+              <Upload className="h-4 w-4" />
+              {create.isPending ? (file ? `Uploading ${progress}%…` : "Saving…") : "Register track"}
+            </Btn>
+            <Btn type="button" variant="outline" disabled><Wand2 className="h-4 w-4" /> Generate preview</Btn>
+            <Btn type="button" variant="outline" disabled><Volume2 className="h-4 w-4" /> Normalize audio</Btn>
+            <Btn type="button" variant="outline" disabled><Radio className="h-4 w-4" /> Publish to Radio Core</Btn>
+            <Btn type="button" variant="outline" disabled><Download className="h-4 w-4" /> Export for distribution</Btn>
           </div>
 
           {msg?.kind === "ok" && (
