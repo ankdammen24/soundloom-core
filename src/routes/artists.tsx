@@ -61,6 +61,35 @@ function ArtistsPage() {
       />
       <SetupBanner />
 
+      {msg?.kind === "ok" && (
+        <div className="mb-4 flex items-center gap-2 rounded-md bg-success/15 px-3 py-2 text-sm text-success">
+          <CheckCircle2 className="h-4 w-4" /> {msg.text}
+        </div>
+      )}
+      {msg?.kind === "err" && (
+        <div className="mb-4 flex items-center gap-2 rounded-md bg-destructive/15 px-3 py-2 text-sm text-destructive">
+          <AlertTriangle className="h-4 w-4" /> {msg.text}
+        </div>
+      )}
+
+      {open && (
+        <form
+          onSubmit={(e) => { e.preventDefault(); if (form.display_name || form.name) create.mutate(); }}
+          className="mb-6 grid gap-3 rounded-lg border border-border bg-card p-4 sm:grid-cols-2"
+        >
+          <input required value={form.display_name} onChange={(e) => setForm({ ...form, display_name: e.target.value })}
+            placeholder="Display name *" className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          <input value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })}
+            placeholder="Country (e.g. SE)" className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          <textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })}
+            placeholder="Bio" rows={2} className="sm:col-span-2 rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          <div className="sm:col-span-2 flex gap-2">
+            <Btn type="submit" disabled={create.isPending}>{create.isPending ? "Saving…" : "Save artist"}</Btn>
+            <Btn type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Btn>
+          </div>
+        </form>
+      )}
+
       <div className="mb-4 flex items-center gap-2">
         <div className="relative max-w-sm flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
