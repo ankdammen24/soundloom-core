@@ -7,6 +7,15 @@ type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
 };
 
+const PROXY_ROUTES = new Map<string, string>([
+  ["/api/health", "/api/v1/health"],
+  ["/api/releases", "/api/v1/releases"],
+  ["/api/artists", "/api/v1/artists"],
+  ["/api/tracks", "/api/v1/tracks"],
+  ["/api/search", "/api/v1/search"],
+  ["/api/playback/token", "/api/v1/playback/token"],
+]);
+
 let serverEntryPromise: Promise<ServerEntry> | undefined;
 
 async function getServerEntry(): Promise<ServerEntry> {
@@ -66,9 +75,53 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   return brandedErrorResponse();
 }
 
+function resolveMusicApiUrl(env: unknown): string | undefined {
+  const envRecord = (env && typeof env === "object" ? (env as Record<string, unknown>) : {}) ?? {};
+  const value = envRecord.MUSIC_API_URL;
+  if (typeof value === "string" && value.length > 0) return value;
+  return process.env.MUSIC_API_URL;
+}
+
+async function maybeProxyApiRequest(request: Request, env: unknown): Promise<Response | null> {
+  const requestUrl = new URL(request.url);
+  const backendPath = PROXY_ROUTES.get(requestUrl.pathname);
+  if (!backendPath) return null;
+
+  const apiBase = resolveMusicApiUrl(env);
+  if (!apiBase) {
+    return Response.json(
+      { error: "MUSIC_API_URL is not configured on the server." },
+      { status: 500 },
+    );
+  }
+
+  const targetUrl = new URL(backendPath + requestUrl.search, apiBase);
+  try {
+    const upstreamResponse = await fetch(targetUrl, {
+      method: request.method,
+      headers: request.headers,
+      body: request.method === "GET" || request.method === "HEAD" ? undefined : await request.text(),
+    });
+
+    return new Response(upstreamResponse.body, {
+      status: upstreamResponse.status,
+      statusText: upstreamResponse.statusText,
+      headers: upstreamResponse.headers,
+    });
+  } catch {
+    return Response.json(
+      { error: "Could not reach music-catalog-core backend." },
+      { status: 502 },
+    );
+  }
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const proxiedResponse = await maybeProxyApiRequest(request, env);
+      if (proxiedResponse) return proxiedResponse;
+
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

@@ -1,8 +1,8 @@
 export const endpoints = {
-  health: "/health",
-  releases: "/api/v1/releases",
-  artists: "/api/v1/artists",
-  tracks: "/api/v1/tracks",
-  search: "/api/v1/catalog/search",
-  playbackToken: "/api/v1/playback/token",
+  health: "/api/health",
+  releases: "/api/releases",
+  artists: "/api/artists",
+  tracks: "/api/tracks",
+  search: "/api/search",
+  playbackToken: "/api/playback/token",
 } as const;
