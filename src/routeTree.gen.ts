@@ -16,6 +16,9 @@ import { Route as RightsRouteImport } from './routes/rights'
 import { Route as ReleasesRouteImport } from './routes/releases'
 import { Route as ProcessingRouteImport } from './routes/processing'
 import { Route as PlaylistsRouteImport } from './routes/playlists'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as LibraryRouteImport } from './routes/library'
+import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as ArtistsRouteImport } from './routes/artists'
 import { Route as AlbumsRouteImport } from './routes/albums'
 import { Route as IndexRouteImport } from './routes/index'
@@ -55,6 +58,21 @@ const PlaylistsRoute = PlaylistsRouteImport.update({
   path: '/playlists',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LibraryRoute = LibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiscoverRoute = DiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ArtistsRoute = ArtistsRouteImport.update({
   id: '/artists',
   path: '/artists',
@@ -75,6 +93,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/albums': typeof AlbumsRoute
   '/artists': typeof ArtistsRoute
+  '/discover': typeof DiscoverRoute
+  '/library': typeof LibraryRoute
+  '/login': typeof LoginRoute
   '/playlists': typeof PlaylistsRoute
   '/processing': typeof ProcessingRoute
   '/releases': typeof ReleasesRoute
@@ -87,6 +108,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/albums': typeof AlbumsRoute
   '/artists': typeof ArtistsRoute
+  '/discover': typeof DiscoverRoute
+  '/library': typeof LibraryRoute
+  '/login': typeof LoginRoute
   '/playlists': typeof PlaylistsRoute
   '/processing': typeof ProcessingRoute
   '/releases': typeof ReleasesRoute
@@ -100,6 +124,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/albums': typeof AlbumsRoute
   '/artists': typeof ArtistsRoute
+  '/discover': typeof DiscoverRoute
+  '/library': typeof LibraryRoute
+  '/login': typeof LoginRoute
   '/playlists': typeof PlaylistsRoute
   '/processing': typeof ProcessingRoute
   '/releases': typeof ReleasesRoute
@@ -114,6 +141,9 @@ export interface FileRouteTypes {
     | '/'
     | '/albums'
     | '/artists'
+    | '/discover'
+    | '/library'
+    | '/login'
     | '/playlists'
     | '/processing'
     | '/releases'
@@ -126,6 +156,9 @@ export interface FileRouteTypes {
     | '/'
     | '/albums'
     | '/artists'
+    | '/discover'
+    | '/library'
+    | '/login'
     | '/playlists'
     | '/processing'
     | '/releases'
@@ -138,6 +171,9 @@ export interface FileRouteTypes {
     | '/'
     | '/albums'
     | '/artists'
+    | '/discover'
+    | '/library'
+    | '/login'
     | '/playlists'
     | '/processing'
     | '/releases'
@@ -151,6 +187,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlbumsRoute: typeof AlbumsRoute
   ArtistsRoute: typeof ArtistsRoute
+  DiscoverRoute: typeof DiscoverRoute
+  LibraryRoute: typeof LibraryRoute
+  LoginRoute: typeof LoginRoute
   PlaylistsRoute: typeof PlaylistsRoute
   ProcessingRoute: typeof ProcessingRoute
   ReleasesRoute: typeof ReleasesRoute
@@ -211,6 +250,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlaylistsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/library': {
+      id: '/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/discover': {
+      id: '/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof DiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/artists': {
       id: '/artists'
       path: '/artists'
@@ -239,6 +299,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlbumsRoute: AlbumsRoute,
   ArtistsRoute: ArtistsRoute,
+  DiscoverRoute: DiscoverRoute,
+  LibraryRoute: LibraryRoute,
+  LoginRoute: LoginRoute,
   PlaylistsRoute: PlaylistsRoute,
   ProcessingRoute: ProcessingRoute,
   ReleasesRoute: ReleasesRoute,
@@ -250,3 +313,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
