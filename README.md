@@ -1,39 +1,83 @@
-# soundloom-core
+# media-platform local development
 
-soundloom-core är en TypeScript-baserad frontend för att bläddra i musik-katalogen och spela upp tracks via `music-catalog-core` API.
+Det här upplägget beskriver en gemensam lokal utvecklingsmiljö för två repos:
 
-## API-koppling (BFF/proxy)
-Browsern anropar endast interna routes i `soundloom-core`, och servern proxy:ar vidare till `music-catalog-core`.
+- `music-catalog-core` (backend/API)
+- `soundloom-core` (frontend)
 
-Flöde:
+## Arkitektur och relation
 
-`Browser → soundloom-core API proxy → music-catalog-core API`
+`music-catalog-core` kör API:t på port **3001**.
 
-Proxy routes:
-- `GET /api/health` → `MUSIC_API_URL/api/v1/health`
-- `GET /api/releases` → `MUSIC_API_URL/api/v1/releases`
-- `GET /api/artists` → `MUSIC_API_URL/api/v1/artists`
-- `GET /api/tracks` → `MUSIC_API_URL/api/v1/tracks`
-- `GET /api/search?q=...` → `MUSIC_API_URL/api/v1/search?q=...`
-- `POST /api/playback/token` → `MUSIC_API_URL/api/v1/playback/token`
+`soundloom-core` kör frontend på port **3000** och använder server-side proxy för API-anrop vidare till backend.
 
-Noteringar:
-- Query params för GET skickas vidare oförändrade.
-- JSON-body för `POST /api/playback/token` skickas vidare oförändrad.
-- Proxy returnerar samma statuskod och JSON-struktur som backend.
-- Om `MUSIC_API_URL` saknas eller backend inte svarar returneras tydliga JSON-fel från proxyn.
+Proxyflöde:
+
+`Browser → soundloom-core /api → music-catalog-core /api/v1`
 
 ## Miljövariabler
-Skapa `.env`:
+
+`setup.sh` ser till att följande env-filer finns och fylls med defaultvärden utan att skriva över befintliga hemligheter:
+
+- `music-catalog-core/.env`
+- `soundloom-core/.env.local`
+
+Minimikrav på värden:
+
+### `music-catalog-core/.env`
+
+```env
+NODE_ENV=development
+PORT=3001
+FRONTEND_ORIGIN=http://localhost:3000
+R2_BUCKET_NAME=mrq-music-masters
+R2_UPLOAD_PREFIX=staging/uploads/
+```
+
+### `soundloom-core/.env.local`
 
 ```env
 MUSIC_API_URL=http://localhost:3001
 ```
 
-## Köra lokalt
+## Storage-princip
+
+Inga nya Cloudflare R2-buckets ska skapas.
+
+Använd bucket:
+
+- `mrq-music-masters`
+
+Upload-prefix:
+
+- `staging/uploads/`
+
+Objektnamn följer principen:
+
+- `mrq-music-masters/staging/uploads/...`
+
+Lokala kataloger för development skapas av setup:
+
+- `storage/staging/uploads`
+- `storage/temp`
+- `storage/cache`
+- `storage/waveforms`
+
+## Kom igång
+
 ```bash
-npm install
-npm run dev
+chmod +x setup.sh start-dev.sh stop-dev.sh
+./setup.sh
+./start-dev.sh
+./stop-dev.sh
 ```
 
-Öppna appen och testa sidorna `/`, `/discover`, `/releases`, `/artists`, `/tracks` samt global player längst ner.
+## Portar
+
+- Backend: `http://localhost:3001`
+- Frontend: `http://localhost:3000`
+
+## Viktigt
+
+- Skapa inga nya repos.
+- Scripten är tänkta att ligga i rooten av `media-platform`, bredvid `music-catalog-core` och `soundloom-core`.
