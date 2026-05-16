@@ -24,6 +24,9 @@ Proxyflöde:
 
 Minimikrav på värden:
 
+> `setup.sh` läser även in alla saknade `KEY=VALUE` från `.env.example`/`.env.local.example` (om de finns) och lägger bara till det som saknas i målfilen.
+
+
 ### `music-catalog-core/.env`
 
 ```env

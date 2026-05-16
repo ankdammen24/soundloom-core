@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 set -e
 
-# Setup script for the local media-platform development stack.
+# Setup script for local media-platform development.
+# Goal: ensure both repos have complete local env files without overwriting existing secrets.
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="$ROOT_DIR/music-catalog-core"
 FRONTEND_DIR="$ROOT_DIR/soundloom-core"
 
-# Fallback: if script is placed inside soundloom-core, look for sibling repo.
+# Fallback for environments where scripts currently live inside soundloom-core.
 if [[ ! -d "$BACKEND_DIR" && -d "$ROOT_DIR/../music-catalog-core" ]]; then
   BACKEND_DIR="$ROOT_DIR/../music-catalog-core"
 fi
@@ -20,15 +21,36 @@ ensure_kv() {
   local key="$2"
   local value="$3"
 
-  if [[ ! -f "$file" ]]; then
-    touch "$file"
-  fi
-
-  if grep -Eq "^${key}=" "$file"; then
+  [[ -f "$file" ]] || touch "$file"
+  if grep -Eq "^[[:space:]]*${key}=" "$file"; then
     return 0
   fi
 
   printf '%s=%s\n' "$key" "$value" >> "$file"
+}
+
+# Merge all KEY=VALUE rows from a template file into target, but only for missing keys.
+merge_env_template() {
+  local target_file="$1"
+  local template_file="$2"
+
+  [[ -f "$target_file" ]] || touch "$target_file"
+  [[ -f "$template_file" ]] || return 0
+
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    # skip comments/empty lines/non-assignment rows
+    [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+    [[ "$line" != *"="* ]] && continue
+
+    local key="${line%%=*}"
+    local value="${line#*=}"
+
+    # normalize key spaces and validate shell-like env key format
+    key="$(printf '%s' "$key" | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+    [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
+
+    ensure_kv "$target_file" "$key" "$value"
+  done < "$template_file"
 }
 
 check_port() {
@@ -76,18 +98,25 @@ fi
 BACKEND_ENV="$BACKEND_DIR/.env"
 FRONTEND_ENV="$FRONTEND_DIR/.env.local"
 
-echo "[4/8] Säkerställer env-filer ..."
+BACKEND_TEMPLATE="$BACKEND_DIR/.env.example"
+FRONTEND_TEMPLATE_LOCAL="$FRONTEND_DIR/.env.local.example"
+FRONTEND_TEMPLATE="$FRONTEND_DIR/.env.example"
+
+echo "[4/8] Säkerställer env-filer och fyller saknade variabler ..."
 [[ -f "$BACKEND_ENV" ]] || touch "$BACKEND_ENV"
 [[ -f "$FRONTEND_ENV" ]] || touch "$FRONTEND_ENV"
 
-# Backend defaults
+# Pull in all defaults from existing template files, without overwriting existing env values.
+merge_env_template "$BACKEND_ENV" "$BACKEND_TEMPLATE"
+merge_env_template "$FRONTEND_ENV" "$FRONTEND_TEMPLATE_LOCAL"
+merge_env_template "$FRONTEND_ENV" "$FRONTEND_TEMPLATE"
+
+# Required platform-specific defaults.
 ensure_kv "$BACKEND_ENV" "NODE_ENV" "development"
 ensure_kv "$BACKEND_ENV" "PORT" "3001"
 ensure_kv "$BACKEND_ENV" "FRONTEND_ORIGIN" "http://localhost:3000"
 ensure_kv "$BACKEND_ENV" "R2_BUCKET_NAME" "mrq-music-masters"
 ensure_kv "$BACKEND_ENV" "R2_UPLOAD_PREFIX" "staging/uploads/"
-
-# Frontend defaults
 ensure_kv "$FRONTEND_ENV" "MUSIC_API_URL" "http://localhost:3001"
 
 echo "[5/8] Installerar dependencies (music-catalog-core) ..."
@@ -108,6 +137,8 @@ check_port 3001
 
 echo
 echo "✅ Setup klar"
+echo "- Env-filer har fyllts med saknade defaultvärden (utan overwrite av befintliga secrets)."
+echo "- Frontend proxar API via MUSIC_API_URL=http://localhost:3001."
 echo "Nästa steg:"
 echo "1) chmod +x setup.sh start-dev.sh stop-dev.sh"
 echo "2) ./start-dev.sh"
