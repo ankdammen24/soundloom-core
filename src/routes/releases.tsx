@@ -3,8 +3,9 @@ import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { StatusBadge } from "@/components/StatusBadge";
+import { SetupBanner, LoadingRows, EmptyRow, ErrorRow } from "@/components/Setup";
 import { Toolbar } from "./albums";
-import { releases, findArtist } from "@/lib/mock-data";
+import { useReleases, useArtists, buildLookup } from "@/lib/catalog";
 import { Plus, Send, Download } from "lucide-react";
 
 export const Route = createFileRoute("/releases")({
@@ -14,7 +15,13 @@ export const Route = createFileRoute("/releases")({
 
 function ReleasesPage() {
   const [q, setQ] = useState("");
-  const rows = useMemo(() => releases.filter((r) => r.title.toLowerCase().includes(q.toLowerCase())), [q]);
+  const releases = useReleases();
+  const artists = useArtists();
+  const findArtist = buildLookup(artists.data);
+  const rows = useMemo(
+    () => (releases.data ?? []).filter((r) => r.title.toLowerCase().includes(q.toLowerCase())),
+    [q, releases.data],
+  );
 
   return (
     <>
@@ -28,6 +35,7 @@ function ReleasesPage() {
           </>
         }
       />
+      <SetupBanner />
 
       <Toolbar q={q} onQ={setQ} />
 
@@ -45,7 +53,9 @@ function ReleasesPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {rows.map((r) => (
+            {releases.isLoading && <LoadingRows cols={7} />}
+            {releases.error && <ErrorRow cols={7} error={releases.error} />}
+            {!releases.isLoading && rows.map((r) => (
               <tr key={r.id} className="hover:bg-muted/30">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
@@ -63,9 +73,7 @@ function ReleasesPage() {
                 <td className="px-4 py-3"><StatusBadge status={r.distribution_status} /></td>
               </tr>
             ))}
-            {rows.length === 0 && (
-              <tr><td colSpan={7} className="p-8 text-center text-sm text-muted-foreground">No releases match.</td></tr>
-            )}
+            {!releases.isLoading && !releases.error && rows.length === 0 && <EmptyRow cols={7} label="No releases match." />}
           </tbody>
         </table>
       </div>
