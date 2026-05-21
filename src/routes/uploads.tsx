@@ -1,225 +1,140 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
+import { api, ApiError } from "@/lib/api";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
-import { StatusBadge } from "@/components/StatusBadge";
-import { SetupBanner } from "@/components/Setup";
-import { useArtists, useAlbums, useTracks, queryKeys } from "@/lib/catalog";
-import { supabase, supabaseConfigured } from "@/lib/supabase";
-import { useR2 } from "@/lib/r2-client";
-import { r2Keys } from "@/lib/r2.functions";
-import { Upload, FileAudio, Wand2, Volume2, Radio, Download, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Upload, FileAudio, CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/uploads")({
-  head: () => ({ meta: [{ title: "Uploads – Music Catalog Core" }] }),
+  head: () => ({ meta: [{ title: "Uploads – Soundloom" }] }),
   component: UploadsPage,
 });
 
+type Step = "idle" | "init" | "upload" | "complete" | "done" | "error";
+
 function UploadsPage() {
-  const artists = useArtists();
-  const albums = useAlbums();
-  const tracks = useTracks();
-  const qc = useQueryClient();
-
-  const r2 = useR2();
-
-  const [form, setForm] = useState({
-    title: "", artist_id: "", album_id: "",
-    isrc: "", genre: "",
-  });
   const [file, setFile] = useState<File | null>(null);
-  const [progress, setProgress] = useState<number>(0);
-  const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [step, setStep] = useState<Step>("idle");
+  const [errMsg, setErrMsg] = useState<string | null>(null);
+  const [assetId, setAssetId] = useState<string | null>(null);
+  const [assetStatus, setAssetStatus] = useState<string | null>(null);
 
-  const create = useMutation({
+  const run = useMutation({
     mutationFn: async () => {
-      // 1. Insert draft track and get id back
-      const payload = {
-        title: form.title,
-        artist_id: form.artist_id,
-        album_id: form.album_id || null,
-        isrc: form.isrc,
-        genre: form.genre,
-        version: "Original",
-        status: "draft" as const,
-        rights_status: "unknown" as const,
-      };
-      const { data, error } = await supabase
-        .from("tracks")
-        .insert(payload as never)
-        .select("id, artist_id")
-        .single();
-      if (error) throw error;
-      const trackId = (data as { id: string }).id;
-      const artistId = (data as { artist_id: string }).artist_id;
-
-      // 2. If a file is selected, upload it to R2 masters and mark uploaded.
-      if (file) {
-        const ext = (file.name.split(".").pop() || "wav").toLowerCase();
-        const key = r2Keys.master(artistId, trackId, ext);
-        setProgress(0);
-        await r2.uploadFile({
-          bucket: "masters",
-          key,
-          file,
-          trackId,
-          onProgress: setProgress,
-        });
-      }
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.tracks });
-      setMsg({
-        kind: "ok",
-        text: file ? "Track registered and master uploaded to R2." : "Draft track saved.",
-      });
-      setForm({ ...form, title: "", isrc: "" });
-      setFile(null);
+      if (!file) throw new Error("Choose a file first");
+      setErrMsg(null);
       setProgress(0);
-      setTimeout(() => setMsg(null), 3000);
+      // 1. init
+      setStep("init");
+      const init = await api.initUpload({
+        filename: file.name,
+        contentType: file.type || "application/octet-stream",
+        size: file.size,
+      });
+      setAssetId(init.assetId);
+
+      // 2. upload via signed URL with XHR for progress
+      setStep("upload");
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open(init.method ?? "PUT", init.uploadUrl);
+        if (init.headers) for (const [k, v] of Object.entries(init.headers)) xhr.setRequestHeader(k, v);
+        if (!init.headers?.["Content-Type"] && !init.headers?.["content-type"]) {
+          xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+        }
+        xhr.upload.onprogress = (e) => { if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100)); };
+        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(`Upload failed (${xhr.status})`)));
+        xhr.onerror = () => reject(new Error("Network error during upload"));
+        xhr.send(file);
+      });
+
+      // 3. complete
+      setStep("complete");
+      const done = await api.completeUpload(init.assetId);
+      setAssetStatus(done.status);
+      setStep("done");
     },
-    onError: (err: unknown) => {
-      const text = err instanceof Error ? err.message : "Insert failed.";
-      setMsg({ kind: "err", text });
+    onError: (e: unknown) => {
+      setStep("error");
+      setErrMsg(e instanceof ApiError ? `${e.status} — ${e.message}` : e instanceof Error ? e.message : "Upload failed");
     },
   });
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.title || !form.artist_id) return;
-    if (!supabaseConfigured) {
-      setMsg({ kind: "err", text: "Connect Supabase first (see Settings)." });
-      return;
-    }
-    create.mutate();
-  };
-
-  const artistAlbums = (albums.data ?? []).filter((a) => a.artist_id === form.artist_id);
-  const recentDrafts = [...(tracks.data ?? [])]
-    .filter((t) => t.status === "draft" || t.status === "uploaded")
-    .slice(0, 8);
 
   return (
-    <>
-      <PageHeader
-        title="Uploads"
-        description="Register a new track in Supabase. R2 master upload runs once storage is wired."
-      />
-      <SetupBanner />
+    <div className="space-y-6 max-w-2xl">
+      <PageHeader title="Uploads" description="Upload audio assets via signed URL to music-catalog-core." />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
-        <form onSubmit={submit} className="rounded-lg border border-border bg-card p-5 space-y-4">
-          <h2 className="text-sm font-semibold">New track registration</h2>
-
-          <Field label="Title">
-            <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className={input} placeholder="Track title" />
-          </Field>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Artist">
-              <select
-                value={form.artist_id}
-                onChange={(e) => setForm({ ...form, artist_id: e.target.value, album_id: "" })}
-                className={input}
-                required
-              >
-                <option value="">— Select artist —</option>
-                {(artists.data ?? []).map((a) => <option key={a.id} value={a.id}>{a.display_name}</option>)}
-              </select>
-            </Field>
-            <Field label="Album (optional)">
-              <select value={form.album_id} onChange={(e) => setForm({ ...form, album_id: e.target.value })} className={input}>
-                <option value="">— None —</option>
-                {artistAlbums.map((a) => <option key={a.id} value={a.id}>{a.title}</option>)}
-              </select>
-            </Field>
+      <div className="rounded-lg border border-border bg-card p-5 space-y-4">
+        <label className="flex items-center gap-3 rounded-md border border-dashed border-input bg-background px-4 py-6 cursor-pointer hover:border-primary/50">
+          <FileAudio className="h-5 w-5 text-muted-foreground" />
+          <div className="text-sm flex-1">
+            <div className="font-medium">{file?.name || "Choose audio file (WAV / FLAC / MP3)"}</div>
+            <div className="text-xs text-muted-foreground">{file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : "Max size depends on backend config"}</div>
           </div>
+          <input type="file" accept="audio/*" className="hidden"
+            onChange={(e) => { setFile(e.target.files?.[0] ?? null); setStep("idle"); setProgress(0); setAssetId(null); setAssetStatus(null); }} />
+        </label>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="ISRC"><input value={form.isrc} onChange={(e) => setForm({ ...form, isrc: e.target.value })} className={input} placeholder="SE-XXX-25-00000" /></Field>
-            <Field label="Genre"><input value={form.genre} onChange={(e) => setForm({ ...form, genre: e.target.value })} className={input} placeholder="Indie folk" /></Field>
+        {(step === "upload" || progress > 0) && (
+          <div className="h-1.5 w-full overflow-hidden rounded bg-muted">
+            <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
           </div>
+        )}
 
-          <Field label="Master file">
-            <label className="flex items-center gap-3 rounded-md border border-dashed border-input bg-background px-4 py-6 cursor-pointer hover:border-primary/50">
-              <FileAudio className="h-5 w-5 text-muted-foreground" />
-              <div className="text-sm flex-1">
-                <div className="font-medium">{file?.name || "Choose WAV / FLAC / AIFF"}</div>
-                <div className="text-xs text-muted-foreground">
-                  Uploaded directly to R2 (mrq-music-masters) via presigned URL.
-                </div>
-              </div>
-              <input
-                type="file" accept="audio/*" className="hidden"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              />
-            </label>
-            {create.isPending && file && (
-              <div className="mt-2 h-1.5 w-full overflow-hidden rounded bg-muted">
-                <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
-              </div>
-            )}
-          </Field>
+        <Btn type="button" disabled={!file || run.isPending} onClick={() => run.mutate()}>
+          <Upload className="h-4 w-4" />
+          {step === "init" && "Requesting upload URL…"}
+          {step === "upload" && `Uploading ${progress}%…`}
+          {step === "complete" && "Finalizing…"}
+          {(step === "idle" || step === "done" || step === "error") && "Start upload"}
+        </Btn>
 
-          <div className="flex flex-wrap gap-2 pt-2">
-            <Btn type="submit" disabled={create.isPending}>
-              <Upload className="h-4 w-4" />
-              {create.isPending ? (file ? `Uploading ${progress}%…` : "Saving…") : "Register track"}
-            </Btn>
-            <Btn type="button" variant="outline" disabled><Wand2 className="h-4 w-4" /> Generate preview</Btn>
-            <Btn type="button" variant="outline" disabled><Volume2 className="h-4 w-4" /> Normalize audio</Btn>
-            <Btn type="button" variant="outline" disabled><Radio className="h-4 w-4" /> Publish to Radio Core</Btn>
-            <Btn type="button" variant="outline" disabled><Download className="h-4 w-4" /> Export for distribution</Btn>
-          </div>
+        <StepList step={step} />
 
-          {msg?.kind === "ok" && (
-            <div className="flex items-center gap-2 rounded-md bg-success/15 px-3 py-2 text-sm text-success">
-              <CheckCircle2 className="h-4 w-4" /> {msg.text}
+        {step === "done" && (
+          <div className="flex items-start gap-2 rounded-md bg-emerald-500/10 px-3 py-2 text-sm text-emerald-600">
+            <CheckCircle2 className="h-4 w-4 mt-0.5" />
+            <div>
+              <div className="font-medium">Upload complete</div>
+              <div className="text-xs">assetId: <code className="font-mono">{assetId}</code> · status: <code className="font-mono">{assetStatus}</code></div>
             </div>
-          )}
-          {msg?.kind === "err" && (
-            <div className="flex items-center gap-2 rounded-md bg-destructive/15 px-3 py-2 text-sm text-destructive">
-              <AlertTriangle className="h-4 w-4" /> {msg.text}
-            </div>
-          )}
-        </form>
-
-        <div className="rounded-lg border border-border bg-card">
-          <div className="border-b border-border px-5 py-3">
-            <h2 className="text-sm font-semibold">Recent drafts</h2>
-            <p className="text-xs text-muted-foreground">Reads live from Supabase.</p>
           </div>
-          <ul className="divide-y divide-border">
-            {tracks.isLoading && <li className="px-5 py-8 text-sm text-muted-foreground">Loading…</li>}
-            {!tracks.isLoading && recentDrafts.length === 0 && (
-              <li className="px-5 py-8 text-sm text-muted-foreground">No drafts yet.</li>
-            )}
-            {recentDrafts.map((d) => (
-              <li key={d.id} className="px-5 py-3 text-sm">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="truncate font-medium">{d.title}</div>
-                    <div className="truncate text-xs text-muted-foreground">{d.master_file_key ?? "no file"}</div>
-                  </div>
-                  <StatusBadge status={d.status} />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+        )}
+        {step === "error" && errMsg && (
+          <div className="flex items-start gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <AlertTriangle className="h-4 w-4 mt-0.5" />
+            <div>{errMsg}</div>
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 }
 
-const input = "w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring";
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function StepList({ step }: { step: Step }) {
+  const steps: { id: Step; label: string }[] = [
+    { id: "init", label: "Request signed upload URL" },
+    { id: "upload", label: "Upload bytes to storage" },
+    { id: "complete", label: "Finalize asset on backend" },
+  ];
+  const order: Step[] = ["idle", "init", "upload", "complete", "done"];
+  const currIdx = order.indexOf(step === "error" ? "idle" : step);
   return (
-    <label className="block space-y-1.5">
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      {children}
-    </label>
+    <ol className="space-y-1.5 text-xs">
+      {steps.map((s) => {
+        const idx = order.indexOf(s.id);
+        const status = currIdx > idx ? "done" : currIdx === idx ? "active" : "pending";
+        return (
+          <li key={s.id} className="flex items-center gap-2 text-muted-foreground">
+            {status === "done" && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />}
+            {status === "active" && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />}
+            {status === "pending" && <span className="h-3.5 w-3.5 rounded-full border border-muted-foreground/30" />}
+            <span className={status === "done" ? "text-foreground" : ""}>{s.label}</span>
+          </li>
+        );
+      })}
+    </ol>
   );
 }

@@ -2,11 +2,11 @@ import { Link, Outlet, useLocation } from "@tanstack/react-router";
 import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 import {
   Home,
-  Compass,
   Send,
   Users,
   Music2,
-  Library,
+  Upload,
+  Activity,
   LayoutDashboard,
   UserCircle2,
   LogIn,
@@ -21,11 +21,12 @@ import { AudioEngine } from "@/features/player/AudioEngine";
 
 const nav = [
   { to: "/", label: "Home", icon: Home },
-  { to: "/discover", label: "Discover", icon: Compass },
-  { to: "/releases", label: "Releases", icon: Send },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/artists", label: "Artists", icon: Users },
+  { to: "/releases", label: "Releases", icon: Send },
   { to: "/tracks", label: "Tracks", icon: Music2 },
-  { to: "/library", label: "Library", icon: Library },
+  { to: "/uploads", label: "Uploads", icon: Upload },
+  { to: "/status", label: "Platform Status", icon: Activity },
 ] as const;
 
 export function AppShell() {

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadsRouteImport } from './routes/uploads'
 import { Route as TracksRouteImport } from './routes/tracks'
+import { Route as StatusRouteImport } from './routes/status'
 import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -26,6 +27,9 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ArtistsRouteImport } from './routes/artists'
 import { Route as AlbumsRouteImport } from './routes/albums'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TracksIdRouteImport } from './routes/tracks.$id'
+import { Route as ReleasesIdRouteImport } from './routes/releases.$id'
+import { Route as ArtistsIdRouteImport } from './routes/artists.$id'
 
 const UploadsRoute = UploadsRouteImport.update({
   id: '/uploads',
@@ -35,6 +39,11 @@ const UploadsRoute = UploadsRouteImport.update({
 const TracksRoute = TracksRouteImport.update({
   id: '/tracks',
   path: '/tracks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatusRoute = StatusRouteImport.update({
+  id: '/status',
+  path: '/status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignUpRoute = SignUpRouteImport.update({
@@ -112,11 +121,26 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TracksIdRoute = TracksIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => TracksRoute,
+} as any)
+const ReleasesIdRoute = ReleasesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ReleasesRoute,
+} as any)
+const ArtistsIdRoute = ArtistsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ArtistsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/albums': typeof AlbumsRoute
-  '/artists': typeof ArtistsRoute
+  '/artists': typeof ArtistsRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
@@ -124,18 +148,22 @@ export interface FileRoutesByFullPath {
   '/playlists': typeof PlaylistsRoute
   '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
-  '/releases': typeof ReleasesRoute
+  '/releases': typeof ReleasesRouteWithChildren
   '/rights': typeof RightsRoute
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
-  '/tracks': typeof TracksRoute
+  '/status': typeof StatusRoute
+  '/tracks': typeof TracksRouteWithChildren
   '/uploads': typeof UploadsRoute
+  '/artists/$id': typeof ArtistsIdRoute
+  '/releases/$id': typeof ReleasesIdRoute
+  '/tracks/$id': typeof TracksIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/albums': typeof AlbumsRoute
-  '/artists': typeof ArtistsRoute
+  '/artists': typeof ArtistsRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
@@ -143,19 +171,23 @@ export interface FileRoutesByTo {
   '/playlists': typeof PlaylistsRoute
   '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
-  '/releases': typeof ReleasesRoute
+  '/releases': typeof ReleasesRouteWithChildren
   '/rights': typeof RightsRoute
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
-  '/tracks': typeof TracksRoute
+  '/status': typeof StatusRoute
+  '/tracks': typeof TracksRouteWithChildren
   '/uploads': typeof UploadsRoute
+  '/artists/$id': typeof ArtistsIdRoute
+  '/releases/$id': typeof ReleasesIdRoute
+  '/tracks/$id': typeof TracksIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/albums': typeof AlbumsRoute
-  '/artists': typeof ArtistsRoute
+  '/artists': typeof ArtistsRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
@@ -163,13 +195,17 @@ export interface FileRoutesById {
   '/playlists': typeof PlaylistsRoute
   '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
-  '/releases': typeof ReleasesRoute
+  '/releases': typeof ReleasesRouteWithChildren
   '/rights': typeof RightsRoute
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
-  '/tracks': typeof TracksRoute
+  '/status': typeof StatusRoute
+  '/tracks': typeof TracksRouteWithChildren
   '/uploads': typeof UploadsRoute
+  '/artists/$id': typeof ArtistsIdRoute
+  '/releases/$id': typeof ReleasesIdRoute
+  '/tracks/$id': typeof TracksIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -189,8 +225,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sign-in'
     | '/sign-up'
+    | '/status'
     | '/tracks'
     | '/uploads'
+    | '/artists/$id'
+    | '/releases/$id'
+    | '/tracks/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -208,8 +248,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sign-in'
     | '/sign-up'
+    | '/status'
     | '/tracks'
     | '/uploads'
+    | '/artists/$id'
+    | '/releases/$id'
+    | '/tracks/$id'
   id:
     | '__root__'
     | '/'
@@ -227,14 +271,18 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sign-in'
     | '/sign-up'
+    | '/status'
     | '/tracks'
     | '/uploads'
+    | '/artists/$id'
+    | '/releases/$id'
+    | '/tracks/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlbumsRoute: typeof AlbumsRoute
-  ArtistsRoute: typeof ArtistsRoute
+  ArtistsRoute: typeof ArtistsRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   DiscoverRoute: typeof DiscoverRoute
   LibraryRoute: typeof LibraryRoute
@@ -242,12 +290,13 @@ export interface RootRouteChildren {
   PlaylistsRoute: typeof PlaylistsRoute
   ProcessingRoute: typeof ProcessingRoute
   ProfileRoute: typeof ProfileRoute
-  ReleasesRoute: typeof ReleasesRoute
+  ReleasesRoute: typeof ReleasesRouteWithChildren
   RightsRoute: typeof RightsRoute
   SettingsRoute: typeof SettingsRoute
   SignInRoute: typeof SignInRoute
   SignUpRoute: typeof SignUpRoute
-  TracksRoute: typeof TracksRoute
+  StatusRoute: typeof StatusRoute
+  TracksRoute: typeof TracksRouteWithChildren
   UploadsRoute: typeof UploadsRoute
 }
 
@@ -265,6 +314,13 @@ declare module '@tanstack/react-router' {
       path: '/tracks'
       fullPath: '/tracks'
       preLoaderRoute: typeof TracksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status': {
+      id: '/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof StatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sign-up': {
@@ -372,13 +428,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tracks/$id': {
+      id: '/tracks/$id'
+      path: '/$id'
+      fullPath: '/tracks/$id'
+      preLoaderRoute: typeof TracksIdRouteImport
+      parentRoute: typeof TracksRoute
+    }
+    '/releases/$id': {
+      id: '/releases/$id'
+      path: '/$id'
+      fullPath: '/releases/$id'
+      preLoaderRoute: typeof ReleasesIdRouteImport
+      parentRoute: typeof ReleasesRoute
+    }
+    '/artists/$id': {
+      id: '/artists/$id'
+      path: '/$id'
+      fullPath: '/artists/$id'
+      preLoaderRoute: typeof ArtistsIdRouteImport
+      parentRoute: typeof ArtistsRoute
+    }
   }
 }
+
+interface ArtistsRouteChildren {
+  ArtistsIdRoute: typeof ArtistsIdRoute
+}
+
+const ArtistsRouteChildren: ArtistsRouteChildren = {
+  ArtistsIdRoute: ArtistsIdRoute,
+}
+
+const ArtistsRouteWithChildren =
+  ArtistsRoute._addFileChildren(ArtistsRouteChildren)
+
+interface ReleasesRouteChildren {
+  ReleasesIdRoute: typeof ReleasesIdRoute
+}
+
+const ReleasesRouteChildren: ReleasesRouteChildren = {
+  ReleasesIdRoute: ReleasesIdRoute,
+}
+
+const ReleasesRouteWithChildren = ReleasesRoute._addFileChildren(
+  ReleasesRouteChildren,
+)
+
+interface TracksRouteChildren {
+  TracksIdRoute: typeof TracksIdRoute
+}
+
+const TracksRouteChildren: TracksRouteChildren = {
+  TracksIdRoute: TracksIdRoute,
+}
+
+const TracksRouteWithChildren =
+  TracksRoute._addFileChildren(TracksRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlbumsRoute: AlbumsRoute,
-  ArtistsRoute: ArtistsRoute,
+  ArtistsRoute: ArtistsRouteWithChildren,
   DashboardRoute: DashboardRoute,
   DiscoverRoute: DiscoverRoute,
   LibraryRoute: LibraryRoute,
@@ -386,24 +497,15 @@ const rootRouteChildren: RootRouteChildren = {
   PlaylistsRoute: PlaylistsRoute,
   ProcessingRoute: ProcessingRoute,
   ProfileRoute: ProfileRoute,
-  ReleasesRoute: ReleasesRoute,
+  ReleasesRoute: ReleasesRouteWithChildren,
   RightsRoute: RightsRoute,
   SettingsRoute: SettingsRoute,
   SignInRoute: SignInRoute,
   SignUpRoute: SignUpRoute,
-  TracksRoute: TracksRoute,
+  StatusRoute: StatusRoute,
+  TracksRoute: TracksRouteWithChildren,
   UploadsRoute: UploadsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
