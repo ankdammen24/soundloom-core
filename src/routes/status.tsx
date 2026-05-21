@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { api, ApiError, type HealthStatus } from "@/lib/api";
+import { useState } from "react";
+import { api, apiUrl, API_BASE_URL, ApiError, type HealthStatus } from "@/lib/api";
 import { PageHeader } from "@/components/PageHeader";
-import { CheckCircle2, AlertTriangle, Loader2, ServerCog, Database, HardDrive, KeyRound, Cpu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CheckCircle2, AlertTriangle, Loader2, ServerCog, Database, HardDrive, KeyRound, Cpu, Play } from "lucide-react";
 import type { ComponentType } from "react";
 
-const URL = "https://catalog.mediarosenqvist.com/status";
+const URL = "https://soundloom.mediarosenqvist.com/status";
 
 export const Route = createFileRoute("/status")({
   head: () => ({
