@@ -55,30 +55,57 @@ export async function apiRequest<T = unknown>(path: string, opts: RequestOpts = 
     ...(headers as Record<string, string> | undefined),
   };
 
+  let attachedAuth = false;
   if (!anonymous && tokenGetter) {
     try {
       const token = await tokenGetter();
-      if (token) finalHeaders.Authorization = `Bearer ${token}`;
+      if (token) {
+        finalHeaders.Authorization = `Bearer ${token}`;
+        attachedAuth = true;
+      }
     } catch {
       // ignore — request continues unauthenticated, server decides
     }
   }
 
+  const finalUrl = buildUrl(path, query);
+  const method = (rest.method as string | undefined) ?? "GET";
+
+  // Debug output (no secrets — Authorization value is replaced with a flag).
+  const debugHeaders: Record<string, string> = { ...finalHeaders };
+  if (debugHeaders.Authorization) debugHeaders.Authorization = "Bearer <redacted>";
+  // eslint-disable-next-line no-console
+  console.debug("[api] →", method, finalUrl, {
+    anonymous: !!anonymous,
+    authorizationAttached: attachedAuth,
+    headers: debugHeaders,
+    hasBody: body !== undefined,
+  });
+
+  if (/^http:\/\//i.test(finalUrl)) {
+    throw new ApiError(0, `Refusing insecure http:// API call: ${finalUrl}. VITE_API_BASE_URL must be https://.`);
+  }
+
   let res: Response;
   try {
-    res = await fetch(buildUrl(path, query), {
-      ...rest,
+    res = await fetch(finalUrl, {
+      method,
       headers: finalHeaders,
       body: body !== undefined ? (body instanceof FormData ? (body as unknown as BodyInit) : JSON.stringify(body)) : undefined,
+      // Intentionally no credentials, no mode, no referrerPolicy — see api.ts notes.
+      signal: rest.signal,
     });
   } catch (e) {
-    const errMsg = e instanceof Error ? e.message : String(e);
+    const err = e as Error;
+    // eslint-disable-next-line no-console
+    console.error("[api] ✗ fetch failed", { url: finalUrl, name: err?.name, message: err?.message });
+    const errMsg = err?.message ?? String(e);
     const isCors = /CORS|Cross-Origin|preflight/i.test(errMsg);
     throw new ApiError(
       0,
       isCors
         ? `CORS error: backend at ${BASE_URL || "(VITE_API_BASE_URL not set)"} did not allow this origin. Check Access-Control-Allow-Origin.`
-        : `Network error: could not reach ${BASE_URL || "(VITE_API_BASE_URL not set)"}${path}. ${errMsg}`,
+        : `Network error (${err?.name ?? "TypeError"}): ${errMsg} — could not reach ${finalUrl}. Check the URL, HTTPS, DNS, and that the backend is reachable.`,
       { cause: errMsg },
     );
   }
