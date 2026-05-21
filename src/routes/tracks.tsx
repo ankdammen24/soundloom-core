@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { Plus, Music2, AlertTriangle } from "lucide-react";
 
-const URL = "https://catalog.mediarosenqvist.com/tracks";
+const URL = "https://soundloom-core.lovable.app/tracks";
 
 export const Route = createFileRoute("/tracks")({
   head: () => ({

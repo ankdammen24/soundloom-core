@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { Plus, Users, AlertTriangle } from "lucide-react";
 
-const URL = "https://catalog.mediarosenqvist.com/artists";
+const URL = "https://soundloom-core.lovable.app/artists";
 
 export const Route = createFileRoute("/artists")({
   head: () => ({

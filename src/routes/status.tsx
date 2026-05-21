@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { api, apiUrl, API_BASE_URL, ApiError, type HealthStatus } from "@/lib/api";
+import { api, apiUrl, API_BASE_URL, ApiError, getFetchDiagnostics, type FetchDiagnostics, type HealthStatus } from "@/lib/api";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, AlertTriangle, Loader2, ServerCog, Database, HardDrive, KeyRound, Cpu, Play } from "lucide-react";
@@ -75,45 +75,68 @@ function FetchTest() {
     headers?: Record<string, string>;
     body?: string;
     error?: string;
+    diagnostics: FetchDiagnostics;
   } | null>(null);
 
   async function run() {
     setLoading(true);
     setResult(null);
     const url = apiUrl("/health");
+    const requestHeaders = { Accept: "application/json" };
     const options = {
       method: "GET" as const,
-      headers: { Accept: "application/json" },
+      headers: requestHeaders,
     };
+    const baseDiagnostics = getFetchDiagnostics({
+      finalUrl: url,
+      method: options.method,
+      authorizationAttached: false,
+      requestHeaders,
+    });
     // eslint-disable-next-line no-console
     console.debug("[status] raw /health fetch →", url, {
-      options,
+      method: options.method,
+      requestHeaders,
       authorizationAttached: false,
       origin: window.location.origin,
     });
     if (/^http:\/\//i.test(url)) {
-      setResult({ error: `Refusing insecure http:// URL: ${url}. VITE_API_BASE_URL must be https://.` });
+      setResult({
+        error: `Refusing insecure http:// URL: ${url}. VITE_API_BASE_URL must be https://.`,
+        diagnostics: getFetchDiagnostics({
+          finalUrl: url,
+          method: options.method,
+          authorizationAttached: false,
+          requestHeaders,
+          error: { name: "MixedContent", message: "Refusing insecure http:// API call." },
+        }),
+      });
       setLoading(false);
       return;
     }
     try {
+      // Public health check: plain GET only. No credentials, no Authorization, no mode.
       const res = await fetch(url, options);
       const headers: Record<string, string> = {};
       res.headers.forEach((v, k) => { headers[k] = v; });
       const body = await res.text();
       // eslint-disable-next-line no-console
       console.debug("[status] raw /health response", { status: res.status, headers });
-      setResult({ status: res.status, statusText: res.statusText, headers, body });
+      setResult({ status: res.status, statusText: res.statusText, headers, body, diagnostics: baseDiagnostics });
     } catch (e) {
       const err = e as Error;
+      const diagnostics = getFetchDiagnostics({
+        finalUrl: url,
+        method: options.method,
+        authorizationAttached: false,
+        requestHeaders,
+        error: err,
+      });
       // eslint-disable-next-line no-console
-      console.error("[status] raw /health failed", { url, name: err?.name, message: err?.message });
-      const msg = err?.message ?? String(e);
-      const isCors = /CORS|Cross-Origin|preflight/i.test(msg);
+      console.error("[status] raw /health failed", diagnostics);
       setResult({
-        error: isCors
-          ? `CORS error calling ${url}. Backend must allow this origin (${window.location.origin}). [${err?.name}] ${msg}`
-          : `Network error calling ${url}. [${err?.name ?? "TypeError"}] ${msg}. Check HTTPS, DNS, and that the backend is reachable from the browser.`,
+        error: `Network fetch failed (${diagnostics.errorName ?? "Error"}): ${diagnostics.errorMessage ?? "Unknown error"}.`,
+        diagnostics,
       });
     } finally {
       setLoading(false);
@@ -158,6 +181,12 @@ function FetchTest() {
               </div>
             </>
           )}
+          <div>
+            <div className="text-muted-foreground mb-1">Browser diagnostics</div>
+            <pre className="whitespace-pre-wrap break-words font-mono text-[11px] bg-muted/40 rounded p-2">
+              {JSON.stringify(result.diagnostics, null, 2)}
+            </pre>
+          </div>
         </div>
       )}
     </div>
@@ -198,8 +227,13 @@ function StatusCard({ check }: { check: Check }) {
           </pre>
         )}
         {state === "err" && (
-          <div className="text-destructive">
-            {q.error instanceof ApiError ? `${q.error.status} — ${q.error.message}` : (q.error as Error)?.message ?? "Failed"}
+          <div className="space-y-2 text-destructive">
+            <div>{q.error instanceof ApiError ? `${q.error.status} — ${q.error.message}` : (q.error as Error)?.message ?? "Failed"}</div>
+            {q.error instanceof ApiError && q.error.diagnostics && (
+              <pre className="whitespace-pre-wrap break-words font-mono text-[11px] text-muted-foreground">
+                {JSON.stringify(q.error.diagnostics, null, 2)}
+              </pre>
+            )}
           </div>
         )}
       </div>

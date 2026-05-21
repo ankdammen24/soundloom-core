@@ -1,7 +1,7 @@
 # Soundloom — Music Catalog Frontend
 
 Modern frontend for **Media Rosenqvist / Soundloom**, sitting on top of the
-[`music-catalog-core`](https://catalog.mediarosenqvist.com) backend.
+[`music-catalog-core`](https://api.mediarosenqvist.com) backend.
 
 Stack: **TanStack Start v1** (Vite 7, React 19, SSR-ready) · **TanStack Query** ·
 **Clerk** (auth) · **Tailwind v4** · **shadcn/ui** · **lucide-react**.
@@ -22,7 +22,7 @@ Create a `.env` file (already present in this repo, fill in the blanks):
 
 | Variable | Purpose |
 |---|---|
-| `VITE_API_BASE_URL` | Base URL of the `music-catalog-core` backend. Default: `https://catalog.mediarosenqvist.com` |
+| `VITE_API_BASE_URL` | Base URL of the `music-catalog-core` backend. Default: `https://api.mediarosenqvist.com` |
 | `VITE_CLERK_PUBLISHABLE_KEY` | Clerk publishable key (`pk_test_…` or `pk_live_…`). Used for login + bearer token. |
 | `VITE_SUPABASE_URL` | _(legacy)_ Supabase URL, kept for migration period. Safe to remove once all reads go through the API. |
 | `VITE_SUPABASE_ANON_KEY` | _(legacy)_ Supabase publishable anon key. |
