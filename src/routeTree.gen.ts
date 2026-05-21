@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadsRouteImport } from './routes/uploads'
 import { Route as TracksRouteImport } from './routes/tracks'
+import { Route as StatusRouteImport } from './routes/status'
 import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -35,6 +36,11 @@ const UploadsRoute = UploadsRouteImport.update({
 const TracksRoute = TracksRouteImport.update({
   id: '/tracks',
   path: '/tracks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatusRoute = StatusRouteImport.update({
+  id: '/status',
+  path: '/status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignUpRoute = SignUpRouteImport.update({
@@ -129,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
+  '/status': typeof StatusRoute
   '/tracks': typeof TracksRoute
   '/uploads': typeof UploadsRoute
 }
@@ -148,6 +155,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
+  '/status': typeof StatusRoute
   '/tracks': typeof TracksRoute
   '/uploads': typeof UploadsRoute
 }
@@ -168,6 +176,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
+  '/status': typeof StatusRoute
   '/tracks': typeof TracksRoute
   '/uploads': typeof UploadsRoute
 }
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sign-in'
     | '/sign-up'
+    | '/status'
     | '/tracks'
     | '/uploads'
   fileRoutesByTo: FileRoutesByTo
@@ -208,6 +218,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sign-in'
     | '/sign-up'
+    | '/status'
     | '/tracks'
     | '/uploads'
   id:
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sign-in'
     | '/sign-up'
+    | '/status'
     | '/tracks'
     | '/uploads'
   fileRoutesById: FileRoutesById
@@ -247,6 +259,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SignInRoute: typeof SignInRoute
   SignUpRoute: typeof SignUpRoute
+  StatusRoute: typeof StatusRoute
   TracksRoute: typeof TracksRoute
   UploadsRoute: typeof UploadsRoute
 }
@@ -265,6 +278,13 @@ declare module '@tanstack/react-router' {
       path: '/tracks'
       fullPath: '/tracks'
       preLoaderRoute: typeof TracksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status': {
+      id: '/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof StatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sign-up': {
@@ -391,9 +411,20 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SignInRoute: SignInRoute,
   SignUpRoute: SignUpRoute,
+  StatusRoute: StatusRoute,
   TracksRoute: TracksRoute,
   UploadsRoute: UploadsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
