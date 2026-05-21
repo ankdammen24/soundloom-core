@@ -81,19 +81,39 @@ function FetchTest() {
     setLoading(true);
     setResult(null);
     const url = apiUrl("/health");
+    const options = {
+      method: "GET" as const,
+      headers: { Accept: "application/json" },
+    };
+    // eslint-disable-next-line no-console
+    console.debug("[status] raw /health fetch →", url, {
+      options,
+      authorizationAttached: false,
+      origin: window.location.origin,
+    });
+    if (/^http:\/\//i.test(url)) {
+      setResult({ error: `Refusing insecure http:// URL: ${url}. VITE_API_BASE_URL must be https://.` });
+      setLoading(false);
+      return;
+    }
     try {
-      const res = await fetch(url, { headers: { Accept: "application/json" } });
+      const res = await fetch(url, options);
       const headers: Record<string, string> = {};
       res.headers.forEach((v, k) => { headers[k] = v; });
       const body = await res.text();
+      // eslint-disable-next-line no-console
+      console.debug("[status] raw /health response", { status: res.status, headers });
       setResult({ status: res.status, statusText: res.statusText, headers, body });
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
+      const err = e as Error;
+      // eslint-disable-next-line no-console
+      console.error("[status] raw /health failed", { url, name: err?.name, message: err?.message });
+      const msg = err?.message ?? String(e);
       const isCors = /CORS|Cross-Origin|preflight/i.test(msg);
       setResult({
         error: isCors
-          ? `CORS error calling ${url}. Backend must allow this origin (${window.location.origin}).`
-          : `Network error calling ${url}: ${msg}`,
+          ? `CORS error calling ${url}. Backend must allow this origin (${window.location.origin}). [${err?.name}] ${msg}`
+          : `Network error calling ${url}. [${err?.name ?? "TypeError"}] ${msg}. Check HTTPS, DNS, and that the backend is reachable from the browser.`,
       });
     } finally {
       setLoading(false);
