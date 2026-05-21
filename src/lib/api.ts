@@ -2,6 +2,11 @@
 // All requests target VITE_API_BASE_URL and attach a Clerk Bearer token when available.
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "";
+export const API_BASE_URL = BASE_URL;
+export function apiUrl(path: string) {
+  const base = BASE_URL.replace(/\/$/, "");
+  return path.startsWith("/") ? `${base}${path}` : `${base}/${path}`;
+}
 
 // Token getter is injected at runtime by AuthProvider (Clerk).
 // Keeping it as a mutable holder avoids importing Clerk into SSR/server code.
@@ -59,11 +64,24 @@ export async function apiRequest<T = unknown>(path: string, opts: RequestOpts = 
     }
   }
 
-  const res = await fetch(buildUrl(path, query), {
-    ...rest,
-    headers: finalHeaders,
-    body: body !== undefined ? (body instanceof FormData ? (body as unknown as BodyInit) : JSON.stringify(body)) : undefined,
-  });
+  let res: Response;
+  try {
+    res = await fetch(buildUrl(path, query), {
+      ...rest,
+      headers: finalHeaders,
+      body: body !== undefined ? (body instanceof FormData ? (body as unknown as BodyInit) : JSON.stringify(body)) : undefined,
+    });
+  } catch (e) {
+    const errMsg = e instanceof Error ? e.message : String(e);
+    const isCors = /CORS|Cross-Origin|preflight/i.test(errMsg);
+    throw new ApiError(
+      0,
+      isCors
+        ? `CORS error: backend at ${BASE_URL || "(VITE_API_BASE_URL not set)"} did not allow this origin. Check Access-Control-Allow-Origin.`
+        : `Network error: could not reach ${BASE_URL || "(VITE_API_BASE_URL not set)"}${path}. ${errMsg}`,
+      { cause: errMsg },
+    );
+  }
 
   const text = await res.text();
   let parsed: unknown = undefined;
@@ -72,12 +90,18 @@ export async function apiRequest<T = unknown>(path: string, opts: RequestOpts = 
   }
 
   if (!res.ok) {
-    const msg =
+    const serverMsg =
       (parsed && typeof parsed === "object" && "message" in parsed && typeof (parsed as { message: unknown }).message === "string"
         ? (parsed as { message: string }).message
         : null) ??
-      (typeof parsed === "string" ? parsed : null) ??
-      `Request failed (${res.status})`;
+      (typeof parsed === "string" ? parsed : null);
+
+    let msg: string;
+    if (res.status === 401) msg = `Auth error (401): not authenticated. ${serverMsg ?? "Sign in and retry."}`;
+    else if (res.status === 403) msg = `Auth error (403): forbidden. ${serverMsg ?? "Your account lacks access."}`;
+    else if (res.status >= 500) msg = `Backend error (${res.status}): the server failed. ${serverMsg ?? "Check backend logs."}`;
+    else msg = serverMsg ?? `Request failed (${res.status})`;
+
     throw new ApiError(res.status, msg, parsed);
   }
   return parsed as T;
