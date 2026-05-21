@@ -1,5 +1,6 @@
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
 import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
+import { clerkConfigured } from "@/lib/auth";
 import {
   Home,
   Send,
