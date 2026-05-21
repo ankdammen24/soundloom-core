@@ -63,33 +63,41 @@ export function AppShell() {
             })}
           </nav>
           <div className="border-t p-3">
-            <SignedOut>
-              <div className="space-y-1">
-                <Link to="/sign-in" className="flex items-center gap-2 rounded px-3 py-2">
-                  <LogIn className="h-4 w-4" />
-                  Sign in
-                </Link>
-                <Link to="/sign-up" className="flex items-center gap-2 rounded px-3 py-2">
-                  <UserPlus className="h-4 w-4" />
-                  Sign up
-                </Link>
+            {clerkConfigured ? (
+              <>
+                <SignedOut>
+                  <div className="space-y-1">
+                    <Link to="/sign-in" className="flex items-center gap-2 rounded px-3 py-2">
+                      <LogIn className="h-4 w-4" />
+                      Sign in
+                    </Link>
+                    <Link to="/sign-up" className="flex items-center gap-2 rounded px-3 py-2">
+                      <UserPlus className="h-4 w-4" />
+                      Sign up
+                    </Link>
+                  </div>
+                </SignedOut>
+                <SignedIn>
+                  <div className="space-y-1">
+                    <Link to="/dashboard" className="flex items-center gap-2 rounded px-3 py-2">
+                      <LayoutDashboard className="h-4 w-4" />
+                      Dashboard
+                    </Link>
+                    <Link to="/profile" className="flex items-center gap-2 rounded px-3 py-2">
+                      <UserCircle2 className="h-4 w-4" />
+                      Profile
+                    </Link>
+                    <div className="px-3 py-2">
+                      <UserButton />
+                    </div>
+                  </div>
+                </SignedIn>
+              </>
+            ) : (
+              <div className="rounded-md border border-dashed border-border p-3 text-xs text-muted-foreground">
+                Clerk inte konfigurerad. S\u00e4tt <code className="font-mono">VITE_CLERK_PUBLISHABLE_KEY</code> i <code className="font-mono">.env</code>.
               </div>
-            </SignedOut>
-            <SignedIn>
-              <div className="space-y-1">
-                <Link to="/dashboard" className="flex items-center gap-2 rounded px-3 py-2">
-                  <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
-                </Link>
-                <Link to="/profile" className="flex items-center gap-2 rounded px-3 py-2">
-                  <UserCircle2 className="h-4 w-4" />
-                  Profile
-                </Link>
-                <div className="px-3 py-2">
-                  <UserButton />
-                </div>
-              </div>
-            </SignedIn>
+            )}
           </div>
         </aside>
         <main className="p-4 md:p-8">
