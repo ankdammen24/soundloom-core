@@ -6,10 +6,22 @@ import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { Plus, Users, AlertTriangle } from "lucide-react";
 
+const URL = "https://catalog.mediarosenqvist.com/artists";
+
 export const Route = createFileRoute("/artists")({
-  head: () => ({ meta: [{ title: "Artists – Soundloom" }] }),
+  head: () => ({
+    meta: [
+      { title: "Artists – Soundloom" },
+      { name: "description", content: "Artists registered in the Soundloom music catalog — manage profiles, releases and metadata for Media Rosenqvist." },
+      { property: "og:title", content: "Artists – Soundloom" },
+      { property: "og:description", content: "Registered artists in the Media Rosenqvist music catalog." },
+      { property: "og:url", content: URL },
+    ],
+    links: [{ rel: "canonical", href: URL }],
+  }),
   component: ArtistsPage,
 });
+
 
 function name(a: Artist) {
   return a.displayName ?? a.display_name ?? a.name ?? "Untitled artist";

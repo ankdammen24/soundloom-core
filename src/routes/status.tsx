@@ -5,10 +5,22 @@ import { PageHeader } from "@/components/PageHeader";
 import { CheckCircle2, AlertTriangle, Loader2, ServerCog, Database, HardDrive, KeyRound, Cpu } from "lucide-react";
 import type { ComponentType } from "react";
 
+const URL = "https://catalog.mediarosenqvist.com/status";
+
 export const Route = createFileRoute("/status")({
-  head: () => ({ meta: [{ title: "Platform Status – Soundloom" }] }),
+  head: () => ({
+    meta: [
+      { title: "Platform Status – Soundloom" },
+      { name: "description", content: "Live health status for the Soundloom music catalog backend — database, storage and integration checks." },
+      { property: "og:title", content: "Platform Status – Soundloom" },
+      { property: "og:description", content: "Backend and integration health for the Soundloom music catalog." },
+      { property: "og:url", content: URL },
+    ],
+    links: [{ rel: "canonical", href: URL }],
+  }),
   component: StatusPage,
 });
+
 
 type Check = {
   id: string;

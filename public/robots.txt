@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /login
+Disallow: /settings
+Disallow: /uploads
+Disallow: /processing
+Disallow: /rights
+Disallow: /library
+Disallow: /playlists
+
+Sitemap: https://catalog.mediarosenqvist.com/sitemap.xml

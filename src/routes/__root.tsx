@@ -59,24 +59,41 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Music Catalog Core – Media Rosenqvist" },
+      { title: "Soundloom – Media Rosenqvist Music Catalog" },
       { name: "description", content: "Central music catalog for Media Rosenqvist services: Radio Core, Music Core, Radio Uppsala and distribution." },
-      { property: "og:title", content: "Music Catalog Core – Media Rosenqvist" },
-      { name: "twitter:title", content: "Music Catalog Core – Media Rosenqvist" },
-      { property: "og:description", content: "Central music catalog for Media Rosenqvist services: Radio Core, Music Core, Radio Uppsala and distribution." },
-      { name: "twitter:description", content: "Central music catalog for Media Rosenqvist services: Radio Core, Music Core, Radio Uppsala and distribution." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/12bdc95c-25ab-454e-9cc3-19dce8fde5ef/id-preview-0424190a--dc0089e6-fe3b-4e08-a14b-a6b78e555901.lovable.app-1778923830837.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/12bdc95c-25ab-454e-9cc3-19dce8fde5ef/id-preview-0424190a--dc0089e6-fe3b-4e08-a14b-a6b78e555901.lovable.app-1778923830837.png" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:site_name", content: "Soundloom" },
       { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "Media Rosenqvist",
+              url: "https://catalog.mediarosenqvist.com",
+            },
+            {
+              "@type": "WebSite",
+              name: "Soundloom",
+              url: "https://catalog.mediarosenqvist.com",
+              description: "Central music catalog for Media Rosenqvist services.",
+            },
+          ],
+        }),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
+
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
