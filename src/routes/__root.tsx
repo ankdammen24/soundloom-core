@@ -75,12 +75,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             {
               "@type": "Organization",
               name: "Media Rosenqvist",
-              url: "https://catalog.mediarosenqvist.com",
+              url: "https://soundloom-core.lovable.app",
             },
             {
               "@type": "WebSite",
               name: "Soundloom",
-              url: "https://catalog.mediarosenqvist.com",
+              url: "https://soundloom-core.lovable.app",
               description: "Central music catalog for Media Rosenqvist services.",
             },
           ],
