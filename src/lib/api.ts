@@ -118,8 +118,8 @@ export function getFetchDiagnostics(input: {
 
   if (isCrossOrigin && isOpaqueBrowserFailure) {
     hints.push("CORS blocked: the browser may have rejected the response or a preflight/error response without matching CORS headers.");
-    hints.push("DNS/HTTPS blocked: the browser may be unable to resolve the host, complete TLS, or reach the API over HTTPS.");
-    hints.push("Cloudflare/security block: a WAF, bot challenge, redirect, or blocked error page can surface as TypeError: Failed to fetch.");
+    hints.push("DNS/HTTPS/TLS blocked: the browser may be unable to resolve the host, complete TLS, trust the certificate for this hostname, or reach the API over HTTPS.");
+    hints.push("Cloudflare/security block: a WAF, bot challenge, redirect, or blocked error response without CORS headers can surface as TypeError: Failed to fetch.");
   }
 
   if (origin?.includes("id-preview--") && origin.endsWith(".lovable.app")) {
