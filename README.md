@@ -1,129 +1,84 @@
-# media-platform local development
+# Soundloom — Music Catalog Frontend
 
-Det här upplägget beskriver en gemensam lokal utvecklingsmiljö för två repos:
+Modern frontend for **Media Rosenqvist / Soundloom**, sitting on top of the
+[`music-catalog-core`](https://catalog.mediarosenqvist.com) backend.
 
-- `music-catalog-core` (backend/API)
-- `soundloom-core` (frontend)
+Stack: **TanStack Start v1** (Vite 7, React 19, SSR-ready) · **TanStack Query** ·
+**Clerk** (auth) · **Tailwind v4** · **shadcn/ui** · **lucide-react**.
 
-## Arkitektur och relation
+---
 
-`music-catalog-core` kör API:t på port **3001**.
-
-`soundloom-core` kör frontend på port **3000** och använder server-side proxy för API-anrop vidare till backend.
-
-Proxyflöde:
-
-`Browser → soundloom-core /api → music-catalog-core /api/v1`
-
-## Miljövariabler
-
-`setup.sh` ser till att följande env-filer finns och fylls med defaultvärden utan att skriva över befintliga hemligheter:
-
-- `music-catalog-core/.env`
-- `soundloom-core/.env.local`
-
-Minimikrav på värden:
-
-> `setup.sh` läser även in alla saknade `KEY=VALUE` från `.env.example`/`.env.local.example` (om de finns) och lägger bara till det som saknas i målfilen.
-
-### `music-catalog-core/.env`
-
-```env
-NODE_ENV=development
-PORT=3001
-FRONTEND_ORIGIN=http://localhost:3000
-R2_BUCKET_NAME=mrq-music-masters
-R2_UPLOAD_PREFIX=staging/uploads/
-```
-
-### `soundloom-core/.env.local`
-
-```env
-MUSIC_API_URL=http://localhost:3001
-```
-
-## Storage-princip
-
-Inga nya Cloudflare R2-buckets ska skapas.
-
-Använd bucket:
-
-- `mrq-music-masters`
-
-Upload-prefix:
-
-- `staging/uploads/`
-
-Objektnamn följer principen:
-
-- `mrq-music-masters/staging/uploads/...`
-
-Lokala kataloger för development skapas av setup:
-
-- `storage/staging/uploads`
-- `storage/temp`
-- `storage/cache`
-- `storage/waveforms`
-
-## Kom igång
+## 1. Run locally
 
 ```bash
-chmod +x setup.sh start-dev.sh stop-dev.sh
-./setup.sh
-./start-dev.sh
-./stop-dev.sh
+bun install
+bun run dev      # http://localhost:5173
+bun run build    # production build
 ```
 
-## Portar
+## 2. Required env variables
 
-- Backend: `http://localhost:3001`
-- Frontend: `http://localhost:3000`
+Create a `.env` file (already present in this repo, fill in the blanks):
 
-## Viktigt
+| Variable | Purpose |
+|---|---|
+| `VITE_API_BASE_URL` | Base URL of the `music-catalog-core` backend. Default: `https://catalog.mediarosenqvist.com` |
+| `VITE_CLERK_PUBLISHABLE_KEY` | Clerk publishable key (`pk_test_…` or `pk_live_…`). Used for login + bearer token. |
+| `VITE_SUPABASE_URL` | _(legacy)_ Supabase URL, kept for migration period. Safe to remove once all reads go through the API. |
+| `VITE_SUPABASE_ANON_KEY` | _(legacy)_ Supabase publishable anon key. |
 
-- Skapa inga nya repos.
-- Scripten är tänkta att ligga i rooten av `media-platform`, bredvid `music-catalog-core` och `soundloom-core`.
+If `VITE_CLERK_PUBLISHABLE_KEY` is empty the app still loads, but protected
+endpoints in `music-catalog-core` will reject calls with `401`.
 
-## Frontend auth (Clerk)
+## 3. Backend wiring (music-catalog-core)
 
-### Required env vars (`soundloom-core/.env.local`)
+All HTTP traffic goes through one central client: **`src/lib/api.ts`**.
 
-```env
-MUSIC_API_URL=http://localhost:3001
-VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxx
-```
+- Base URL comes from `VITE_API_BASE_URL`.
+- A Clerk token bridge in `src/lib/auth.tsx` registers a token getter with
+  the client via `setApiTokenGetter`. Every request then adds:
 
-> Only use Clerk **publishable** key in frontend. Never commit Clerk secret keys.
+  ```
+  Authorization: Bearer <clerk-session-jwt>
+  ```
 
-### Run locally
+- `/health/*` endpoints are explicitly called `anonymous: true` so the
+  Platform Status page works even when signed out.
+- Errors are normalized into `ApiError { status, message, body }` — UI
+  surfaces both the HTTP status and the message.
 
-```bash
-npm install
-npm run dev
-```
+### Endpoints consumed
 
-Open app (typically `http://localhost:3000` or the Vite URL shown in terminal).
+| Area | Method · Path |
+|---|---|
+| Health | `GET /health`, `GET /health/database`, `GET /health/storage`, `GET /health/auth-config`, `GET /health/redis` |
+| Artists | `GET /api/artists`, `GET /api/artists/:id`, `POST /api/artists` |
+| Releases | `GET /api/releases`, `GET /api/releases/:id`, `POST /api/releases` |
+| Tracks | `GET /api/tracks`, `GET /api/tracks/:id`, `POST /api/tracks` |
+| Uploads | `POST /api/assets/uploads/init` → signed URL, then `PUT` to that URL, then `POST /api/assets/uploads/complete` |
 
-### Test login/logout flow
+## 4. App routes
 
-1. Visit `/sign-up` and create a user (or use `/sign-in`).
-2. After login you should be redirected to `/dashboard`.
-3. `/dashboard` should redirect unauthenticated users to `/sign-in`.
-4. In sidebar:
-   - signed out: `Sign in`, `Sign up`
-   - signed in: `Dashboard`, `Profile`, `UserButton`
-5. Use `UserButton` to sign out and verify redirect behavior again.
+| Route | Purpose |
+|---|---|
+| `/` | Landing |
+| `/dashboard` | Authenticated dashboard (Clerk `<SignedIn>`) |
+| `/status` | Platform status — live polling of `/health/*` |
+| `/artists`, `/artists/$id` | Artist list + detail |
+| `/releases`, `/releases/$id` | Release list + detail |
+| `/tracks`, `/tracks/$id` | Track list + detail |
+| `/uploads` | Init → PUT signed URL → Complete flow |
+| `/settings`, `/profile`, `/sign-in`, `/sign-up` | Account |
 
-### Current status (auth module)
+## 5. Auth flow
 
-Done:
+1. `AuthProvider` (in `src/lib/auth.tsx`) wraps the app with `ClerkProvider`.
+2. `ApiTokenBridge` registers `getToken()` with the API client on mount.
+3. Pages that need the user check `<SignedIn>` / `<SignedOut>` from
+   `@clerk/clerk-react`. Server-side calls always carry the bearer
+   token automatically once `useAuth().isLoaded === true`.
 
-- Clerk provider wired at root level.
-- Clerk pages added: `/sign-in`, `/sign-up`, `/profile`.
-- Protected route added: `/dashboard`.
-- Auth-aware navigation in sidebar.
-- Development-only auth debug panel (no token exposure).
+## 6. GitHub
 
-Remaining:
-
-- Connect authenticated frontend requests to upcoming `music-catalog-core` auth expectations when backend module is ready.
+Repo: **`soundloom-core`** — the existing repo is reused, no fork.
+Push from local or let Lovable sync; the GitHub integration is bidirectional.
