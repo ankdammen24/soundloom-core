@@ -27,8 +27,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   if (!clerkConfigured) {
     return <>{children}</>;
   }
+  const publishableKey = PUBLISHABLE_KEY as string;
   return (
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+    <ClerkProvider publishableKey={publishableKey}>
       <ApiTokenBridge />
       {children}
     </ClerkProvider>
