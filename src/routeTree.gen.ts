@@ -27,6 +27,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ArtistsRouteImport } from './routes/artists'
 import { Route as AlbumsRouteImport } from './routes/albums'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TracksIdRouteImport } from './routes/tracks.$id'
 import { Route as ReleasesIdRouteImport } from './routes/releases.$id'
 import { Route as ArtistsIdRouteImport } from './routes/artists.$id'
 
@@ -120,6 +121,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TracksIdRoute = TracksIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => TracksRoute,
+} as any)
 const ReleasesIdRoute = ReleasesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -148,10 +154,11 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/status': typeof StatusRoute
-  '/tracks': typeof TracksRoute
+  '/tracks': typeof TracksRouteWithChildren
   '/uploads': typeof UploadsRoute
   '/artists/$id': typeof ArtistsIdRoute
   '/releases/$id': typeof ReleasesIdRoute
+  '/tracks/$id': typeof TracksIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -170,10 +177,11 @@ export interface FileRoutesByTo {
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/status': typeof StatusRoute
-  '/tracks': typeof TracksRoute
+  '/tracks': typeof TracksRouteWithChildren
   '/uploads': typeof UploadsRoute
   '/artists/$id': typeof ArtistsIdRoute
   '/releases/$id': typeof ReleasesIdRoute
+  '/tracks/$id': typeof TracksIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -193,10 +201,11 @@ export interface FileRoutesById {
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/status': typeof StatusRoute
-  '/tracks': typeof TracksRoute
+  '/tracks': typeof TracksRouteWithChildren
   '/uploads': typeof UploadsRoute
   '/artists/$id': typeof ArtistsIdRoute
   '/releases/$id': typeof ReleasesIdRoute
+  '/tracks/$id': typeof TracksIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -221,6 +230,7 @@ export interface FileRouteTypes {
     | '/uploads'
     | '/artists/$id'
     | '/releases/$id'
+    | '/tracks/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -243,6 +253,7 @@ export interface FileRouteTypes {
     | '/uploads'
     | '/artists/$id'
     | '/releases/$id'
+    | '/tracks/$id'
   id:
     | '__root__'
     | '/'
@@ -265,6 +276,7 @@ export interface FileRouteTypes {
     | '/uploads'
     | '/artists/$id'
     | '/releases/$id'
+    | '/tracks/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -284,7 +296,7 @@ export interface RootRouteChildren {
   SignInRoute: typeof SignInRoute
   SignUpRoute: typeof SignUpRoute
   StatusRoute: typeof StatusRoute
-  TracksRoute: typeof TracksRoute
+  TracksRoute: typeof TracksRouteWithChildren
   UploadsRoute: typeof UploadsRoute
 }
 
@@ -416,6 +428,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tracks/$id': {
+      id: '/tracks/$id'
+      path: '/$id'
+      fullPath: '/tracks/$id'
+      preLoaderRoute: typeof TracksIdRouteImport
+      parentRoute: typeof TracksRoute
+    }
     '/releases/$id': {
       id: '/releases/$id'
       path: '/$id'
@@ -456,6 +475,17 @@ const ReleasesRouteWithChildren = ReleasesRoute._addFileChildren(
   ReleasesRouteChildren,
 )
 
+interface TracksRouteChildren {
+  TracksIdRoute: typeof TracksIdRoute
+}
+
+const TracksRouteChildren: TracksRouteChildren = {
+  TracksIdRoute: TracksIdRoute,
+}
+
+const TracksRouteWithChildren =
+  TracksRoute._addFileChildren(TracksRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlbumsRoute: AlbumsRoute,
@@ -473,9 +503,19 @@ const rootRouteChildren: RootRouteChildren = {
   SignInRoute: SignInRoute,
   SignUpRoute: SignUpRoute,
   StatusRoute: StatusRoute,
-  TracksRoute: TracksRoute,
+  TracksRoute: TracksRouteWithChildren,
   UploadsRoute: UploadsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
