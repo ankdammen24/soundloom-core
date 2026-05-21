@@ -181,7 +181,7 @@ async function safeFetch(finalUrl: string, init: {
       headers: init.headers,
       body: init.body,
       signal: init.signal ?? undefined,
-      // Deliberately no credentials and no mode. Never use credentials: "include" or mode: "no-cors".
+      // Deliberately no credentials option and no request mode override.
     });
   } catch (e) {
     const err = e as Error;
