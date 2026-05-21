@@ -1,11 +1,20 @@
 // Central API client for the music-catalog-core backend.
-// All requests target VITE_API_BASE_URL and attach a Clerk Bearer token when available.
+// All requests target VITE_API_BASE_URL and attach a Clerk Bearer token only for protected calls.
 
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "";
+const BASE_URL = ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "").trim().replace(/\/+$/, "");
 export const API_BASE_URL = BASE_URL;
+
+function normalizePath(path: string) {
+  if (/^https?:\/\//i.test(path)) {
+    throw new ApiError(0, "API calls must pass a path only. The host is always resolved from VITE_API_BASE_URL.");
+  }
+  return path.startsWith("/") ? path : `/${path}`;
+}
+
 export function apiUrl(path: string) {
-  const base = BASE_URL.replace(/\/$/, "");
-  return path.startsWith("/") ? `${base}${path}` : `${base}/${path}`;
+  const normalizedPath = normalizePath(path);
+  if (!BASE_URL) return `(VITE_API_BASE_URL not configured)${normalizedPath}`;
+  return `${BASE_URL}${normalizedPath}`;
 }
 
 // Token getter is injected at runtime by AuthProvider (Clerk).
@@ -20,14 +29,29 @@ export function setApiTokenGetter(fn: TokenGetter | null) {
 export class ApiError extends Error {
   status: number;
   body: unknown;
-  constructor(status: number, message: string, body?: unknown) {
+  diagnostics?: FetchDiagnostics;
+  constructor(status: number, message: string, body?: unknown, diagnostics?: FetchDiagnostics) {
     super(message);
     this.status = status;
     this.body = body;
+    this.diagnostics = diagnostics;
   }
 }
 
-type RequestOpts = Omit<RequestInit, "body"> & {
+export type FetchDiagnostics = {
+  finalUrl: string;
+  method: string;
+  authorizationAttached: boolean;
+  requestHeaders: Record<string, string>;
+  errorName?: string;
+  errorMessage?: string;
+  hints: string[];
+};
+
+type RequestOpts = {
+  method?: string;
+  headers?: HeadersInit;
+  signal?: AbortSignal | null;
   body?: unknown;
   query?: Record<string, string | number | boolean | undefined | null>;
   /** Set true to skip Authorization header (for public endpoints) */
@@ -35,8 +59,10 @@ type RequestOpts = Omit<RequestInit, "body"> & {
 };
 
 function buildUrl(path: string, query?: RequestOpts["query"]) {
-  const base = BASE_URL.replace(/\/$/, "");
-  const url = new URL(path.startsWith("/") ? `${base}${path}` : `${base}/${path}`);
+  if (!BASE_URL) {
+    throw new ApiError(0, "VITE_API_BASE_URL is not configured; refusing to call a relative API path.");
+  }
+  const url = new URL(normalizePath(path), BASE_URL);
   if (query) {
     for (const [k, v] of Object.entries(query)) {
       if (v === undefined || v === null) continue;
@@ -46,14 +72,147 @@ function buildUrl(path: string, query?: RequestOpts["query"]) {
   return url.toString();
 }
 
+function headersToRecord(headers?: HeadersInit): Record<string, string> {
+  const record: Record<string, string> = {};
+  if (!headers) return record;
+  new Headers(headers).forEach((value, key) => {
+    record[key] = value;
+  });
+  return record;
+}
+
+function removeAuthorization(headers: Record<string, string>) {
+  for (const key of Object.keys(headers)) {
+    if (key.toLowerCase() === "authorization") delete headers[key];
+  }
+}
+
+function browserOrigin() {
+  return typeof window === "undefined" ? undefined : window.location.origin;
+}
+
+export function getFetchDiagnostics(input: {
+  finalUrl: string;
+  method: string;
+  authorizationAttached: boolean;
+  requestHeaders: Record<string, string>;
+  error?: Pick<Error, "name" | "message">;
+}): FetchDiagnostics {
+  const { finalUrl, method, authorizationAttached, requestHeaders, error } = input;
+  const hints: string[] = [];
+  const origin = browserOrigin();
+
+  let parsedUrl: URL | null = null;
+  try {
+    parsedUrl = new URL(finalUrl);
+  } catch {
+    hints.push("Invalid URL: check VITE_API_BASE_URL formatting.");
+  }
+
+  if (parsedUrl?.protocol === "http:" && origin?.startsWith("https://")) {
+    hints.push("Mixed content blocked: an HTTPS frontend cannot call an HTTP API URL.");
+  }
+
+  const isOpaqueBrowserFailure = error?.name === "TypeError" && /Failed to fetch|NetworkError|Load failed/i.test(error.message ?? "");
+  const isCrossOrigin = Boolean(origin && parsedUrl && parsedUrl.origin !== origin);
+
+  if (isCrossOrigin && isOpaqueBrowserFailure) {
+    hints.push("CORS blocked: the browser may have rejected the response or a preflight/error response without matching CORS headers.");
+    hints.push("DNS/HTTPS blocked: the browser may be unable to resolve the host, complete TLS, or reach the API over HTTPS.");
+    hints.push("Cloudflare/security block: a WAF, bot challenge, redirect, or blocked error page can surface as TypeError: Failed to fetch.");
+  }
+
+  if (origin?.includes("id-preview--") && origin.endsWith(".lovable.app")) {
+    hints.push("Lovable Preview diagnostic: if curl and the published site work, the preview fetch proxy may be the blocker.");
+  }
+
+  if (hints.length === 0) hints.push("No browser-side fallback condition matched; inspect the Network tab for the blocked request details.");
+
+  return {
+    finalUrl,
+    method,
+    authorizationAttached,
+    requestHeaders,
+    errorName: error?.name,
+    errorMessage: error?.message,
+    hints,
+  };
+}
+
+function redactedHeaders(headers: Record<string, string>) {
+  const copy = { ...headers };
+  for (const key of Object.keys(copy)) {
+    if (key.toLowerCase() === "authorization") copy[key] = "Bearer <redacted>";
+  }
+  return copy;
+}
+
+async function safeFetch(finalUrl: string, init: {
+  method: string;
+  headers: Record<string, string>;
+  body?: BodyInit;
+  signal?: AbortSignal | null;
+  authorizationAttached: boolean;
+}) {
+  const requestHeaders = redactedHeaders(init.headers);
+  // eslint-disable-next-line no-console
+  console.debug("[api] →", init.method, finalUrl, {
+    finalUrl,
+    method: init.method,
+    authorizationAttached: init.authorizationAttached,
+    headers: requestHeaders,
+    hasBody: init.body !== undefined,
+  });
+
+  if (/^http:\/\//i.test(finalUrl)) {
+    const diagnostics = getFetchDiagnostics({
+      finalUrl,
+      method: init.method,
+      authorizationAttached: init.authorizationAttached,
+      requestHeaders,
+      error: { name: "MixedContent", message: "Refusing insecure http:// API call." },
+    });
+    throw new ApiError(0, `Refusing insecure http:// API call: ${finalUrl}. VITE_API_BASE_URL must be https://.`, { diagnostics }, diagnostics);
+  }
+
+  try {
+    return await fetch(finalUrl, {
+      method: init.method,
+      headers: init.headers,
+      body: init.body,
+      signal: init.signal ?? undefined,
+      // Deliberately no credentials and no mode. Never use credentials: "include" or mode: "no-cors".
+    });
+  } catch (e) {
+    const err = e as Error;
+    const diagnostics = getFetchDiagnostics({
+      finalUrl,
+      method: init.method,
+      authorizationAttached: init.authorizationAttached,
+      requestHeaders,
+      error: err,
+    });
+    // eslint-disable-next-line no-console
+    console.error("[api] ✗ fetch failed", diagnostics);
+    throw new ApiError(
+      0,
+      `Network fetch failed (${diagnostics.errorName ?? "Error"}): ${diagnostics.errorMessage ?? "Unknown error"}. ${diagnostics.hints.join(" ")}`,
+      { diagnostics },
+      diagnostics,
+    );
+  }
+}
+
 export async function apiRequest<T = unknown>(path: string, opts: RequestOpts = {}): Promise<T> {
-  const { body, query, anonymous, headers, ...rest } = opts;
+  const { body, query, anonymous, headers, method: requestedMethod, signal } = opts;
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
 
   const finalHeaders: Record<string, string> = {
     Accept: "application/json",
-    ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
-    ...(headers as Record<string, string> | undefined),
+    ...(body !== undefined && !isFormData ? { "Content-Type": "application/json" } : {}),
+    ...headersToRecord(headers),
   };
+  if (anonymous) removeAuthorization(finalHeaders);
 
   let attachedAuth = false;
   if (!anonymous && tokenGetter) {
@@ -69,46 +228,15 @@ export async function apiRequest<T = unknown>(path: string, opts: RequestOpts = 
   }
 
   const finalUrl = buildUrl(path, query);
-  const method = (rest.method as string | undefined) ?? "GET";
+  const method = requestedMethod ?? "GET";
 
-  // Debug output (no secrets — Authorization value is replaced with a flag).
-  const debugHeaders: Record<string, string> = { ...finalHeaders };
-  if (debugHeaders.Authorization) debugHeaders.Authorization = "Bearer <redacted>";
-  // eslint-disable-next-line no-console
-  console.debug("[api] →", method, finalUrl, {
-    anonymous: !!anonymous,
+  const res = await safeFetch(finalUrl, {
+    method,
+    headers: finalHeaders,
+    body: body !== undefined ? (isFormData ? (body as unknown as BodyInit) : JSON.stringify(body)) : undefined,
+    signal,
     authorizationAttached: attachedAuth,
-    headers: debugHeaders,
-    hasBody: body !== undefined,
   });
-
-  if (/^http:\/\//i.test(finalUrl)) {
-    throw new ApiError(0, `Refusing insecure http:// API call: ${finalUrl}. VITE_API_BASE_URL must be https://.`);
-  }
-
-  let res: Response;
-  try {
-    res = await fetch(finalUrl, {
-      method,
-      headers: finalHeaders,
-      body: body !== undefined ? (body instanceof FormData ? (body as unknown as BodyInit) : JSON.stringify(body)) : undefined,
-      // Intentionally no credentials, no mode, no referrerPolicy — see api.ts notes.
-      signal: rest.signal,
-    });
-  } catch (e) {
-    const err = e as Error;
-    // eslint-disable-next-line no-console
-    console.error("[api] ✗ fetch failed", { url: finalUrl, name: err?.name, message: err?.message });
-    const errMsg = err?.message ?? String(e);
-    const isCors = /CORS|Cross-Origin|preflight/i.test(errMsg);
-    throw new ApiError(
-      0,
-      isCors
-        ? `CORS error: backend at ${BASE_URL || "(VITE_API_BASE_URL not set)"} did not allow this origin. Check Access-Control-Allow-Origin.`
-        : `Network error (${err?.name ?? "TypeError"}): ${errMsg} — could not reach ${finalUrl}. Check the URL, HTTPS, DNS, and that the backend is reachable.`,
-      { cause: errMsg },
-    );
-  }
 
   const text = await res.text();
   let parsed: unknown = undefined;
