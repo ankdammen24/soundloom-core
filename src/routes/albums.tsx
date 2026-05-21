@@ -10,7 +10,7 @@ import { Plus, Search, Disc3 } from "lucide-react";
 
 const statusFilters: (AlbumStatus | "all")[] = ["all", "draft", "scheduled", "released", "archived"];
 
-const URL = "https://catalog.mediarosenqvist.com/albums";
+const URL = "https://soundloom-core.lovable.app/albums";
 
 export const Route = createFileRoute("/albums")({
   head: () => ({
