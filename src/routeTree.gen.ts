@@ -11,14 +11,18 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadsRouteImport } from './routes/uploads'
 import { Route as TracksRouteImport } from './routes/tracks'
+import { Route as SignUpRouteImport } from './routes/sign-up'
+import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RightsRouteImport } from './routes/rights'
 import { Route as ReleasesRouteImport } from './routes/releases'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProcessingRouteImport } from './routes/processing'
 import { Route as PlaylistsRouteImport } from './routes/playlists'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as DiscoverRouteImport } from './routes/discover'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ArtistsRouteImport } from './routes/artists'
 import { Route as AlbumsRouteImport } from './routes/albums'
 import { Route as IndexRouteImport } from './routes/index'
@@ -31,6 +35,16 @@ const UploadsRoute = UploadsRouteImport.update({
 const TracksRoute = TracksRouteImport.update({
   id: '/tracks',
   path: '/tracks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignUpRoute = SignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -46,6 +60,11 @@ const RightsRoute = RightsRouteImport.update({
 const ReleasesRoute = ReleasesRouteImport.update({
   id: '/releases',
   path: '/releases',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProcessingRoute = ProcessingRouteImport.update({
@@ -73,6 +92,11 @@ const DiscoverRoute = DiscoverRouteImport.update({
   path: '/discover',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ArtistsRoute = ArtistsRouteImport.update({
   id: '/artists',
   path: '/artists',
@@ -93,14 +117,18 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/albums': typeof AlbumsRoute
   '/artists': typeof ArtistsRoute
+  '/dashboard': typeof DashboardRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
   '/playlists': typeof PlaylistsRoute
   '/processing': typeof ProcessingRoute
+  '/profile': typeof ProfileRoute
   '/releases': typeof ReleasesRoute
   '/rights': typeof RightsRoute
   '/settings': typeof SettingsRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/tracks': typeof TracksRoute
   '/uploads': typeof UploadsRoute
 }
@@ -108,14 +136,18 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/albums': typeof AlbumsRoute
   '/artists': typeof ArtistsRoute
+  '/dashboard': typeof DashboardRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
   '/playlists': typeof PlaylistsRoute
   '/processing': typeof ProcessingRoute
+  '/profile': typeof ProfileRoute
   '/releases': typeof ReleasesRoute
   '/rights': typeof RightsRoute
   '/settings': typeof SettingsRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/tracks': typeof TracksRoute
   '/uploads': typeof UploadsRoute
 }
@@ -124,14 +156,18 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/albums': typeof AlbumsRoute
   '/artists': typeof ArtistsRoute
+  '/dashboard': typeof DashboardRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
   '/playlists': typeof PlaylistsRoute
   '/processing': typeof ProcessingRoute
+  '/profile': typeof ProfileRoute
   '/releases': typeof ReleasesRoute
   '/rights': typeof RightsRoute
   '/settings': typeof SettingsRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/tracks': typeof TracksRoute
   '/uploads': typeof UploadsRoute
 }
@@ -141,14 +177,18 @@ export interface FileRouteTypes {
     | '/'
     | '/albums'
     | '/artists'
+    | '/dashboard'
     | '/discover'
     | '/library'
     | '/login'
     | '/playlists'
     | '/processing'
+    | '/profile'
     | '/releases'
     | '/rights'
     | '/settings'
+    | '/sign-in'
+    | '/sign-up'
     | '/tracks'
     | '/uploads'
   fileRoutesByTo: FileRoutesByTo
@@ -156,14 +196,18 @@ export interface FileRouteTypes {
     | '/'
     | '/albums'
     | '/artists'
+    | '/dashboard'
     | '/discover'
     | '/library'
     | '/login'
     | '/playlists'
     | '/processing'
+    | '/profile'
     | '/releases'
     | '/rights'
     | '/settings'
+    | '/sign-in'
+    | '/sign-up'
     | '/tracks'
     | '/uploads'
   id:
@@ -171,14 +215,18 @@ export interface FileRouteTypes {
     | '/'
     | '/albums'
     | '/artists'
+    | '/dashboard'
     | '/discover'
     | '/library'
     | '/login'
     | '/playlists'
     | '/processing'
+    | '/profile'
     | '/releases'
     | '/rights'
     | '/settings'
+    | '/sign-in'
+    | '/sign-up'
     | '/tracks'
     | '/uploads'
   fileRoutesById: FileRoutesById
@@ -187,14 +235,18 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlbumsRoute: typeof AlbumsRoute
   ArtistsRoute: typeof ArtistsRoute
+  DashboardRoute: typeof DashboardRoute
   DiscoverRoute: typeof DiscoverRoute
   LibraryRoute: typeof LibraryRoute
   LoginRoute: typeof LoginRoute
   PlaylistsRoute: typeof PlaylistsRoute
   ProcessingRoute: typeof ProcessingRoute
+  ProfileRoute: typeof ProfileRoute
   ReleasesRoute: typeof ReleasesRoute
   RightsRoute: typeof RightsRoute
   SettingsRoute: typeof SettingsRoute
+  SignInRoute: typeof SignInRoute
+  SignUpRoute: typeof SignUpRoute
   TracksRoute: typeof TracksRoute
   UploadsRoute: typeof UploadsRoute
 }
@@ -213,6 +265,20 @@ declare module '@tanstack/react-router' {
       path: '/tracks'
       fullPath: '/tracks'
       preLoaderRoute: typeof TracksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-up': {
+      id: '/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof SignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -234,6 +300,13 @@ declare module '@tanstack/react-router' {
       path: '/releases'
       fullPath: '/releases'
       preLoaderRoute: typeof ReleasesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/processing': {
@@ -271,6 +344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DiscoverRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/artists': {
       id: '/artists'
       path: '/artists'
@@ -299,14 +379,18 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlbumsRoute: AlbumsRoute,
   ArtistsRoute: ArtistsRoute,
+  DashboardRoute: DashboardRoute,
   DiscoverRoute: DiscoverRoute,
   LibraryRoute: LibraryRoute,
   LoginRoute: LoginRoute,
   PlaylistsRoute: PlaylistsRoute,
   ProcessingRoute: ProcessingRoute,
+  ProfileRoute: ProfileRoute,
   ReleasesRoute: ReleasesRoute,
   RightsRoute: RightsRoute,
   SettingsRoute: SettingsRoute,
+  SignInRoute: SignInRoute,
+  SignUpRoute: SignUpRoute,
   TracksRoute: TracksRoute,
   UploadsRoute: UploadsRoute,
 }

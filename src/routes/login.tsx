@@ -1,2 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-export const Route = createFileRoute("/login")({ component: ()=> <div className="max-w-sm space-y-3"><h1 className="text-xl font-semibold">Login</h1><input className="w-full rounded border p-2" placeholder="Email"/><input className="w-full rounded border p-2" placeholder="Password" type="password"/><button className="rounded bg-primary px-4 py-2 text-primary-foreground">Logga in</button></div> });
+import { createFileRoute, Navigate } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/login")({
+  component: () => <Navigate to="/sign-in" />,
+});
