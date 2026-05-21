@@ -2,7 +2,21 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
 import { playerStore } from "@/features/player/player-store";
-export const Route = createFileRoute("/discover")({ component: Discover });
+const URL = "https://catalog.mediarosenqvist.com/discover";
+export const Route = createFileRoute("/discover")({
+  head: () => ({
+    meta: [
+      { title: "Discover – Soundloom" },
+      { name: "description", content: "Discover new and featured tracks across the Soundloom music catalog for Media Rosenqvist services." },
+      { property: "og:title", content: "Discover – Soundloom" },
+      { property: "og:description", content: "New and featured tracks in the Media Rosenqvist music catalog." },
+      { property: "og:url", content: URL },
+    ],
+    links: [{ rel: "canonical", href: URL }],
+  }),
+  component: Discover,
+});
+
 function Discover(){ const tracks = useQuery({queryKey:["tracks"], queryFn: apiClient.getTracks});
  if(tracks.isLoading) return <p>Loading discover…</p>; if(tracks.error) return <p>API nere: {(tracks.error as Error).message}</p>;
  if((tracks.data?.length ?? 0)===0) return <p>Inget sökresultat.</p>;

@@ -10,10 +10,22 @@ import { Plus, Search, Disc3 } from "lucide-react";
 
 const statusFilters: (AlbumStatus | "all")[] = ["all", "draft", "scheduled", "released", "archived"];
 
+const URL = "https://catalog.mediarosenqvist.com/albums";
+
 export const Route = createFileRoute("/albums")({
-  head: () => ({ meta: [{ title: "Albums – Music Catalog Core" }] }),
+  head: () => ({
+    meta: [
+      { title: "Albums – Soundloom" },
+      { name: "description", content: "Album-format releases in the Soundloom music catalog — drafts, scheduled, released and archived albums for Media Rosenqvist." },
+      { property: "og:title", content: "Albums – Soundloom" },
+      { property: "og:description", content: "Album-format releases in the Media Rosenqvist music catalog." },
+      { property: "og:url", content: URL },
+    ],
+    links: [{ rel: "canonical", href: URL }],
+  }),
   component: AlbumsPage,
 });
+
 
 function AlbumsPage() {
   const [q, setQ] = useState("");
