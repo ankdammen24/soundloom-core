@@ -1,0 +1,14 @@
+# Soundloom — Media Rosenqvist Music Catalog
+
+> Central music catalog for Media Rosenqvist services: Radio Core, Music Core, Radio Uppsala and distribution. Frontend built on top of music-catalog-core.
+
+Soundloom is the catalog and upload interface used by Media Rosenqvist to manage artists, releases and tracks across multiple radio and music services.
+
+## Pages
+- [Home](/): Overview of the Soundloom catalog frontend.
+- [Discover](/discover): Browse new and featured releases.
+- [Releases](/releases): Singles, EPs and albums in the catalog.
+- [Artists](/artists): Artists registered in the catalog.
+- [Tracks](/tracks): Individual tracks across releases.
+- [Albums](/albums): Album-format releases.
+- [Platform Status](/status): Backend and integration health.
