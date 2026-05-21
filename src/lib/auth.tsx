@@ -2,9 +2,9 @@ import { ClerkProvider, useAuth } from "@clerk/clerk-react";
 import { useEffect, type ReactNode } from "react";
 import { setApiTokenGetter } from "./api";
 
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
+const PUBLISHABLE_KEY = (import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined)?.trim();
 
-export const clerkConfigured = Boolean(PUBLISHABLE_KEY);
+export const clerkConfigured = Boolean(PUBLISHABLE_KEY?.startsWith("pk_"));
 
 function ApiTokenBridge() {
   const { getToken, isLoaded } = useAuth();
@@ -24,7 +24,7 @@ function ApiTokenBridge() {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   // When no Clerk key is configured, render children directly so the app stays usable.
-  if (!PUBLISHABLE_KEY) {
+  if (!clerkConfigured) {
     return <>{children}</>;
   }
   return (
