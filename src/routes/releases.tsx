@@ -6,10 +6,22 @@ import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { Plus, Disc3, AlertTriangle } from "lucide-react";
 
+const URL = "https://catalog.mediarosenqvist.com/releases";
+
 export const Route = createFileRoute("/releases")({
-  head: () => ({ meta: [{ title: "Releases – Soundloom" }] }),
+  head: () => ({
+    meta: [
+      { title: "Releases – Soundloom" },
+      { name: "description", content: "Browse and manage singles, EPs and albums in the Soundloom music catalog for Media Rosenqvist." },
+      { property: "og:title", content: "Releases – Soundloom" },
+      { property: "og:description", content: "Singles, EPs and albums in the Media Rosenqvist music catalog." },
+      { property: "og:url", content: URL },
+    ],
+    links: [{ rel: "canonical", href: URL }],
+  }),
   component: ReleasesPage,
 });
+
 
 function ReleasesPage() {
   const qc = useQueryClient();
