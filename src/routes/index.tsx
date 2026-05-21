@@ -20,7 +20,7 @@ function Home() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">Soundloom</h1>
-      <p className="text-muted-foreground">Frontend för Media Rosenqvists musikkatalog — bygger på music-catalog-core.</p>
+      <p className="text-muted-foreground">Frontend för Media Rosenqvists musikkatalog</p>
       <div className="flex flex-wrap gap-2">
         {["discover", "releases", "artists", "tracks"].map((p) => (
           <Link key={p} to={`/${p}`} className="rounded border px-3 py-2">/{p}</Link>
