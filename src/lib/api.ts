@@ -212,7 +212,7 @@ export async function apiRequest<T = unknown>(path: string, opts: RequestOpts = 
     ...(body !== undefined && !isFormData ? { "Content-Type": "application/json" } : {}),
     ...headersToRecord(headers),
   };
-  if (anonymous) removeAuthorization(finalHeaders);
+  removeAuthorization(finalHeaders);
 
   let attachedAuth = false;
   if (!anonymous && tokenGetter) {
