@@ -2,6 +2,11 @@
 // All requests target VITE_API_BASE_URL and attach a Clerk Bearer token when available.
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "";
+export const API_BASE_URL = BASE_URL;
+export function apiUrl(path: string) {
+  const base = BASE_URL.replace(/\/$/, "");
+  return path.startsWith("/") ? `${base}${path}` : `${base}/${path}`;
+}
 
 // Token getter is injected at runtime by AuthProvider (Clerk).
 // Keeping it as a mutable holder avoids importing Clerk into SSR/server code.
