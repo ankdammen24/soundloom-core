@@ -27,6 +27,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ArtistsRouteImport } from './routes/artists'
 import { Route as AlbumsRouteImport } from './routes/albums'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ArtistsIdRouteImport } from './routes/artists.$id'
 
 const UploadsRoute = UploadsRouteImport.update({
   id: '/uploads',
@@ -118,11 +119,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ArtistsIdRoute = ArtistsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ArtistsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/albums': typeof AlbumsRoute
-  '/artists': typeof ArtistsRoute
+  '/artists': typeof ArtistsRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
@@ -138,11 +144,12 @@ export interface FileRoutesByFullPath {
   '/status': typeof StatusRoute
   '/tracks': typeof TracksRoute
   '/uploads': typeof UploadsRoute
+  '/artists/$id': typeof ArtistsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/albums': typeof AlbumsRoute
-  '/artists': typeof ArtistsRoute
+  '/artists': typeof ArtistsRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
@@ -158,12 +165,13 @@ export interface FileRoutesByTo {
   '/status': typeof StatusRoute
   '/tracks': typeof TracksRoute
   '/uploads': typeof UploadsRoute
+  '/artists/$id': typeof ArtistsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/albums': typeof AlbumsRoute
-  '/artists': typeof ArtistsRoute
+  '/artists': typeof ArtistsRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/status': typeof StatusRoute
   '/tracks': typeof TracksRoute
   '/uploads': typeof UploadsRoute
+  '/artists/$id': typeof ArtistsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -201,6 +210,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/tracks'
     | '/uploads'
+    | '/artists/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -221,6 +231,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/tracks'
     | '/uploads'
+    | '/artists/$id'
   id:
     | '__root__'
     | '/'
@@ -241,12 +252,13 @@ export interface FileRouteTypes {
     | '/status'
     | '/tracks'
     | '/uploads'
+    | '/artists/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlbumsRoute: typeof AlbumsRoute
-  ArtistsRoute: typeof ArtistsRoute
+  ArtistsRoute: typeof ArtistsRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   DiscoverRoute: typeof DiscoverRoute
   LibraryRoute: typeof LibraryRoute
@@ -392,13 +404,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/artists/$id': {
+      id: '/artists/$id'
+      path: '/$id'
+      fullPath: '/artists/$id'
+      preLoaderRoute: typeof ArtistsIdRouteImport
+      parentRoute: typeof ArtistsRoute
+    }
   }
 }
+
+interface ArtistsRouteChildren {
+  ArtistsIdRoute: typeof ArtistsIdRoute
+}
+
+const ArtistsRouteChildren: ArtistsRouteChildren = {
+  ArtistsIdRoute: ArtistsIdRoute,
+}
+
+const ArtistsRouteWithChildren =
+  ArtistsRoute._addFileChildren(ArtistsRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlbumsRoute: AlbumsRoute,
-  ArtistsRoute: ArtistsRoute,
+  ArtistsRoute: ArtistsRouteWithChildren,
   DashboardRoute: DashboardRoute,
   DiscoverRoute: DiscoverRoute,
   LibraryRoute: LibraryRoute,
@@ -418,3 +448,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
