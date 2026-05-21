@@ -10,6 +10,7 @@ const set = (patch: Partial<State>) => { Object.assign(state, patch); emit(); };
 export const playerStore = {
   subscribe: (l: () => void) => (listeners.add(l), () => listeners.delete(l)),
   getSnapshot: () => state,
+  getServerSnapshot: () => state,
   async playTrack(track: Track, queue: Track[] = []) { const t = await apiClient.requestPlaybackToken(track.id); set({ currentTrack: track, queue, playbackUrl: t.playbackUrl, isPlaying: true }); },
   setPlaying: (isPlaying: boolean) => set({ isPlaying }),
   setVolume: (volume: number) => set({ volume }),
@@ -18,4 +19,4 @@ export const playerStore = {
   next: async () => { if (!state.currentTrack || state.queue.length === 0) return; const idx = state.queue.findIndex((t) => t.id === state.currentTrack?.id); const nextTrack = state.shuffle ? state.queue[Math.floor(Math.random()*state.queue.length)] : state.queue[(idx + 1) % state.queue.length]; await playerStore.playTrack(nextTrack, state.queue); },
   previous: async () => { if (!state.currentTrack || state.queue.length === 0) return; const idx = state.queue.findIndex((t) => t.id === state.currentTrack?.id); const prevTrack = state.queue[(idx - 1 + state.queue.length) % state.queue.length]; await playerStore.playTrack(prevTrack, state.queue); },
 };
-export function usePlayerStore() { return useSyncExternalStore(playerStore.subscribe, playerStore.getSnapshot); }
+export function usePlayerStore() { return useSyncExternalStore(playerStore.subscribe, playerStore.getSnapshot, playerStore.getServerSnapshot); }
