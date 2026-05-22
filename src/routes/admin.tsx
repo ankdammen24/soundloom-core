@@ -39,8 +39,8 @@ const subnav: ReadonlyArray<{ to: string; label: string; icon: typeof Gauge; exa
 
 function AdminLayout() {
   const location = useLocation();
-  const isActive = (to: string, exact?: boolean) =>
-    exact ? location.pathname === to : location.pathname.startsWith(to) && to !== "/admin";
+
+
 
   return (
     <div className="space-y-6">
