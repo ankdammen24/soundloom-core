@@ -293,6 +293,13 @@ export type Release = {
   status?: string;
 };
 
+export type ProcessingEvent = {
+  step: string;
+  status?: "pending" | "active" | "done" | "failed" | string;
+  ts?: string;
+  error?: string;
+};
+
 export type Track = {
   id: string;
   title: string;
@@ -303,6 +310,9 @@ export type Track = {
   durationSec?: number;
   isrc?: string;
   status?: string;
+  audioUrl?: string;
+  previewUrl?: string;
+  processingEvents?: ProcessingEvent[];
 };
 
 export type UploadInit = {
@@ -443,16 +453,22 @@ export const api = {
   getArtist: (id: string) => apiRequest<Artist>(`/api/artists/${id}`),
   createArtist: (body: Partial<Artist>) =>
     apiRequest<Artist>("/api/artists", { method: "POST", body }),
+  updateArtist: (id: string, body: Partial<Artist>) =>
+    apiRequest<Artist>(`/api/artists/${id}`, { method: "PATCH", body }),
 
   listReleases: () => apiRequest<Release[]>("/api/releases"),
   getRelease: (id: string) => apiRequest<Release>(`/api/releases/${id}`),
   createRelease: (body: Partial<Release>) =>
     apiRequest<Release>("/api/releases", { method: "POST", body }),
+  updateRelease: (id: string, body: Partial<Release>) =>
+    apiRequest<Release>(`/api/releases/${id}`, { method: "PATCH", body }),
 
   listTracks: () => apiRequest<Track[]>("/api/tracks"),
   getTrack: (id: string) => apiRequest<Track>(`/api/tracks/${id}`),
   createTrack: (body: Partial<Track>) =>
     apiRequest<Track>("/api/tracks", { method: "POST", body }),
+  updateTrack: (id: string, body: Partial<Track>) =>
+    apiRequest<Track>(`/api/tracks/${id}`, { method: "PATCH", body }),
 
   // Uploads
   initUpload: (body: { filename: string; contentType: string; size?: number; trackId?: string }) =>
