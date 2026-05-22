@@ -170,17 +170,17 @@ export function AppShell() {
 
           <nav className="px-2 py-2 space-y-1">
             {mainNav.map((i) => (
-              <>
-                <span key={`lg-${i.to}`} className="hidden lg:block">
+              <div key={i.to}>
+                <span className="hidden lg:block">
                   <NavItem to={i.to} label={i.label} Icon={i.icon} active={isActive(i.to)} onClick={() => setOpen(false)} />
                 </span>
-                <span key={`md-${i.to}`} className="hidden md:block lg:hidden">
+                <span className="hidden md:block lg:hidden">
                   <NavItem to={i.to} label={i.label} Icon={i.icon} active={isActive(i.to)} onClick={() => setOpen(false)} compact />
                 </span>
-                <span key={`sm-${i.to}`} className="block md:hidden">
+                <span className="block md:hidden">
                   <NavItem to={i.to} label={i.label} Icon={i.icon} active={isActive(i.to)} onClick={() => setOpen(false)} />
                 </span>
-              </>
+              </div>
             ))}
           </nav>
 
