@@ -17,6 +17,11 @@ import {
   Library,
   Search,
   Compass,
+  Boxes,
+  Building2,
+  Radio,
+  Cpu,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -27,14 +32,22 @@ const mainNav = [
   { to: "/", label: "Home", icon: Home },
   { to: "/discover", label: "Discover", icon: Compass },
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/status", label: "Platform Status", icon: Activity },
+] as const;
+
+const workspaceNav = [
+  { to: "/processing", label: "Processing", icon: Cpu },
+  { to: "/distribution", label: "Distribution", icon: Radio },
+  { to: "/organizations", label: "Organizations", icon: Building2 },
+  { to: "/settings", label: "Settings", icon: SettingsIcon },
 ] as const;
 
 const libraryNav = [
   { to: "/artists", label: "Artists", icon: Users },
   { to: "/releases", label: "Releases", icon: Send },
   { to: "/tracks", label: "Tracks", icon: Music2 },
+  { to: "/assets", label: "Assets", icon: Boxes },
   { to: "/uploads", label: "Uploads", icon: Upload },
-  { to: "/status", label: "Platform Status", icon: Activity },
 ] as const;
 
 function NavItem({
