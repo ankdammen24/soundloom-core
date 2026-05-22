@@ -1,6 +1,6 @@
-# Soundloom — Music Catalog Frontend
+# Catalogus Musicus — Music Catalog Frontend
 
-Modern frontend for **Media Rosenqvist / Soundloom**, sitting on top of the
+Modern frontend for **Media Rosenqvist / Catalogus Musicus**, sitting on top of the
 [`music-catalog-core`](https://api.mediarosenqvist.com) backend.
 
 Stack: **TanStack Start v1** (Vite 7, React 19, SSR-ready) · **TanStack Query** ·

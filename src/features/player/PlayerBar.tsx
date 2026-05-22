@@ -16,7 +16,7 @@ export function PlayerBar() {
               {s.currentTrack?.title ?? "Nothing playing"}
             </div>
             <div className="truncate text-xs text-muted-foreground">
-              {s.currentTrack ? "Soundloom" : "Pick a track to start"}
+              {s.currentTrack ? "Catalogus Musicus" : "Pick a track to start"}
             </div>
           </div>
         </div>

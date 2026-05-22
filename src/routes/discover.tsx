@@ -6,9 +6,9 @@ const URL = "https://soundloom-core.lovable.app/discover";
 export const Route = createFileRoute("/discover")({
   head: () => ({
     meta: [
-      { title: "Discover – Soundloom" },
-      { name: "description", content: "Discover new and featured tracks across the Soundloom music catalog for Media Rosenqvist services." },
-      { property: "og:title", content: "Discover – Soundloom" },
+      { title: "Discover – Catalogus Musicus" },
+      { name: "description", content: "Discover new and featured tracks across the Catalogus Musicus music catalog for Media Rosenqvist services." },
+      { property: "og:title", content: "Discover – Catalogus Musicus" },
       { property: "og:description", content: "New and featured tracks in the Media Rosenqvist music catalog." },
       { property: "og:url", content: URL },
     ],

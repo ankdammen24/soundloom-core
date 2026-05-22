@@ -59,9 +59,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Soundloom – Media Rosenqvist Music Catalog" },
+      { title: "Catalogus Musicus – Media Rosenqvist Music Catalog" },
       { name: "description", content: "Central music catalog for Media Rosenqvist services: Radio Core, Music Core, Radio Uppsala and distribution." },
-      { property: "og:site_name", content: "Soundloom" },
+      { property: "og:site_name", content: "Catalogus Musicus" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -79,7 +79,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             },
             {
               "@type": "WebSite",
-              name: "Soundloom",
+              name: "Catalogus Musicus",
               url: "https://soundloom-core.lovable.app",
               description: "Central music catalog for Media Rosenqvist services.",
             },
