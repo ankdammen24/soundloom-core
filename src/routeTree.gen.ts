@@ -21,10 +21,13 @@ import { Route as ReleasesRouteImport } from './routes/releases'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProcessingRouteImport } from './routes/processing'
 import { Route as PlaylistsRouteImport } from './routes/playlists'
+import { Route as OrganizationsRouteImport } from './routes/organizations'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LibraryRouteImport } from './routes/library'
+import { Route as DistributionRouteImport } from './routes/distribution'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AssetsRouteImport } from './routes/assets'
 import { Route as ArtistsRouteImport } from './routes/artists'
 import { Route as AlbumsRouteImport } from './routes/albums'
 import { Route as IndexRouteImport } from './routes/index'
@@ -92,6 +95,11 @@ const PlaylistsRoute = PlaylistsRouteImport.update({
   path: '/playlists',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrganizationsRoute = OrganizationsRouteImport.update({
+  id: '/organizations',
+  path: '/organizations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -102,6 +110,11 @@ const LibraryRoute = LibraryRouteImport.update({
   path: '/library',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DistributionRoute = DistributionRouteImport.update({
+  id: '/distribution',
+  path: '/distribution',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DiscoverRoute = DiscoverRouteImport.update({
   id: '/discover',
   path: '/discover',
@@ -110,6 +123,11 @@ const DiscoverRoute = DiscoverRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssetsRoute = AssetsRouteImport.update({
+  id: '/assets',
+  path: '/assets',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ArtistsRoute = ArtistsRouteImport.update({
@@ -147,10 +165,13 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/albums': typeof AlbumsRoute
   '/artists': typeof ArtistsRouteWithChildren
+  '/assets': typeof AssetsRoute
   '/dashboard': typeof DashboardRoute
   '/discover': typeof DiscoverRoute
+  '/distribution': typeof DistributionRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/organizations': typeof OrganizationsRoute
   '/playlists': typeof PlaylistsRoute
   '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
@@ -171,10 +192,13 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/albums': typeof AlbumsRoute
   '/artists': typeof ArtistsRouteWithChildren
+  '/assets': typeof AssetsRoute
   '/dashboard': typeof DashboardRoute
   '/discover': typeof DiscoverRoute
+  '/distribution': typeof DistributionRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/organizations': typeof OrganizationsRoute
   '/playlists': typeof PlaylistsRoute
   '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
@@ -196,10 +220,13 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/albums': typeof AlbumsRoute
   '/artists': typeof ArtistsRouteWithChildren
+  '/assets': typeof AssetsRoute
   '/dashboard': typeof DashboardRoute
   '/discover': typeof DiscoverRoute
+  '/distribution': typeof DistributionRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/organizations': typeof OrganizationsRoute
   '/playlists': typeof PlaylistsRoute
   '/processing': typeof ProcessingRoute
   '/profile': typeof ProfileRoute
@@ -222,10 +249,13 @@ export interface FileRouteTypes {
     | '/'
     | '/albums'
     | '/artists'
+    | '/assets'
     | '/dashboard'
     | '/discover'
+    | '/distribution'
     | '/library'
     | '/login'
+    | '/organizations'
     | '/playlists'
     | '/processing'
     | '/profile'
@@ -246,10 +276,13 @@ export interface FileRouteTypes {
     | '/'
     | '/albums'
     | '/artists'
+    | '/assets'
     | '/dashboard'
     | '/discover'
+    | '/distribution'
     | '/library'
     | '/login'
+    | '/organizations'
     | '/playlists'
     | '/processing'
     | '/profile'
@@ -270,10 +303,13 @@ export interface FileRouteTypes {
     | '/'
     | '/albums'
     | '/artists'
+    | '/assets'
     | '/dashboard'
     | '/discover'
+    | '/distribution'
     | '/library'
     | '/login'
+    | '/organizations'
     | '/playlists'
     | '/processing'
     | '/profile'
@@ -295,10 +331,13 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlbumsRoute: typeof AlbumsRoute
   ArtistsRoute: typeof ArtistsRouteWithChildren
+  AssetsRoute: typeof AssetsRoute
   DashboardRoute: typeof DashboardRoute
   DiscoverRoute: typeof DiscoverRoute
+  DistributionRoute: typeof DistributionRoute
   LibraryRoute: typeof LibraryRoute
   LoginRoute: typeof LoginRoute
+  OrganizationsRoute: typeof OrganizationsRoute
   PlaylistsRoute: typeof PlaylistsRoute
   ProcessingRoute: typeof ProcessingRoute
   ProfileRoute: typeof ProfileRoute
@@ -399,6 +438,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlaylistsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/organizations': {
+      id: '/organizations'
+      path: '/organizations'
+      fullPath: '/organizations'
+      preLoaderRoute: typeof OrganizationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -413,6 +459,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LibraryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/distribution': {
+      id: '/distribution'
+      path: '/distribution'
+      fullPath: '/distribution'
+      preLoaderRoute: typeof DistributionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/discover': {
       id: '/discover'
       path: '/discover'
@@ -425,6 +478,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assets': {
+      id: '/assets'
+      path: '/assets'
+      fullPath: '/assets'
+      preLoaderRoute: typeof AssetsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/artists': {
@@ -510,10 +570,13 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlbumsRoute: AlbumsRoute,
   ArtistsRoute: ArtistsRouteWithChildren,
+  AssetsRoute: AssetsRoute,
   DashboardRoute: DashboardRoute,
   DiscoverRoute: DiscoverRoute,
+  DistributionRoute: DistributionRoute,
   LibraryRoute: LibraryRoute,
   LoginRoute: LoginRoute,
+  OrganizationsRoute: OrganizationsRoute,
   PlaylistsRoute: PlaylistsRoute,
   ProcessingRoute: ProcessingRoute,
   ProfileRoute: ProfileRoute,

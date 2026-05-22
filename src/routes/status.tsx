@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, AlertTriangle, Loader2, ServerCog, Database, HardDrive, KeyRound, Cpu, Play } from "lucide-react";
 import type { ComponentType } from "react";
 
-const URL = "https://soundloom.mediarosenqvist.com/status";
+const URL = "https://catalogusmusicus.mediarosenqvist.com/status";
 
 export const Route = createFileRoute("/status")({
   head: () => ({
