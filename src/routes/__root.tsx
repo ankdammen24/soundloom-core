@@ -10,6 +10,7 @@ import {
 import appCss from "../styles.css?url";
 import { AppShell } from "@/components/layout/AppShell";
 import { AuthProvider } from "@/lib/auth";
+import { ThemeProvider, themeBootScript } from "@/lib/theme";
 
 function NotFoundComponent() {
   return (
@@ -67,6 +68,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [{ rel: "stylesheet", href: appCss }],
     scripts: [
+      { children: themeBootScript },
       {
         type: "application/ld+json",
         children: JSON.stringify({
@@ -97,7 +99,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" style={{ colorScheme: "dark" }} suppressHydrationWarning>
       <head><HeadContent /></head>
       <body>
         {children}
@@ -110,10 +112,12 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClient}>
-        <AppShell />
-      </QueryClientProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <AppShell />
+        </QueryClientProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
