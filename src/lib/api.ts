@@ -319,6 +319,116 @@ export type UploadComplete = {
   url?: string;
 };
 
+// ---------- Admin / Ops types ----------
+export type AdminSummary = {
+  workersUp?: number;
+  workersTotal?: number;
+  queueDepth?: number;
+  failedJobs24h?: number;
+  storageUsedBytes?: number;
+  storageQuotaBytes?: number;
+  processingP95Ms?: number;
+  requestsPerMin?: number;
+  [k: string]: unknown;
+};
+
+export type Worker = {
+  id: string;
+  host?: string;
+  version?: string;
+  status?: "online" | "offline" | "degraded" | string;
+  lastHeartbeat?: string;
+  activeJobs?: number;
+  [k: string]: unknown;
+};
+
+export type QueueStats = {
+  name: string;
+  waiting?: number;
+  active?: number;
+  completed?: number;
+  failed?: number;
+  delayed?: number;
+  paused?: boolean;
+  history?: number[];
+};
+
+export type StorageStats = {
+  name: string;
+  usedBytes?: number;
+  quotaBytes?: number;
+  objectCount?: number;
+  egress24hBytes?: number;
+};
+
+export type ProcessingMetrics = {
+  range: string;
+  throughputPerMin?: number;
+  successRate?: number;
+  byType?: Array<{
+    type: string;
+    throughput?: number;
+    successRate?: number;
+    p50Ms?: number;
+    p95Ms?: number;
+    p99Ms?: number;
+  }>;
+};
+
+export type Job = {
+  id: string;
+  queue: string;
+  type?: string;
+  attempts?: number;
+  maxAttempts?: number;
+  error?: string;
+  payload?: unknown;
+  failedAt?: string;
+};
+
+export type LogEntry = {
+  id: string;
+  ts: string;
+  level: "debug" | "info" | "warn" | "error" | string;
+  service?: string;
+  traceId?: string;
+  message: string;
+  fields?: Record<string, unknown>;
+};
+
+export type AuditEvent = {
+  id: string;
+  ts: string;
+  actor?: string;
+  action: string;
+  resourceType?: string;
+  resourceId?: string;
+  ip?: string;
+  before?: unknown;
+  after?: unknown;
+};
+
+export type ApiUsage = {
+  range: string;
+  totalRequests?: number;
+  byRoute?: Array<{ route: string; count: number; p95Ms?: number }>;
+  byStatus?: Record<string, number>;
+  topConsumers?: Array<{ id: string; label?: string; count: number }>;
+  rateLimitHits?: number;
+};
+
+export type HealthAggregate = {
+  status: string;
+  checks?: Record<string, HealthStatus>;
+  [k: string]: unknown;
+};
+
+export type Page<T> = {
+  items: T[];
+  total?: number;
+  nextCursor?: string | null;
+};
+
 // ---------- Domain helpers ----------
 export const api = {
   // Health
@@ -352,4 +462,29 @@ export const api = {
       method: "POST",
       body: { assetId, ...(body ?? {}) },
     }),
+
+  // Admin / Ops
+  admin: {
+    summary: () => apiRequest<AdminSummary>("/api/admin/summary"),
+    workers: () => apiRequest<Worker[]>("/api/admin/workers"),
+    queues: () => apiRequest<QueueStats[]>("/api/admin/queues"),
+    storage: () => apiRequest<StorageStats[]>("/api/admin/storage"),
+    processing: (range: string) =>
+      apiRequest<ProcessingMetrics>("/api/admin/metrics/processing", { query: { range } }),
+    failedJobs: (q: { queue?: string; since?: string; cursor?: string; limit?: number } = {}) =>
+      apiRequest<Page<Job>>("/api/admin/jobs/failed", { query: q }),
+    retryJob: (id: string) =>
+      apiRequest<void>(`/api/admin/jobs/${id}/retry`, { method: "POST" }),
+    bulkRetry: (ids: string[]) =>
+      apiRequest<void>("/api/admin/jobs/bulk-retry", { method: "POST", body: { ids } }),
+    discardJob: (id: string) =>
+      apiRequest<void>(`/api/admin/jobs/${id}`, { method: "DELETE" }),
+    logs: (q: { level?: string; service?: string; traceId?: string; q?: string; since?: string; cursor?: string; limit?: number } = {}) =>
+      apiRequest<Page<LogEntry>>("/api/admin/logs", { query: q }),
+    audit: (q: { actor?: string; action?: string; resourceType?: string; since?: string; cursor?: string; limit?: number } = {}) =>
+      apiRequest<Page<AuditEvent>>("/api/admin/audit", { query: q }),
+    apiUsage: (range: string) =>
+      apiRequest<ApiUsage>("/api/admin/metrics/api-usage", { query: { range } }),
+    healthAll: () => apiRequest<HealthAggregate>("/health/all", { anonymous: true }),
+  },
 };

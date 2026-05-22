@@ -30,10 +30,20 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AssetsRouteImport } from './routes/assets'
 import { Route as ArtistsRouteImport } from './routes/artists'
 import { Route as AlbumsRouteImport } from './routes/albums'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TracksIdRouteImport } from './routes/tracks.$id'
 import { Route as ReleasesIdRouteImport } from './routes/releases.$id'
 import { Route as ArtistsIdRouteImport } from './routes/artists.$id'
+import { Route as AdminWorkersRouteImport } from './routes/admin.workers'
+import { Route as AdminStorageRouteImport } from './routes/admin.storage'
+import { Route as AdminQueuesRouteImport } from './routes/admin.queues'
+import { Route as AdminProcessingMetricsRouteImport } from './routes/admin.processing-metrics'
+import { Route as AdminLogsRouteImport } from './routes/admin.logs'
+import { Route as AdminJobsRouteImport } from './routes/admin.jobs'
+import { Route as AdminDiagnosticsRouteImport } from './routes/admin.diagnostics'
+import { Route as AdminAuditRouteImport } from './routes/admin.audit'
+import { Route as AdminApiUsageRouteImport } from './routes/admin.api-usage'
 
 const UploadsRoute = UploadsRouteImport.update({
   id: '/uploads',
@@ -140,6 +150,11 @@ const AlbumsRoute = AlbumsRouteImport.update({
   path: '/albums',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -160,9 +175,55 @@ const ArtistsIdRoute = ArtistsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ArtistsRoute,
 } as any)
+const AdminWorkersRoute = AdminWorkersRouteImport.update({
+  id: '/workers',
+  path: '/workers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminStorageRoute = AdminStorageRouteImport.update({
+  id: '/storage',
+  path: '/storage',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminQueuesRoute = AdminQueuesRouteImport.update({
+  id: '/queues',
+  path: '/queues',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProcessingMetricsRoute = AdminProcessingMetricsRouteImport.update({
+  id: '/processing-metrics',
+  path: '/processing-metrics',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLogsRoute = AdminLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminJobsRoute = AdminJobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDiagnosticsRoute = AdminDiagnosticsRouteImport.update({
+  id: '/diagnostics',
+  path: '/diagnostics',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminApiUsageRoute = AdminApiUsageRouteImport.update({
+  id: '/api-usage',
+  path: '/api-usage',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/albums': typeof AlbumsRoute
   '/artists': typeof ArtistsRouteWithChildren
   '/assets': typeof AssetsRoute
@@ -184,12 +245,22 @@ export interface FileRoutesByFullPath {
   '/status': typeof StatusRoute
   '/tracks': typeof TracksRouteWithChildren
   '/uploads': typeof UploadsRoute
+  '/admin/api-usage': typeof AdminApiUsageRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/diagnostics': typeof AdminDiagnosticsRoute
+  '/admin/jobs': typeof AdminJobsRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/processing-metrics': typeof AdminProcessingMetricsRoute
+  '/admin/queues': typeof AdminQueuesRoute
+  '/admin/storage': typeof AdminStorageRoute
+  '/admin/workers': typeof AdminWorkersRoute
   '/artists/$id': typeof ArtistsIdRoute
   '/releases/$id': typeof ReleasesIdRoute
   '/tracks/$id': typeof TracksIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/albums': typeof AlbumsRoute
   '/artists': typeof ArtistsRouteWithChildren
   '/assets': typeof AssetsRoute
@@ -211,6 +282,15 @@ export interface FileRoutesByTo {
   '/status': typeof StatusRoute
   '/tracks': typeof TracksRouteWithChildren
   '/uploads': typeof UploadsRoute
+  '/admin/api-usage': typeof AdminApiUsageRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/diagnostics': typeof AdminDiagnosticsRoute
+  '/admin/jobs': typeof AdminJobsRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/processing-metrics': typeof AdminProcessingMetricsRoute
+  '/admin/queues': typeof AdminQueuesRoute
+  '/admin/storage': typeof AdminStorageRoute
+  '/admin/workers': typeof AdminWorkersRoute
   '/artists/$id': typeof ArtistsIdRoute
   '/releases/$id': typeof ReleasesIdRoute
   '/tracks/$id': typeof TracksIdRoute
@@ -218,6 +298,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/albums': typeof AlbumsRoute
   '/artists': typeof ArtistsRouteWithChildren
   '/assets': typeof AssetsRoute
@@ -239,6 +320,15 @@ export interface FileRoutesById {
   '/status': typeof StatusRoute
   '/tracks': typeof TracksRouteWithChildren
   '/uploads': typeof UploadsRoute
+  '/admin/api-usage': typeof AdminApiUsageRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/diagnostics': typeof AdminDiagnosticsRoute
+  '/admin/jobs': typeof AdminJobsRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/processing-metrics': typeof AdminProcessingMetricsRoute
+  '/admin/queues': typeof AdminQueuesRoute
+  '/admin/storage': typeof AdminStorageRoute
+  '/admin/workers': typeof AdminWorkersRoute
   '/artists/$id': typeof ArtistsIdRoute
   '/releases/$id': typeof ReleasesIdRoute
   '/tracks/$id': typeof TracksIdRoute
@@ -247,6 +337,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/albums'
     | '/artists'
     | '/assets'
@@ -268,12 +359,22 @@ export interface FileRouteTypes {
     | '/status'
     | '/tracks'
     | '/uploads'
+    | '/admin/api-usage'
+    | '/admin/audit'
+    | '/admin/diagnostics'
+    | '/admin/jobs'
+    | '/admin/logs'
+    | '/admin/processing-metrics'
+    | '/admin/queues'
+    | '/admin/storage'
+    | '/admin/workers'
     | '/artists/$id'
     | '/releases/$id'
     | '/tracks/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/albums'
     | '/artists'
     | '/assets'
@@ -295,12 +396,22 @@ export interface FileRouteTypes {
     | '/status'
     | '/tracks'
     | '/uploads'
+    | '/admin/api-usage'
+    | '/admin/audit'
+    | '/admin/diagnostics'
+    | '/admin/jobs'
+    | '/admin/logs'
+    | '/admin/processing-metrics'
+    | '/admin/queues'
+    | '/admin/storage'
+    | '/admin/workers'
     | '/artists/$id'
     | '/releases/$id'
     | '/tracks/$id'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/albums'
     | '/artists'
     | '/assets'
@@ -322,6 +433,15 @@ export interface FileRouteTypes {
     | '/status'
     | '/tracks'
     | '/uploads'
+    | '/admin/api-usage'
+    | '/admin/audit'
+    | '/admin/diagnostics'
+    | '/admin/jobs'
+    | '/admin/logs'
+    | '/admin/processing-metrics'
+    | '/admin/queues'
+    | '/admin/storage'
+    | '/admin/workers'
     | '/artists/$id'
     | '/releases/$id'
     | '/tracks/$id'
@@ -329,6 +449,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AlbumsRoute: typeof AlbumsRoute
   ArtistsRoute: typeof ArtistsRouteWithChildren
   AssetsRoute: typeof AssetsRoute
@@ -501,6 +622,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AlbumsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -529,8 +657,97 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArtistsIdRouteImport
       parentRoute: typeof ArtistsRoute
     }
+    '/admin/workers': {
+      id: '/admin/workers'
+      path: '/workers'
+      fullPath: '/admin/workers'
+      preLoaderRoute: typeof AdminWorkersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/storage': {
+      id: '/admin/storage'
+      path: '/storage'
+      fullPath: '/admin/storage'
+      preLoaderRoute: typeof AdminStorageRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/queues': {
+      id: '/admin/queues'
+      path: '/queues'
+      fullPath: '/admin/queues'
+      preLoaderRoute: typeof AdminQueuesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/processing-metrics': {
+      id: '/admin/processing-metrics'
+      path: '/processing-metrics'
+      fullPath: '/admin/processing-metrics'
+      preLoaderRoute: typeof AdminProcessingMetricsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/logs': {
+      id: '/admin/logs'
+      path: '/logs'
+      fullPath: '/admin/logs'
+      preLoaderRoute: typeof AdminLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/jobs': {
+      id: '/admin/jobs'
+      path: '/jobs'
+      fullPath: '/admin/jobs'
+      preLoaderRoute: typeof AdminJobsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/diagnostics': {
+      id: '/admin/diagnostics'
+      path: '/diagnostics'
+      fullPath: '/admin/diagnostics'
+      preLoaderRoute: typeof AdminDiagnosticsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/api-usage': {
+      id: '/admin/api-usage'
+      path: '/api-usage'
+      fullPath: '/admin/api-usage'
+      preLoaderRoute: typeof AdminApiUsageRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
+
+interface AdminRouteChildren {
+  AdminApiUsageRoute: typeof AdminApiUsageRoute
+  AdminAuditRoute: typeof AdminAuditRoute
+  AdminDiagnosticsRoute: typeof AdminDiagnosticsRoute
+  AdminJobsRoute: typeof AdminJobsRoute
+  AdminLogsRoute: typeof AdminLogsRoute
+  AdminProcessingMetricsRoute: typeof AdminProcessingMetricsRoute
+  AdminQueuesRoute: typeof AdminQueuesRoute
+  AdminStorageRoute: typeof AdminStorageRoute
+  AdminWorkersRoute: typeof AdminWorkersRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminApiUsageRoute: AdminApiUsageRoute,
+  AdminAuditRoute: AdminAuditRoute,
+  AdminDiagnosticsRoute: AdminDiagnosticsRoute,
+  AdminJobsRoute: AdminJobsRoute,
+  AdminLogsRoute: AdminLogsRoute,
+  AdminProcessingMetricsRoute: AdminProcessingMetricsRoute,
+  AdminQueuesRoute: AdminQueuesRoute,
+  AdminStorageRoute: AdminStorageRoute,
+  AdminWorkersRoute: AdminWorkersRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface ArtistsRouteChildren {
   ArtistsIdRoute: typeof ArtistsIdRoute
@@ -568,6 +785,7 @@ const TracksRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AlbumsRoute: AlbumsRoute,
   ArtistsRoute: ArtistsRouteWithChildren,
   AssetsRoute: AssetsRoute,
