@@ -122,10 +122,6 @@ export function getFetchDiagnostics(input: {
     hints.push("Cloudflare/security block: a WAF, bot challenge, redirect, or blocked error response without CORS headers can surface as TypeError: Failed to fetch.");
   }
 
-  if (origin?.includes("id-preview--") && origin.endsWith(".lovable.app")) {
-    hints.push("Lovable Preview diagnostic: if curl and the published site work, the preview fetch proxy may be the blocker.");
-  }
-
   if (hints.length === 0) hints.push("No browser-side fallback condition matched; inspect the Network tab for the blocked request details.");
 
   return {
