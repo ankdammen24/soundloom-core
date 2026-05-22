@@ -22,6 +22,7 @@ import {
   Radio,
   Cpu,
   Settings as SettingsIcon,
+  ShieldAlert,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -40,6 +41,10 @@ const workspaceNav = [
   { to: "/distribution", label: "Distribution", icon: Radio },
   { to: "/organizations", label: "Organizations", icon: Building2 },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
+] as const;
+
+const opsNav = [
+  { to: "/admin", label: "Admin", icon: ShieldAlert },
 ] as const;
 
 const libraryNav = [
@@ -156,6 +161,24 @@ export function AppShell() {
             </div>
             <nav className="space-y-1 mt-1">
               {workspaceNav.map((i) => (
+                <NavItem
+                  key={i.to}
+                  to={i.to}
+                  label={i.label}
+                  Icon={i.icon}
+                  active={isActive(i.to)}
+                  onClick={() => setOpen(false)}
+                />
+              ))}
+            </nav>
+          </div>
+
+          <div className="mx-3 my-2 rounded-lg bg-sidebar-accent/40 p-2">
+            <div className="flex items-center gap-2 px-2 py-1 text-xs uppercase tracking-wider text-sidebar-foreground/60">
+              <ShieldAlert className="h-4 w-4" /> Operations
+            </div>
+            <nav className="space-y-1 mt-1">
+              {opsNav.map((i) => (
                 <NavItem
                   key={i.to}
                   to={i.to}
