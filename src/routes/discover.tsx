@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
 import { playerStore } from "@/features/player/player-store";
-const URL = "https://soundloom-core.lovable.app/discover";
+const URL = "https://catalogusmusicus.mediarosenqvist.com/discover";
 export const Route = createFileRoute("/discover")({
   head: () => ({
     meta: [

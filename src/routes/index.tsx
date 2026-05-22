@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-const URL = "https://soundloom-core.lovable.app/";
+const URL = "https://catalogusmusicus.mediarosenqvist.com/";
 
 export const Route = createFileRoute("/")({
   head: () => ({

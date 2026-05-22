@@ -80,5 +80,5 @@ All HTTP traffic goes through one central client: **`src/lib/api.ts`**.
 
 ## 6. GitHub
 
-Repo: **`soundloom-core`** — the existing repo is reused, no fork.
+Repo: **`catalogus-musicus`** — the existing repo is reused, no fork.
 Push from local or let Lovable sync; the GitHub integration is bidirectional.
