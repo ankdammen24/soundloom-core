@@ -24,7 +24,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminLayout,
 });
 
-const subnav = [
+const subnav: ReadonlyArray<{ to: string; label: string; icon: typeof Gauge; exact?: boolean }> = [
   { to: "/admin", label: "Overview", icon: Gauge, exact: true },
   { to: "/admin/workers", label: "Workers", icon: Server },
   { to: "/admin/queues", label: "Queues", icon: Layers },
@@ -35,7 +35,7 @@ const subnav = [
   { to: "/admin/diagnostics", label: "Diagnostics", icon: Stethoscope },
   { to: "/admin/audit", label: "Audit", icon: ShieldAlert },
   { to: "/admin/api-usage", label: "API usage", icon: Activity },
-] as const;
+];
 
 function AdminLayout() {
   const location = useLocation();
