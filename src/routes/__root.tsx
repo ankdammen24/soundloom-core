@@ -3,14 +3,12 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
-  HeadContent,
-  Scripts,
 } from "@tanstack/react-router";
 
-import appCss from "../styles.css?url";
+import "../styles.css";
 import { AppShell } from "@/components/layout/AppShell";
 import { AuthProvider } from "@/lib/auth";
-import { ThemeProvider, themeBootScript } from "@/lib/theme";
+import { ThemeProvider } from "@/lib/theme";
 
 function NotFoundComponent() {
   return (
@@ -56,58 +54,11 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Catalogus Musicus – Media Rosenqvist Music Catalog" },
-      { name: "description", content: "Central music catalog for Media Rosenqvist services: Radio Core, Music Core, Radio Uppsala and distribution." },
-      { property: "og:site_name", content: "Catalogus Musicus" },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [{ rel: "stylesheet", href: appCss }],
-    scripts: [
-      { children: themeBootScript },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@graph": [
-            {
-              "@type": "Organization",
-              name: "Media Rosenqvist",
-              url: "https://catalogusmusicus.mediarosenqvist.com",
-            },
-            {
-              "@type": "WebSite",
-              name: "Catalogus Musicus",
-              url: "https://catalogusmusicus.mediarosenqvist.com",
-              description: "Central music catalog for Media Rosenqvist services.",
-            },
-          ],
-        }),
-      },
-    ],
-  }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
 
-
-function RootShell({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en" className="dark" style={{ colorScheme: "dark" }} suppressHydrationWarning>
-      <head><HeadContent /></head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
