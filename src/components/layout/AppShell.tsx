@@ -107,11 +107,16 @@ export function AppShell() {
             open ? "block" : "hidden md:block",
           )}
         >
-          <div className="px-5 pt-5 pb-3 hidden md:flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30">
-              <Music2 className="h-4 w-4" />
-            </span>
-            <span className="text-lg font-bold tracking-tight">Catalogus Musicus</span>
+          <div className="px-5 pt-5 pb-3 hidden md:block">
+            <div className="flex items-center gap-2">
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30">
+                <Music2 className="h-4 w-4" />
+              </span>
+              <span className="text-lg font-bold tracking-tight">Catalogus Musicus</span>
+            </div>
+            <p className="mt-1 pl-11 text-[11px] text-sidebar-foreground/60">
+              The modern music catalog and distribution platform
+            </p>
           </div>
 
           <nav className="px-2 py-2 space-y-1">
@@ -129,10 +134,28 @@ export function AppShell() {
 
           <div className="mx-3 my-2 rounded-lg bg-sidebar-accent/40 p-2">
             <div className="flex items-center gap-2 px-2 py-1 text-xs uppercase tracking-wider text-sidebar-foreground/60">
-              <Library className="h-4 w-4" /> Your library
+              <Library className="h-4 w-4" /> Catalog
             </div>
             <nav className="space-y-1 mt-1">
               {libraryNav.map((i) => (
+                <NavItem
+                  key={i.to}
+                  to={i.to}
+                  label={i.label}
+                  Icon={i.icon}
+                  active={isActive(i.to)}
+                  onClick={() => setOpen(false)}
+                />
+              ))}
+            </nav>
+          </div>
+
+          <div className="mx-3 my-2 rounded-lg bg-sidebar-accent/40 p-2">
+            <div className="flex items-center gap-2 px-2 py-1 text-xs uppercase tracking-wider text-sidebar-foreground/60">
+              <SettingsIcon className="h-4 w-4" /> Workspace
+            </div>
+            <nav className="space-y-1 mt-1">
+              {workspaceNav.map((i) => (
                 <NavItem
                   key={i.to}
                   to={i.to}
