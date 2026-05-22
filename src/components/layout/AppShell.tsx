@@ -80,7 +80,7 @@ export function AppShell() {
           <span className="grid h-8 w-8 place-items-center rounded-full bg-primary text-primary-foreground">
             <Music2 className="h-4 w-4" />
           </span>
-          Soundloom
+          Catalogus Musicus
         </div>
         <button onClick={() => setOpen((v) => !v)} aria-label="Toggle navigation">
           {open ? <X /> : <Menu />}
@@ -98,7 +98,7 @@ export function AppShell() {
             <span className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30">
               <Music2 className="h-4 w-4" />
             </span>
-            <span className="text-lg font-bold tracking-tight">Soundloom</span>
+            <span className="text-lg font-bold tracking-tight">Catalogus Musicus</span>
           </div>
 
           <nav className="px-2 py-2 space-y-1">

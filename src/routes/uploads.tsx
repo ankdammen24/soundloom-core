@@ -7,7 +7,7 @@ import { Btn } from "@/components/Btn";
 import { Upload, FileAudio, CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/uploads")({
-  head: () => ({ meta: [{ title: "Uploads – Soundloom" }] }),
+  head: () => ({ meta: [{ title: "Uploads – Catalogus Musicus" }] }),
   component: UploadsPage,
 });
 

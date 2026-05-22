@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/artists/$id")({
-  head: () => ({ meta: [{ title: "Artist – Soundloom" }] }),
+  head: () => ({ meta: [{ title: "Artist – Catalogus Musicus" }] }),
   component: ArtistDetail,
   errorComponent: ({ error, reset }) => {
     const router = useRouter();

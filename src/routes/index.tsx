@@ -5,9 +5,9 @@ const URL = "https://soundloom-core.lovable.app/";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Soundloom – Media Rosenqvist Music Catalog" },
-      { name: "description", content: "Soundloom is the catalog and upload interface for Media Rosenqvist — manage artists, releases and tracks across Radio Core, Music Core and Radio Uppsala." },
-      { property: "og:title", content: "Soundloom – Media Rosenqvist Music Catalog" },
+      { title: "Catalogus Musicus – Media Rosenqvist Music Catalog" },
+      { name: "description", content: "Catalogus Musicus is the catalog and upload interface for Media Rosenqvist — manage artists, releases and tracks across Radio Core, Music Core and Radio Uppsala." },
+      { property: "og:title", content: "Catalogus Musicus – Media Rosenqvist Music Catalog" },
       { property: "og:description", content: "Catalog and upload interface for Media Rosenqvist — artists, releases and tracks across radio and music services." },
       { property: "og:url", content: URL },
     ],
@@ -30,7 +30,7 @@ function Home() {
         style={{ background: "var(--gradient-hero)" }}
       >
         <div className="relative z-10 max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary">Soundloom</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">Catalogus Musicus</p>
           <h1 className="mt-2 text-4xl md:text-5xl font-bold tracking-tight">God morgon 👋</h1>
           <p className="mt-3 text-base text-foreground/80">
             Frontend för Media Rosenqvists musikkatalog

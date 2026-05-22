@@ -12,10 +12,10 @@ const URL = "https://soundloom.mediarosenqvist.com/status";
 export const Route = createFileRoute("/status")({
   head: () => ({
     meta: [
-      { title: "Platform Status – Soundloom" },
-      { name: "description", content: "Live health status for the Soundloom music catalog backend — database, storage and integration checks." },
-      { property: "og:title", content: "Platform Status – Soundloom" },
-      { property: "og:description", content: "Backend and integration health for the Soundloom music catalog." },
+      { title: "Platform Status – Catalogus Musicus" },
+      { name: "description", content: "Live health status for the Catalogus Musicus music catalog backend — database, storage and integration checks." },
+      { property: "og:title", content: "Platform Status – Catalogus Musicus" },
+      { property: "og:description", content: "Backend and integration health for the Catalogus Musicus music catalog." },
       { property: "og:url", content: URL },
     ],
     links: [{ rel: "canonical", href: URL }],
