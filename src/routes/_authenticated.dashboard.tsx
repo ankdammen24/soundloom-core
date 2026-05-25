@@ -1,9 +1,7 @@
-import { SignedIn, SignedOut } from "@clerk/clerk-react";
-import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Users, Send, Music2, Boxes, Upload, Radio, Plus, Activity } from "lucide-react";
 import { api } from "@/lib/api";
-import { clerkConfigured } from "@/lib/auth";
 
 const URL = "https://catalogusmusicus.mediarosenqvist.com/dashboard";
 
@@ -22,25 +20,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function DashboardPage() {
-  if (!clerkConfigured) {
-    return (
-      <div className="space-y-3">
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <p className="text-muted-foreground">Clerk är inte konfigurerat.</p>
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <SignedOut>
-        <Navigate to="/sign-in" />
-      </SignedOut>
-      <SignedIn>
-        <DashboardContent />
-      </SignedIn>
-    </>
-  );
+  return <DashboardContent />;
 }
 
 function DashboardContent() {
