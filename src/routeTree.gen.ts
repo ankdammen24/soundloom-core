@@ -15,6 +15,7 @@ import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DiscoverRouteImport } from './routes/discover'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedUploadsRouteImport } from './routes/_authenticated.uploads'
 import { Route as AuthenticatedTracksRouteImport } from './routes/_authenticated.tracks'
@@ -75,92 +76,96 @@ const DiscoverRoute = DiscoverRouteImport.update({
   path: '/discover',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedUploadsRoute = AuthenticatedUploadsRouteImport.update({
-  id: '/_authenticated/uploads',
+  id: '/uploads',
   path: '/uploads',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTracksRoute = AuthenticatedTracksRouteImport.update({
-  id: '/_authenticated/tracks',
+  id: '/tracks',
   path: '/tracks',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
-  id: '/_authenticated/settings',
+  id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedRightsRoute = AuthenticatedRightsRouteImport.update({
-  id: '/_authenticated/rights',
+  id: '/rights',
   path: '/rights',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedReleasesRoute = AuthenticatedReleasesRouteImport.update({
-  id: '/_authenticated/releases',
+  id: '/releases',
   path: '/releases',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
-  id: '/_authenticated/profile',
+  id: '/profile',
   path: '/profile',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedProcessingRoute = AuthenticatedProcessingRouteImport.update({
-  id: '/_authenticated/processing',
+  id: '/processing',
   path: '/processing',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedPlaylistsRoute = AuthenticatedPlaylistsRouteImport.update({
-  id: '/_authenticated/playlists',
+  id: '/playlists',
   path: '/playlists',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedOrganizationsRoute =
   AuthenticatedOrganizationsRouteImport.update({
-    id: '/_authenticated/organizations',
+    id: '/organizations',
     path: '/organizations',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedLibraryRoute = AuthenticatedLibraryRouteImport.update({
-  id: '/_authenticated/library',
+  id: '/library',
   path: '/library',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDistributionRoute =
   AuthenticatedDistributionRouteImport.update({
-    id: '/_authenticated/distribution',
+    id: '/distribution',
     path: '/distribution',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/_authenticated/dashboard',
+  id: '/dashboard',
   path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAssetsRoute = AuthenticatedAssetsRouteImport.update({
-  id: '/_authenticated/assets',
+  id: '/assets',
   path: '/assets',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedArtistsRoute = AuthenticatedArtistsRouteImport.update({
-  id: '/_authenticated/artists',
+  id: '/artists',
   path: '/artists',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAlbumsRoute = AuthenticatedAlbumsRouteImport.update({
-  id: '/_authenticated/albums',
+  id: '/albums',
   path: '/albums',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
-  id: '/_authenticated/admin',
+  id: '/admin',
   path: '/admin',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTracksIdRoute = AuthenticatedTracksIdRouteImport.update({
   id: '/$id',
@@ -306,6 +311,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/discover': typeof DiscoverRoute
   '/login': typeof LoginRoute
   '/sign-in': typeof SignInRoute
@@ -419,6 +425,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/discover'
     | '/login'
     | '/sign-in'
@@ -457,28 +464,13 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   DiscoverRoute: typeof DiscoverRoute
   LoginRoute: typeof LoginRoute
   SignInRoute: typeof SignInRoute
   SignUpRoute: typeof SignUpRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StatusRoute: typeof StatusRoute
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
-  AuthenticatedAlbumsRoute: typeof AuthenticatedAlbumsRoute
-  AuthenticatedArtistsRoute: typeof AuthenticatedArtistsRouteWithChildren
-  AuthenticatedAssetsRoute: typeof AuthenticatedAssetsRoute
-  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedDistributionRoute: typeof AuthenticatedDistributionRoute
-  AuthenticatedLibraryRoute: typeof AuthenticatedLibraryRoute
-  AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRoute
-  AuthenticatedPlaylistsRoute: typeof AuthenticatedPlaylistsRoute
-  AuthenticatedProcessingRoute: typeof AuthenticatedProcessingRoute
-  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
-  AuthenticatedReleasesRoute: typeof AuthenticatedReleasesRouteWithChildren
-  AuthenticatedRightsRoute: typeof AuthenticatedRightsRoute
-  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
-  AuthenticatedTracksRoute: typeof AuthenticatedTracksRouteWithChildren
-  AuthenticatedUploadsRoute: typeof AuthenticatedUploadsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -525,6 +517,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DiscoverRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -537,112 +536,112 @@ declare module '@tanstack/react-router' {
       path: '/uploads'
       fullPath: '/uploads'
       preLoaderRoute: typeof AuthenticatedUploadsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/tracks': {
       id: '/_authenticated/tracks'
       path: '/tracks'
       fullPath: '/tracks'
       preLoaderRoute: typeof AuthenticatedTracksRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/rights': {
       id: '/_authenticated/rights'
       path: '/rights'
       fullPath: '/rights'
       preLoaderRoute: typeof AuthenticatedRightsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/releases': {
       id: '/_authenticated/releases'
       path: '/releases'
       fullPath: '/releases'
       preLoaderRoute: typeof AuthenticatedReleasesRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/processing': {
       id: '/_authenticated/processing'
       path: '/processing'
       fullPath: '/processing'
       preLoaderRoute: typeof AuthenticatedProcessingRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/playlists': {
       id: '/_authenticated/playlists'
       path: '/playlists'
       fullPath: '/playlists'
       preLoaderRoute: typeof AuthenticatedPlaylistsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/organizations': {
       id: '/_authenticated/organizations'
       path: '/organizations'
       fullPath: '/organizations'
       preLoaderRoute: typeof AuthenticatedOrganizationsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/library': {
       id: '/_authenticated/library'
       path: '/library'
       fullPath: '/library'
       preLoaderRoute: typeof AuthenticatedLibraryRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/distribution': {
       id: '/_authenticated/distribution'
       path: '/distribution'
       fullPath: '/distribution'
       preLoaderRoute: typeof AuthenticatedDistributionRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/assets': {
       id: '/_authenticated/assets'
       path: '/assets'
       fullPath: '/assets'
       preLoaderRoute: typeof AuthenticatedAssetsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/artists': {
       id: '/_authenticated/artists'
       path: '/artists'
       fullPath: '/artists'
       preLoaderRoute: typeof AuthenticatedArtistsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/albums': {
       id: '/_authenticated/albums'
       path: '/albums'
       fullPath: '/albums'
       preLoaderRoute: typeof AuthenticatedAlbumsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/tracks/$id': {
       id: '/_authenticated/tracks/$id'
@@ -794,14 +793,26 @@ const AuthenticatedTracksRouteChildren: AuthenticatedTracksRouteChildren = {
 const AuthenticatedTracksRouteWithChildren =
   AuthenticatedTracksRoute._addFileChildren(AuthenticatedTracksRouteChildren)
 
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  DiscoverRoute: DiscoverRoute,
-  LoginRoute: LoginRoute,
-  SignInRoute: SignInRoute,
-  SignUpRoute: SignUpRoute,
-  SitemapDotxmlRoute: SitemapDotxmlRoute,
-  StatusRoute: StatusRoute,
+interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedAlbumsRoute: typeof AuthenticatedAlbumsRoute
+  AuthenticatedArtistsRoute: typeof AuthenticatedArtistsRouteWithChildren
+  AuthenticatedAssetsRoute: typeof AuthenticatedAssetsRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDistributionRoute: typeof AuthenticatedDistributionRoute
+  AuthenticatedLibraryRoute: typeof AuthenticatedLibraryRoute
+  AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRoute
+  AuthenticatedPlaylistsRoute: typeof AuthenticatedPlaylistsRoute
+  AuthenticatedProcessingRoute: typeof AuthenticatedProcessingRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedReleasesRoute: typeof AuthenticatedReleasesRouteWithChildren
+  AuthenticatedRightsRoute: typeof AuthenticatedRightsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedTracksRoute: typeof AuthenticatedTracksRouteWithChildren
+  AuthenticatedUploadsRoute: typeof AuthenticatedUploadsRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAlbumsRoute: AuthenticatedAlbumsRoute,
   AuthenticatedArtistsRoute: AuthenticatedArtistsRouteWithChildren,
@@ -818,6 +829,21 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTracksRoute: AuthenticatedTracksRouteWithChildren,
   AuthenticatedUploadsRoute: AuthenticatedUploadsRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  DiscoverRoute: DiscoverRoute,
+  LoginRoute: LoginRoute,
+  SignInRoute: SignInRoute,
+  SignUpRoute: SignUpRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  StatusRoute: StatusRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
