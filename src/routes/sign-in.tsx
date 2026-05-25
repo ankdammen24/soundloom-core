@@ -13,8 +13,9 @@ export const Route = createFileRoute("/sign-in")({
   component: SignInPage,
 });
 
-function landingFor(roles: string[] | undefined) {
-  return roles?.includes("admin") ? "/dashboard" : "/";
+function landingFor(_roles: string[] | undefined) {
+  // All signed-in users land on their profile by default.
+  return "/profile";
 }
 
 type Mode = "sign-in" | "sign-up";
@@ -34,8 +35,10 @@ function SignInPage() {
   const [info, setInfo] = useState<string | null>(null);
 
   if (isAuthenticated) {
-    const target = search.redirect || landingFor(user?.roles);
-    return <Navigate to={target} />;
+    const safe = search.redirect && search.redirect.startsWith("/") && !search.redirect.startsWith("//")
+      ? search.redirect
+      : landingFor(user?.roles);
+    return <Navigate to={safe} />;
   }
 
   async function onSubmit(e: FormEvent) {

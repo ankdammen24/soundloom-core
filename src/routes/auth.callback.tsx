@@ -1,33 +1,18 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
+import { authStore } from "@/lib/auth/store";
 import { Button } from "@/components/ui/button";
 
-const CALLBACK_TIMEOUT_MS = 8000;
+const CALLBACK_TIMEOUT_MS = 10000;
 
-function internalTarget(target: string) {
+function internalTarget(target: string): string {
   if (!target) return "";
-  if (target.startsWith("/")) return target;
-  try {
-    const url = new URL(target, window.location.origin);
-    return url.origin === window.location.origin ? `${url.pathname}${url.search}${url.hash}` : "";
-  } catch {
-    return "";
-  }
-}
-
-async function withTimeout<T>(promise: PromiseLike<T>, ms = CALLBACK_TIMEOUT_MS): Promise<T> {
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => reject(new Error("Session request timed out")), ms);
-  });
-  try {
-    return await Promise.race([promise, timeout]);
-  } finally {
-    if (timeoutId) clearTimeout(timeoutId);
-  }
+  if (!target.startsWith("/") || target.startsWith("//")) return "";
+  // Only allow simple internal paths.
+  return target;
 }
 
 export const Route = createFileRoute("/auth/callback")({
@@ -37,11 +22,7 @@ export const Route = createFileRoute("/auth/callback")({
   component: AuthCallbackPage,
 });
 
-// Roles are no longer needed to choose the post-login landing page —
-// every signed-in user lands on their profile by default.
-
 function AuthCallbackPage() {
-  const navigate = useNavigate();
   const { next } = Route.useSearch();
   const { t } = useTranslation("auth");
   const [error, setError] = useState<string | null>(null);
@@ -49,79 +30,94 @@ function AuthCallbackPage() {
   useEffect(() => {
     let cancelled = false;
 
-    async function resolveTarget(_userId: string) {
-      const requestedTarget = internalTarget(next);
-      if (requestedTarget) return requestedTarget;
-      return "/profile";
+    function landTarget(): string {
+      return internalTarget(next) || "/profile";
     }
 
-    async function consumeHashTokens() {
+    function hardRedirect(to: string) {
+      if (typeof window === "undefined") return;
+      window.location.replace(to);
+    }
+
+    function parseHash(): { access_token: string; refresh_token: string } | null {
       if (typeof window === "undefined") return null;
-      const hash = window.location.hash.startsWith("#")
+      const raw = window.location.hash.startsWith("#")
         ? window.location.hash.slice(1)
         : "";
-      if (!hash) return null;
-      const params = new URLSearchParams(hash);
+      if (!raw) return null;
+      const params = new URLSearchParams(raw);
       const access_token = params.get("access_token");
       const refresh_token = params.get("refresh_token");
       if (!access_token || !refresh_token) return null;
-      // Clean tokens from the URL so they aren't kept in history.
-      const cleanUrl = `${window.location.pathname}${window.location.search}`;
-      window.history.replaceState({}, "", cleanUrl);
-      const { data, error: setErr } = await withTimeout(
-        supabase.auth.setSession({
-          access_token,
-          refresh_token,
-        }),
-      );
-      if (setErr) throw setErr;
-      return data.session;
+      return { access_token, refresh_token };
     }
 
-    async function waitForSession() {
+    async function run() {
       try {
-        const hashSession = await consumeHashTokens();
+        // 1) If we already have a session, just go.
+        const existing = await supabase.auth.getSession();
         if (cancelled) return;
-        if (hashSession) {
-          const target = await resolveTarget(hashSession.user.id);
-          if (!cancelled) navigate({ to: target, replace: true });
+        if (existing.data.session) {
+          authStore.setFromSession(existing.data.session, []);
+          hardRedirect(landTarget());
           return;
         }
-      } catch (err) {
-        setError((err as Error)?.message ?? "Session error");
-        return;
-      }
 
-      const { data, error: getErr } = await withTimeout(supabase.auth.getSession());
-      if (cancelled) return;
-      if (data.session) {
-        const target = await resolveTarget(data.session.user.id);
-        if (!cancelled) navigate({ to: target, replace: true });
-        return;
-      }
-      if (getErr) {
-        setError(getErr.message);
-        return;
-      }
-      const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-        if (cancelled) return;
-        if ((event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED") && session) {
-          sub.subscription.unsubscribe();
-          void resolveTarget(session.user.id).then((target) => {
-            if (!cancelled) navigate({ to: target, replace: true });
-          });
+        // 2) Try to consume tokens from the hash fragment.
+        const tokens = parseHash();
+        if (tokens) {
+          // Strip the hash immediately so tokens don't linger in history.
+          const cleanUrl = `${window.location.pathname}${window.location.search}`;
+          window.history.replaceState({}, "", cleanUrl);
+
+          const { data, error: setErr } = await supabase.auth.setSession(tokens);
+          if (cancelled) return;
+          if (setErr) {
+            setError(setErr.message);
+            return;
+          }
+          if (data.session) {
+            authStore.setFromSession(data.session, []);
+            hardRedirect(landTarget());
+            return;
+          }
         }
-      });
-      setTimeout(() => {
-        if (cancelled) return;
-        sub.subscription.unsubscribe();
-        setError(t("callback.timeout"));
-      }, CALLBACK_TIMEOUT_MS);
+
+        // 3) Last resort: wait briefly for an auth-state event (e.g. PKCE).
+        const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+          if (cancelled) return;
+          if (
+            session &&
+            (event === "SIGNED_IN" ||
+              event === "INITIAL_SESSION" ||
+              event === "TOKEN_REFRESHED")
+          ) {
+            sub.subscription.unsubscribe();
+            authStore.setFromSession(session, []);
+            hardRedirect(landTarget());
+          }
+        });
+
+        const timeout = setTimeout(() => {
+          if (cancelled) return;
+          sub.subscription.unsubscribe();
+          setError(t("callback.timeout"));
+        }, CALLBACK_TIMEOUT_MS);
+
+        return () => {
+          clearTimeout(timeout);
+          sub.subscription.unsubscribe();
+        };
+      } catch (err) {
+        if (!cancelled) setError((err as Error)?.message ?? "Session error");
+      }
     }
 
-    void waitForSession();
-    return () => { cancelled = true; };
-  }, [navigate, next, t]);
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [next, t]);
 
   if (error) {
     return (
@@ -133,8 +129,12 @@ function AuthCallbackPage() {
           <h1 className="text-xl font-semibold">{t("callback.failed")}</h1>
           <p className="text-sm text-muted-foreground break-words">{error}</p>
           <div className="flex justify-center gap-2">
-            <Button onClick={() => navigate({ to: "/sign-in" })}>{t("callback.backToSignIn")}</Button>
-            <Button variant="outline" onClick={() => navigate({ to: "/" })}>{t("callback.toHome")}</Button>
+            <Button onClick={() => window.location.replace("/sign-in")}>
+              {t("callback.backToSignIn")}
+            </Button>
+            <Button variant="outline" onClick={() => window.location.replace("/")}>
+              {t("callback.toHome")}
+            </Button>
           </div>
         </div>
       </div>
