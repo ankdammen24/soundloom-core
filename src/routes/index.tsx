@@ -118,6 +118,18 @@ function useAuthCallbackOnRoot(): { processing: boolean; error: string | null } 
 }
 
 function Home() {
+  const callback = useAuthCallbackOnRoot();
+
+  if (callback.processing) {
+    return (
+      <div className="grid min-h-[60vh] place-items-center text-muted-foreground">
+        <div className="flex items-center gap-2 text-sm">
+          <Loader2 className="h-4 w-4 animate-spin" /> Slutför inloggning…
+        </div>
+      </div>
+    );
+  }
+
   const shortcuts = [
     { to: "/discover", label: "Discover", desc: "Nya och utvalda spår" },
     { to: "/releases", label: "Releases", desc: "Senaste utgåvorna" },
