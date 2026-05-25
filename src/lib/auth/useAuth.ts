@@ -40,7 +40,7 @@ export function useAuth() {
         email,
         password,
         options: {
-          emailRedirectTo: `${origin}/auth/callback`,
+          emailRedirectTo: `${origin}/?next=%2Fprofile`,
           data: displayName ? { display_name: displayName } : undefined,
         },
       });
