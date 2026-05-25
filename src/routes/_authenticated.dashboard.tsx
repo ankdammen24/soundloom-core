@@ -2,10 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Users, Send, Music2, Boxes, Upload, Radio, Plus, Activity } from "lucide-react";
 import { api } from "@/lib/api";
+import { requireRole } from "@/lib/auth/guards";
+import { RoleGuard } from "@/components/auth/RoleGuard";
 
 const URL = "https://catalogusmusicus.mediarosenqvist.com/dashboard";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  beforeLoad: ({ location }) => requireRole(["admin"], { href: location.href }),
   head: () => ({
     meta: [
       { title: "Dashboard – Catalogus Musicus" },
@@ -20,7 +23,11 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function DashboardPage() {
-  return <DashboardContent />;
+  return (
+    <RoleGuard roles={["admin"]}>
+      <DashboardContent />
+    </RoleGuard>
+  );
 }
 
 function DashboardContent() {
