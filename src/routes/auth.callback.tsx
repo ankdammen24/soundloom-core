@@ -7,10 +7,19 @@ import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/auth/callback")({
   validateSearch: (search: Record<string, unknown>) => ({
-    next: typeof search.next === "string" ? search.next : "/dashboard",
+    next: typeof search.next === "string" ? search.next : "",
   }),
   component: AuthCallbackPage,
 });
+
+async function fetchRolesFor(userId: string): Promise<string[]> {
+  try {
+    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+    return (data ?? []).map((r) => r.role as string);
+  } catch {
+    return [];
+  }
+}
 
 function AuthCallbackPage() {
   const navigate = useNavigate();
