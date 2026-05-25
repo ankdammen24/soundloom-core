@@ -14,6 +14,11 @@ const PROXY_ROUTES = new Map<string, string>([
   ["/api/tracks", "/api/v1/tracks"],
   ["/api/search", "/api/v1/search"],
   ["/api/playback/token", "/api/v1/playback/token"],
+  ["/api/auth/login", "/api/v1/auth/login"],
+  ["/api/auth/refresh", "/api/v1/auth/refresh"],
+  ["/api/auth/logout", "/api/v1/auth/logout"],
+  ["/api/auth/logout-all", "/api/v1/auth/logout-all"],
+  ["/api/api-keys", "/api/v1/api-keys"],
 ]);
 
 let serverEntryPromise: Promise<ServerEntry> | undefined;
