@@ -35,8 +35,10 @@ function SignInPage() {
   const [info, setInfo] = useState<string | null>(null);
 
   if (isAuthenticated) {
-    const target = search.redirect || landingFor(user?.roles);
-    return <Navigate to={target} />;
+    const safe = search.redirect && search.redirect.startsWith("/") && !search.redirect.startsWith("//")
+      ? search.redirect
+      : landingFor(user?.roles);
+    return <Navigate to={safe} />;
   }
 
   async function onSubmit(e: FormEvent) {
