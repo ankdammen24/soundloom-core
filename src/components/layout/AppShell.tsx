@@ -40,7 +40,7 @@ const PRIMARY: NavLink[] = [
 const OPS: NavLink[] = [
   { to: "/processing", label: "Processing", icon: Cpu, roles: ["admin", "editor"] },
   { to: "/review", label: "Review", icon: ClipboardCheck, roles: ["admin", "editor"] },
-  { to: "/api-keys", label: "API keys", icon: KeyRound, roles: ["admin"] },
+  { to: "/api-keys", label: "API access", icon: KeyRound, roles: ["admin"] },
   { to: "/admin/users", label: "Users & roles", icon: ShieldCheck, roles: ["admin"] },
   { to: "/admin/debug", label: "Auth debug", icon: Bug, roles: ["admin"] },
   { to: "/settings", label: "Settings", icon: SettingsIcon, roles: ["admin"] },
