@@ -1,10 +1,10 @@
 import { useServerFn } from "@tanstack/react-start";
-import { getR2UploadUrl, getR2DownloadUrl, completeR2Upload } from "./r2.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { getR2DownloadUrl, completeR2Upload } from "./r2.functions";
 
 export type R2BucketKind = "masters" | "previews" | "normalized" | "artwork" | "exports";
 
 export function useR2() {
-  const upload = useServerFn(getR2UploadUrl);
   const download = useServerFn(getR2DownloadUrl);
   const complete = useServerFn(completeR2Upload);
 
@@ -15,27 +15,17 @@ export function useR2() {
     trackId?: string;
     onProgress?: (pct: number) => void;
   }) {
-    const { url } = await upload({
-      data: { bucket: args.bucket, key: args.key, contentType: args.file.type || "application/octet-stream" },
-    });
-
-    // PUT directly to R2 with XHR for progress tracking
-    await new Promise<void>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("PUT", url, true);
-      if (args.file.type) xhr.setRequestHeader("Content-Type", args.file.type);
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable && args.onProgress) {
-          args.onProgress(Math.round((e.loaded / e.total) * 100));
-        }
-      };
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) resolve();
-        else reject(new Error(`R2 upload failed: HTTP ${xhr.status} ${xhr.responseText.slice(0, 200)}`));
-      };
-      xhr.onerror = () => reject(new Error("Network error during R2 upload."));
-      xhr.send(args.file);
-    });
+    // Upload directly to Lovable Cloud Storage using the authenticated client.
+    // RLS policies on storage.objects gate access.
+    const { error } = await supabase.storage
+      .from(args.bucket)
+      .upload(args.key, args.file, {
+        upsert: true,
+        contentType: args.file.type || "application/octet-stream",
+      });
+    if (error) throw new Error(`Storage upload failed: ${error.message}`);
+    // Progress reporting isn't exposed by supabase-js; emit a final tick.
+    args.onProgress?.(100);
 
     const result = await complete({
       data: { bucket: args.bucket, key: args.key, trackId: args.trackId },
