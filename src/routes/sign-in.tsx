@@ -123,6 +123,15 @@ export function AuthForm({ initialMode = "sign-in" }: { initialMode?: Mode }) {
         </button>
         <button
           type="button"
+          onClick={() => void onMicrosoft()}
+          disabled={busy !== null || !supabaseConfigured}
+          className="inline-flex w-full items-center justify-center gap-3 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
+        >
+          {busy === "microsoft" ? <Loader2 className="h-4 w-4 animate-spin" /> : <MicrosoftLogo />}
+          {t("signIn.continueWithMicrosoft")}
+        </button>
+        <button
+          type="button"
           onClick={() => void onApple()}
           disabled={busy !== null || !supabaseConfigured}
           className="inline-flex w-full items-center justify-center gap-3 rounded-md border border-border bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:opacity-60"
