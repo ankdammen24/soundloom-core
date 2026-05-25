@@ -1,7 +1,8 @@
 // Minimal reactive auth store, no extra dependencies.
-// Uses useSyncExternalStore so React components re-render on auth changes.
+// Mirrors the MSAL active account into a React-subscribable state.
 
 import { useSyncExternalStore } from "react";
+import type { AccountInfo } from "@azure/msal-browser";
 
 export type AuthUser = {
   id: string;
@@ -17,20 +18,17 @@ export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 type State = {
   status: AuthStatus;
   user: AuthUser | null;
-  accessToken: string | null;
+  account: AccountInfo | null;
 };
 
 let state: State = {
   status: "loading",
   user: null,
-  accessToken: null,
+  account: null,
 };
 
 const listeners = new Set<() => void>();
-
-function emit() {
-  for (const l of listeners) l();
-}
+function emit() { for (const l of listeners) l(); }
 
 export const authStore = {
   getState: () => state,
@@ -42,8 +40,25 @@ export const authStore = {
     state = { ...state, ...patch };
     emit();
   },
+  setFromAccount: (account: AccountInfo | null) => {
+    if (!account) {
+      state = { status: "unauthenticated", user: null, account: null };
+    } else {
+      state = {
+        status: "authenticated",
+        account,
+        user: {
+          id: account.localAccountId ?? account.homeAccountId ?? account.username,
+          email: account.username,
+          name: account.name ?? account.username,
+          displayName: account.name ?? account.username,
+        },
+      };
+    }
+    emit();
+  },
   signOut: () => {
-    state = { status: "unauthenticated", user: null, accessToken: null };
+    state = { status: "unauthenticated", user: null, account: null };
     emit();
   },
 };

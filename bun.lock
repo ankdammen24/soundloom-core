@@ -7,6 +7,8 @@
       "dependencies": {
         "@aws-sdk/client-s3": "^3.1047.0",
         "@aws-sdk/s3-request-presigner": "^3.1047.0",
+        "@azure/msal-browser": "^5.11.0",
+        "@azure/msal-react": "^5.4.2",
         "@cloudflare/vite-plugin": "^1.25.5",
         "@hookform/resolvers": "^5.2.2",
         "@radix-ui/react-accordion": "^1.2.12",
@@ -161,6 +163,12 @@
     "@aws-sdk/xml-builder": ["@aws-sdk/xml-builder@3.972.24", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@aws-sdk/xml-builder/-/xml-builder-3.972.24.tgz", { "dependencies": { "@nodable/entities": "2.1.0", "@smithy/types": "^4.14.1", "fast-xml-parser": "5.7.3", "tslib": "^2.6.2" } }, "sha512-V8z5YcDPfsvzrBlj0xR1vhRtocblhYbqdreCJB/voGd4Sr5zjNAeWxexbnqVtskTJe0vFb5KMqbSL++ePl+zRw=="],
 
     "@aws/lambda-invoke-store": ["@aws/lambda-invoke-store@0.2.4", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@aws/lambda-invoke-store/-/lambda-invoke-store-0.2.4.tgz", {}, "sha512-iY8yvjE0y651BixKNPgmv1WrQc+GZ142sb0z4gYnChDDY2YqI4P/jsSopBWrKfAt7LOJAkOXt7rC/hms+WclQQ=="],
+
+    "@azure/msal-browser": ["@azure/msal-browser@5.11.0", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@azure/msal-browser/-/msal-browser-5.11.0.tgz", { "dependencies": { "@azure/msal-common": "16.6.2" } }, "sha512-zkGNYS3TwY8lUpPIafAmsFCYZbgFixY9y/LZB9GUg0IILoHTqpN26j5OrkL1AQThh/YdZsawe4iWXfp85lFVxg=="],
+
+    "@azure/msal-common": ["@azure/msal-common@16.6.2", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@azure/msal-common/-/msal-common-16.6.2.tgz", {}, "sha512-hQjjsekAjB00cM1EmatWJlzhEoK2Qhz7Rj5gvM6tYf8iL7RM3tkxlpU9fG0+ofkulzg9AEEA6dIEnSmDr5ZqUA=="],
+
+    "@azure/msal-react": ["@azure/msal-react@5.4.2", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@azure/msal-react/-/msal-react-5.4.2.tgz", { "peerDependencies": { "@azure/msal-browser": "^5.11.0", "react": "^16.8.0 || ^17 || ^18 || ^19.2.1" } }, "sha512-UK4xVqwhdi0qKebb76Z9oI6lLnNPmpcSdoBcBBnLao4+GXPJNA1HP2Tj5mWQSwd0EPTBCcV4msNiepPdxLk+ng=="],
 
     "@babel/code-frame": ["@babel/code-frame@7.29.0", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.28.5", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw=="],
 

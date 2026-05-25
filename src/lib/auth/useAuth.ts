@@ -1,49 +1,44 @@
 import { useCallback } from "react";
-import { authClient, type LoginInput, type RegisterInput } from "./client";
-import { authStore, useAuthState, type AuthUser } from "./store";
-import { tokenStorage } from "./storage";
-
-function applySession(res: { accessToken: string; refreshToken?: string | null; user: AuthUser }) {
-  tokenStorage.setAccess(res.accessToken);
-  if (res.refreshToken !== undefined) tokenStorage.setRefresh(res.refreshToken ?? null);
-  authStore.set({ status: "authenticated", user: res.user, accessToken: res.accessToken });
-}
-
-function clearSession() {
-  tokenStorage.clear();
-  authStore.signOut();
-}
+import { authStore, useAuthState } from "./store";
+import {
+  msalInstance,
+  initMsal,
+  buildLoginRequest,
+  getActiveAccount,
+  msalConfigured,
+} from "./msal";
 
 export function useAuth() {
   const state = useAuthState();
 
-  const login = useCallback(async (input: LoginInput) => {
-    const res = await authClient.login(input);
-    applySession(res);
-    return res.user;
+  const loginRedirect = useCallback(async (redirect?: string) => {
+    if (!msalConfigured) {
+      throw new Error("Entra/MSAL is not configured. Set VITE_ENTRA_CLIENT_ID / AUTHORITY / AUDIENCE.");
+    }
+    await initMsal();
+    await msalInstance.loginRedirect(buildLoginRequest(redirect));
   }, []);
 
-  const register = useCallback(async (input: RegisterInput) => {
-    const res = await authClient.register(input);
-    applySession(res);
-    return res.user;
-  }, []);
-
-  const logout = useCallback(async () => {
-    await authClient.logout(tokenStorage.getRefresh());
-    clearSession();
+  const logoutRedirect = useCallback(async () => {
+    await initMsal();
+    const account = getActiveAccount();
+    authStore.signOut();
+    await msalInstance.logoutRedirect({
+      account: account ?? undefined,
+      postLogoutRedirectUri: typeof window !== "undefined" ? window.location.origin : "/",
+    });
   }, []);
 
   return {
     user: state.user,
+    account: state.account,
     status: state.status,
     isAuthenticated: state.status === "authenticated",
     isLoading: state.status === "loading",
-    login,
-    register,
-    logout,
+    loginRedirect,
+    logoutRedirect,
+    // Back-compat aliases
+    login: loginRedirect,
+    logout: logoutRedirect,
   };
 }
-
-// Exported for guards / non-component code.
-export const authActions = { applySession, clearSession };

@@ -17,6 +17,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AuthenticatedUploadsRouteImport } from './routes/_authenticated.uploads'
 import { Route as AuthenticatedTracksRouteImport } from './routes/_authenticated.tracks'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated.settings'
@@ -83,6 +84,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedUploadsRoute = AuthenticatedUploadsRouteImport.update({
@@ -258,6 +264,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/tracks': typeof AuthenticatedTracksRouteWithChildren
   '/uploads': typeof AuthenticatedUploadsRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/admin/api-usage': typeof AuthenticatedAdminApiUsageRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/diagnostics': typeof AuthenticatedAdminDiagnosticsRoute
@@ -295,6 +302,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/tracks': typeof AuthenticatedTracksRouteWithChildren
   '/uploads': typeof AuthenticatedUploadsRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/admin/api-usage': typeof AuthenticatedAdminApiUsageRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/diagnostics': typeof AuthenticatedAdminDiagnosticsRoute
@@ -334,6 +342,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tracks': typeof AuthenticatedTracksRouteWithChildren
   '/_authenticated/uploads': typeof AuthenticatedUploadsRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/_authenticated/admin/api-usage': typeof AuthenticatedAdminApiUsageRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/diagnostics': typeof AuthenticatedAdminDiagnosticsRoute
@@ -373,6 +382,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tracks'
     | '/uploads'
+    | '/auth/callback'
     | '/admin/api-usage'
     | '/admin/audit'
     | '/admin/diagnostics'
@@ -410,6 +420,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tracks'
     | '/uploads'
+    | '/auth/callback'
     | '/admin/api-usage'
     | '/admin/audit'
     | '/admin/diagnostics'
@@ -448,6 +459,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/tracks'
     | '/_authenticated/uploads'
+    | '/auth/callback'
     | '/_authenticated/admin/api-usage'
     | '/_authenticated/admin/audit'
     | '/_authenticated/admin/diagnostics'
@@ -471,6 +483,7 @@ export interface RootRouteChildren {
   SignUpRoute: typeof SignUpRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StatusRoute: typeof StatusRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -529,6 +542,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/uploads': {
@@ -844,6 +864,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignUpRoute: SignUpRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StatusRoute: StatusRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

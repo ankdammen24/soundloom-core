@@ -1,8 +1,8 @@
-import { createFileRoute, Link, Navigate, useNavigate } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { Music2, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth/useAuth";
-import { ApiError } from "@/lib/api";
+import { msalConfigured } from "@/lib/auth/msal";
 
 export const Route = createFileRoute("/sign-in")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -12,28 +12,20 @@ export const Route = createFileRoute("/sign-in")({
 });
 
 function SignInPage() {
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, loginRedirect } = useAuth();
   const search = Route.useSearch();
-  const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (isAuthenticated) return <Navigate to={search.redirect} />;
 
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function onSignIn() {
     setError(null);
     setSubmitting(true);
     try {
-      await login({ email, password });
-      navigate({ to: search.redirect });
+      await loginRedirect(search.redirect);
     } catch (err) {
-      const e = err as ApiError;
-      if (e.status === 404) setError("Auth endpoint /auth/login is not available on the backend yet.");
-      else setError(e.message ?? "Sign in failed.");
-    } finally {
+      setError((err as Error)?.message ?? "Sign in failed.");
       setSubmitting(false);
     }
   }
@@ -41,27 +33,48 @@ function SignInPage() {
   return (
     <AuthShell>
       <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Sign in to your Catalogus Musicus workspace.</p>
-      <form onSubmit={onSubmit} className="mt-6 space-y-4">
-        <Field label="Email" type="email" value={email} onChange={setEmail} autoComplete="email" required />
-        <Field label="Password" type="password" value={password} onChange={setPassword} autoComplete="current-password" required />
-        {error && <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>}
+      <p className="mt-1 text-sm text-muted-foreground">
+        Sign in to your Catalogus Musicus workspace with your Microsoft account.
+      </p>
+
+      <div className="mt-6 space-y-3">
         <button
-          type="submit"
-          disabled={submitting}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+          type="button"
+          onClick={onSignIn}
+          disabled={submitting || !msalConfigured}
+          className="inline-flex w-full items-center justify-center gap-3 rounded-md bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:opacity-60"
         >
-          {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-          Sign in
+          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <MicrosoftLogo />}
+          Sign in with Microsoft
         </button>
-      </form>
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        New here?{" "}
-        <Link to="/sign-up" className="font-medium text-primary hover:underline">
-          Create an account
-        </Link>
+        {!msalConfigured && (
+          <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            Entra is not configured. Set VITE_ENTRA_CLIENT_ID, VITE_ENTRA_AUTHORITY and VITE_ENTRA_AUDIENCE.
+          </p>
+        )}
+        {error && (
+          <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {error}
+          </p>
+        )}
+      </div>
+
+      <p className="mt-8 text-xs text-muted-foreground">
+        By signing in you agree to your organization's Entra ID terms. New accounts are provisioned by an
+        administrator.
       </p>
     </AuthShell>
+  );
+}
+
+function MicrosoftLogo() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="1" y="1" width="6.5" height="6.5" fill="#F25022" />
+      <rect x="8.5" y="1" width="6.5" height="6.5" fill="#7FBA00" />
+      <rect x="1" y="8.5" width="6.5" height="6.5" fill="#00A4EF" />
+      <rect x="8.5" y="8.5" width="6.5" height="6.5" fill="#FFB900" />
+    </svg>
   );
 }
 
@@ -76,8 +89,12 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           <span className="text-lg font-bold tracking-tight">Catalogus Musicus</span>
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary-foreground/80">Music catalog · distribution</p>
-          <h2 className="mt-3 text-3xl font-bold leading-tight">The modern music catalog and distribution platform.</h2>
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary-foreground/80">
+            Music catalog · distribution
+          </p>
+          <h2 className="mt-3 text-3xl font-bold leading-tight">
+            The modern music catalog and distribution platform.
+          </h2>
           <p className="mt-4 max-w-md text-sm text-primary-foreground/80">
             Manage artists, releases, tracks and assets — and push them out to the world.
           </p>
@@ -90,26 +107,5 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
         <div className="w-full max-w-sm">{children}</div>
       </main>
     </div>
-  );
-}
-
-function Field({
-  label, type = "text", value, onChange, autoComplete, required,
-}: {
-  label: string; type?: string; value: string; onChange: (v: string) => void;
-  autoComplete?: string; required?: boolean;
-}) {
-  return (
-    <label className="block">
-      <span className="text-sm font-medium text-foreground">{label}</span>
-      <input
-        type={type}
-        value={value}
-        required={required}
-        autoComplete={autoComplete}
-        onChange={(e) => onChange(e.target.value)}
-        className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
-      />
-    </label>
   );
 }

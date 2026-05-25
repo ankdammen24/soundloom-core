@@ -4,8 +4,7 @@ import { authStore } from "./store";
 /** Use inside a route's beforeLoad to require authentication. */
 export function requireAuth(location: { href: string }) {
   const { status } = authStore.getState();
-  // While bootstrapping, allow render — the component-level guard will hold UI.
-  // Once we know we're unauthenticated, redirect to /sign-in with redirect-back.
+  // While bootstrapping, allow render — the layout shows a spinner until MSAL settles.
   if (status === "unauthenticated") {
     throw redirect({
       to: "/sign-in",

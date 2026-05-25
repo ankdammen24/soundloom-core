@@ -1,42 +1,44 @@
 import { useEffect, type ReactNode } from "react";
 import { setApiTokenGetter } from "@/lib/api";
-import { authClient } from "./client";
 import { authStore } from "./store";
-import { tokenStorage } from "./storage";
-import { authActions } from "./useAuth";
+import {
+  initMsal,
+  msalInstance,
+  getActiveAccount,
+  acquireAccessToken,
+  msalConfigured,
+} from "./msal";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
-    // Inject token getter into the central api client.
-    setApiTokenGetter(async () => tokenStorage.getAccess());
+    // Inject MSAL token getter into the central api client.
+    setApiTokenGetter(() => acquireAccessToken());
 
     let cancelled = false;
 
     async function bootstrap() {
-      const access = tokenStorage.getAccess();
-      if (!access) {
-        authStore.set({ status: "unauthenticated", user: null, accessToken: null });
+      if (!msalConfigured) {
+        authStore.set({ status: "unauthenticated", user: null, account: null });
         return;
       }
       try {
-        const user = await authClient.me();
+        await initMsal();
+        const redirectResult = await msalInstance.handleRedirectPromise();
         if (cancelled) return;
-        authStore.set({ status: "authenticated", user, accessToken: access });
-      } catch {
-        // Try refresh if available.
-        const refresh = tokenStorage.getRefresh();
-        if (refresh) {
-          try {
-            const res = await authClient.refresh(refresh);
-            if (cancelled) return;
-            authActions.applySession(res);
-            return;
-          } catch {
-            /* fall through */
-          }
+
+        if (redirectResult?.account) {
+          msalInstance.setActiveAccount(redirectResult.account);
+        } else {
+          const existing = getActiveAccount();
+          if (existing) msalInstance.setActiveAccount(existing);
         }
-        if (cancelled) return;
-        authActions.clearSession();
+
+        const account = getActiveAccount();
+        authStore.setFromAccount(account);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error("[auth] MSAL bootstrap failed", e);
+        if (!cancelled) authStore.set({ status: "unauthenticated", user: null, account: null });
       }
     }
 
