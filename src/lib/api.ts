@@ -248,8 +248,20 @@ export async function apiRequest<T = unknown>(path: string, opts: RequestOpts = 
       (typeof parsed === "string" ? parsed : null);
 
     let msg: string;
-    if (res.status === 401) msg = `Auth error (401): not authenticated. ${serverMsg ?? "Sign in and retry."}`;
-    else if (res.status === 403) msg = `Auth error (403): forbidden. ${serverMsg ?? "Your account lacks access."}`;
+    if (res.status === 401) {
+      msg = `Du behöver logga in igen. ${serverMsg ?? ""}`.trim();
+      try {
+        const mod = await import("@/lib/connectAuth");
+        mod.clearLocalSession();
+        if (typeof window !== "undefined"
+          && !window.location.pathname.startsWith("/sign-in")
+          && !window.location.pathname.startsWith("/auth/callback")) {
+          const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+          window.location.assign(`/sign-in?redirect=${redirect}`);
+        }
+      } catch { /* ignore */ }
+    }
+    else if (res.status === 403) msg = `Du saknar behörighet för den här åtgärden. ${serverMsg ?? ""}`.trim();
     else if (res.status >= 500) msg = `Backend error (${res.status}): the server failed. ${serverMsg ?? "Check backend logs."}`;
     else msg = serverMsg ?? `Request failed (${res.status})`;
 
