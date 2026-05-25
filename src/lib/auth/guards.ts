@@ -4,7 +4,6 @@ import { authStore } from "./store";
 /** Use inside a route's beforeLoad to require authentication. */
 export function requireAuth(location: { href: string }) {
   const { status } = authStore.getState();
-  // While bootstrapping, allow render — the layout shows a spinner until the Supabase session resolves.
   if (status === "unauthenticated") {
     throw redirect({
       to: "/sign-in",
@@ -14,12 +13,9 @@ export function requireAuth(location: { href: string }) {
 }
 
 /**
- * Use inside a route's beforeLoad to require one of the given roles.
- * Unauthenticated users are sent to sign-in; authenticated users without
- * a matching role are sent home.
- *
- * While the session is still loading we allow render — the layout shows
- * a spinner and the guard re-runs once roles arrive.
+ * Require one of the given roles. Unauthenticated → /sign-in.
+ * Authenticated but missing role → /forbidden.
+ * While bootstrapping the layout shows a spinner and the guard re-runs.
  */
 export function requireRole(roles: string[], location: { href: string }) {
   const { status, user } = authStore.getState();
@@ -29,7 +25,7 @@ export function requireRole(roles: string[], location: { href: string }) {
   if (status === "authenticated") {
     const has = user?.roles?.some((r) => roles.includes(r)) ?? false;
     if (!has) {
-      throw redirect({ to: "/" });
+      throw redirect({ to: "/forbidden" });
     }
   }
 }
