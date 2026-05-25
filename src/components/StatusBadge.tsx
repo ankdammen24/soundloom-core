@@ -1,9 +1,23 @@
 import { cn } from "@/lib/utils";
-import type { RightsStatus, TrackStatus, AlbumStatus, ReleaseStatus, DistributionStatus, JobStatus } from "@/lib/types";
+import type {
+  RightsStatus,
+  TrackStatus,
+  AlbumStatus,
+  ReleaseStatus,
+  DistributionStatus,
+  JobStatus,
+} from "@/lib/types";
 import { CheckCircle2, Clock, AlertTriangle, Loader2, Circle, XCircle } from "lucide-react";
 import type { ComponentType } from "react";
 
-type AnyStatus = TrackStatus | RightsStatus | AlbumStatus | ReleaseStatus | DistributionStatus | JobStatus | string;
+type AnyStatus =
+  | TrackStatus
+  | RightsStatus
+  | AlbumStatus
+  | ReleaseStatus
+  | DistributionStatus
+  | JobStatus
+  | string;
 
 const styles: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
@@ -100,7 +114,9 @@ export function StatusBadge({
         <span className="absolute -left-1 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-current animate-ping opacity-60" />
       )}
       {withIcon && Icon && (
-        <Icon className={cn(size === "sm" ? "h-2.5 w-2.5" : "h-3 w-3", isActive && "animate-spin")} />
+        <Icon
+          className={cn(size === "sm" ? "h-2.5 w-2.5" : "h-3 w-3", isActive && "animate-spin")}
+        />
       )}
       {label}
     </span>

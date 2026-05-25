@@ -190,7 +190,11 @@ function ProfilePage() {
 
             <div className="flex flex-wrap items-center gap-2 pt-2">
               <Btn type="submit" disabled={saving}>
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserIcon className="h-4 w-4" />}
+                {saving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <UserIcon className="h-4 w-4" />
+                )}
                 {saving ? t("saving") : t("save")}
               </Btn>
               <Btn variant="outline" type="button" onClick={() => void logoutRedirect()}>

@@ -36,7 +36,13 @@ function profileFromAuth(user: {
 async function getVerifiedUser(supabase: {
   auth: {
     getUser: () => Promise<{
-      data: { user: { id: string; email?: string | null; user_metadata?: Record<string, unknown> | null } | null };
+      data: {
+        user: {
+          id: string;
+          email?: string | null;
+          user_metadata?: Record<string, unknown> | null;
+        } | null;
+      };
       error: { message: string } | null;
     }>;
   };

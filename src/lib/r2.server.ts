@@ -25,7 +25,8 @@ export async function presignPut(
   const { data, error } = await supabaseAdmin.storage
     .from(bucket)
     .createSignedUploadUrl(key, { upsert: true });
-  if (error || !data) throw new Error(`Storage signed upload failed: ${error?.message ?? "unknown"}`);
+  if (error || !data)
+    throw new Error(`Storage signed upload failed: ${error?.message ?? "unknown"}`);
   // Lovable Cloud signed upload URLs are short-lived; expiresIn is informational.
   void expiresIn;
   return data.signedUrl;
@@ -36,9 +37,7 @@ export async function presignGet(bucket: string, key: string, expiresIn = 900) {
     const { data } = supabaseAdmin.storage.from(bucket).getPublicUrl(key);
     return data.publicUrl;
   }
-  const { data, error } = await supabaseAdmin.storage
-    .from(bucket)
-    .createSignedUrl(key, expiresIn);
+  const { data, error } = await supabaseAdmin.storage.from(bucket).createSignedUrl(key, expiresIn);
   if (error || !data) throw new Error(`Storage signed url failed: ${error?.message ?? "unknown"}`);
   return data.signedUrl;
 }

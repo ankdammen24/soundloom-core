@@ -13,13 +13,24 @@ export const Route = createFileRoute("/_authenticated/releases")({
 });
 
 type Release = {
-  id: string; title: string; slug: string; type: string;
-  release_date: string | null; artist_id: string; upc: string | null;
+  id: string;
+  title: string;
+  slug: string;
+  type: string;
+  release_date: string | null;
+  artist_id: string;
+  upc: string | null;
 };
 type Artist = { id: string; name: string };
 
 function slugify(s: string) {
-  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || `release-${Date.now()}`;
+  return (
+    s
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || `release-${Date.now()}`
+  );
 }
 
 function ReleasesPage() {
@@ -30,7 +41,10 @@ function ReleasesPage() {
   const releases = useQuery({
     queryKey: ["releases"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("releases").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("releases")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as Release[];
     },
@@ -70,26 +84,44 @@ function ReleasesPage() {
 
       {canCreate && (
         <form
-          onSubmit={(e) => { e.preventDefault(); if (form.title && form.artist_id) create.mutate(form); }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (form.title && form.artist_id) create.mutate(form);
+          }}
           className="flex flex-wrap items-end gap-3 rounded-lg border border-border bg-card p-4"
         >
           <div className="flex-1 min-w-[200px]">
             <label className="block text-xs font-medium text-muted-foreground mb-1">Title</label>
-            <input className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+            <input
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              required
+            />
           </div>
           <div className="w-56">
             <label className="block text-xs font-medium text-muted-foreground mb-1">Artist</label>
-            <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              value={form.artist_id} onChange={(e) => setForm({ ...form, artist_id: e.target.value })} required>
+            <select
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={form.artist_id}
+              onChange={(e) => setForm({ ...form, artist_id: e.target.value })}
+              required
+            >
               <option value="">Select artist…</option>
-              {(artists.data ?? []).map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+              {(artists.data ?? []).map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
             </select>
           </div>
           <div className="w-32">
             <label className="block text-xs font-medium text-muted-foreground mb-1">Type</label>
-            <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
+            <select
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={form.type}
+              onChange={(e) => setForm({ ...form, type: e.target.value })}
+            >
               <option value="single">Single</option>
               <option value="ep">EP</option>
               <option value="album">Album</option>
@@ -103,7 +135,8 @@ function ReleasesPage() {
 
       {create.error && (
         <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
-          <AlertTriangle className="h-4 w-4 mt-0.5" /><div>{(create.error as Error).message}</div>
+          <AlertTriangle className="h-4 w-4 mt-0.5" />
+          <div>{(create.error as Error).message}</div>
         </div>
       )}
 
@@ -129,7 +162,9 @@ function ReleasesPage() {
               {(releases.data ?? []).map((r) => (
                 <tr key={r.id} className="hover:bg-muted/30">
                   <td className="px-4 py-3 font-medium">{r.title}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{artistMap.get(r.artist_id) ?? "—"}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {artistMap.get(r.artist_id) ?? "—"}
+                  </td>
                   <td className="px-4 py-3 capitalize text-muted-foreground">{r.type}</td>
                   <td className="px-4 py-3 text-muted-foreground">{r.release_date ?? "—"}</td>
                 </tr>

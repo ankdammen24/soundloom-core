@@ -12,7 +12,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const hydrate = (session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
+    const hydrate = (
+      session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"],
+    ) => {
       if (!session?.user) {
         activeRoleRequest += 1;
         authStore.setFromSession(null);
@@ -26,7 +28,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       hydrate(session);
     });
 

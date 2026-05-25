@@ -16,7 +16,10 @@ export function TableSkeleton({ rows = 5, columns = 4 }: { rows?: number; column
         {Array.from({ length: rows }).map((_, r) => (
           <div key={r} className="flex gap-4 px-4 py-3">
             {Array.from({ length: columns }).map((_, c) => (
-              <Skeleton key={c} className={cn("h-4 flex-1", c === 0 ? "max-w-[180px]" : "max-w-[120px]")} />
+              <Skeleton
+                key={c}
+                className={cn("h-4 flex-1", c === 0 ? "max-w-[180px]" : "max-w-[120px]")}
+              />
             ))}
           </div>
         ))}

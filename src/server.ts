@@ -21,7 +21,7 @@ let serverEntryPromise: Promise<ServerEntry> | undefined;
 async function getServerEntry(): Promise<ServerEntry> {
   if (!serverEntryPromise) {
     serverEntryPromise = import("@tanstack/react-start/server-entry").then(
-      (m) => ((m as { default?: ServerEntry }).default ?? (m as unknown as ServerEntry)),
+      (m) => (m as { default?: ServerEntry }).default ?? (m as unknown as ServerEntry),
     );
   }
   return serverEntryPromise;
@@ -100,7 +100,8 @@ async function maybeProxyApiRequest(request: Request, env: unknown): Promise<Res
     const upstreamResponse = await fetch(targetUrl, {
       method: request.method,
       headers: request.headers,
-      body: request.method === "GET" || request.method === "HEAD" ? undefined : await request.text(),
+      body:
+        request.method === "GET" || request.method === "HEAD" ? undefined : await request.text(),
     });
 
     return new Response(upstreamResponse.body, {
@@ -109,10 +110,7 @@ async function maybeProxyApiRequest(request: Request, env: unknown): Promise<Res
       headers: upstreamResponse.headers,
     });
   } catch {
-    return Response.json(
-      { error: "Could not reach music-catalog-core backend." },
-      { status: 502 },
-    );
+    return Response.json({ error: "Could not reach music-catalog-core backend." }, { status: 502 });
   }
 }
 

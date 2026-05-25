@@ -56,9 +56,7 @@ function AuthCallbackPage() {
 
     function parseTokens(): { access_token: string; refresh_token: string } | null {
       if (typeof window === "undefined") return null;
-      const raw = window.location.hash.startsWith("#")
-        ? window.location.hash.slice(1)
-        : "";
+      const raw = window.location.hash.startsWith("#") ? window.location.hash.slice(1) : "";
       const params = new URLSearchParams(raw || window.location.search.slice(1));
       const access_token = params.get("access_token");
       const refresh_token = params.get("refresh_token");
@@ -76,7 +74,10 @@ function AuthCallbackPage() {
 
     async function run() {
       try {
-        console.log("[auth/callback] start", { next, hasHash: typeof window !== "undefined" && !!window.location.hash });
+        console.log("[auth/callback] start", {
+          next,
+          hasHash: typeof window !== "undefined" && !!window.location.hash,
+        });
         // Always consume fresh callback tokens before trusting any old cached session.
         const tokens = parseTokens();
         console.log("[auth/callback] tokens parsed", { hasTokens: !!tokens });
@@ -104,7 +105,12 @@ function AuthCallbackPage() {
           const roles = await withTimeout(fetchUserRoles(session.user.id), t("callback.timeout"));
           if (cancelled) return;
           const target = callbackLanding(next, roles);
-          console.log("[auth/callback] roles + redirect (token branch)", { userId: session.user.id, next, roles, target });
+          console.log("[auth/callback] roles + redirect (token branch)", {
+            userId: session.user.id,
+            next,
+            roles,
+            target,
+          });
           authStore.setFromSession(session, roles);
           hardRedirect(target);
           return;
@@ -116,16 +122,27 @@ function AuthCallbackPage() {
         );
         if (cancelled) return;
         if (userErr || !userData.user) throw userErr ?? new Error(t("callback.timeout"));
-        console.log("[auth/callback] user (existing session)", { id: userData.user.id, email: userData.user.email });
+        console.log("[auth/callback] user (existing session)", {
+          id: userData.user.id,
+          email: userData.user.email,
+        });
 
         const existing = await supabase.auth.getSession();
         if (cancelled) return;
         if (!existing.data.session) throw new Error(t("callback.timeout"));
 
-        const roles = await withTimeout(fetchUserRoles(existing.data.session.user.id), t("callback.timeout"));
+        const roles = await withTimeout(
+          fetchUserRoles(existing.data.session.user.id),
+          t("callback.timeout"),
+        );
         if (cancelled) return;
         const target = callbackLanding(next, roles);
-        console.log("[auth/callback] roles + redirect (existing-session branch)", { userId: existing.data.session.user.id, next, roles, target });
+        console.log("[auth/callback] roles + redirect (existing-session branch)", {
+          userId: existing.data.session.user.id,
+          next,
+          roles,
+          target,
+        });
         authStore.setFromSession(existing.data.session, roles);
         hardRedirect(target);
       } catch (err) {

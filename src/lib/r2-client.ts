@@ -17,12 +17,10 @@ export function useR2() {
   }) {
     // Upload directly to Lovable Cloud Storage using the authenticated client.
     // RLS policies on storage.objects gate access.
-    const { error } = await supabase.storage
-      .from(args.bucket)
-      .upload(args.key, args.file, {
-        upsert: true,
-        contentType: args.file.type || "application/octet-stream",
-      });
+    const { error } = await supabase.storage.from(args.bucket).upload(args.key, args.file, {
+      upsert: true,
+      contentType: args.file.type || "application/octet-stream",
+    });
     if (error) throw new Error(`Storage upload failed: ${error.message}`);
     // Progress reporting isn't exposed by supabase-js; emit a final tick.
     args.onProgress?.(100);

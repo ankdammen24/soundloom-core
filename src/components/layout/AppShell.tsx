@@ -1,9 +1,25 @@
 import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth/useAuth";
 import {
-  LayoutDashboard, Users, Send, Music2, Upload, Cpu, ClipboardCheck,
-  KeyRound, Settings as SettingsIcon, BookOpen, UserCircle2, LogIn, UserPlus,
-  Menu, X, LogOut, Music2 as Brand, ShieldCheck, Bug,
+  LayoutDashboard,
+  Users,
+  Send,
+  Music2,
+  Upload,
+  Cpu,
+  ClipboardCheck,
+  KeyRound,
+  Settings as SettingsIcon,
+  BookOpen,
+  UserCircle2,
+  LogIn,
+  UserPlus,
+  Menu,
+  X,
+  LogOut,
+  Music2 as Brand,
+  ShieldCheck,
+  Bug,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -31,8 +47,18 @@ const OPS: NavLink[] = [
   { to: "/system-overview", label: "System Overview", icon: BookOpen, roles: ["admin"] },
 ];
 
-function NavItem({ to, label, Icon, active, onClick }: {
-  to: string; label: string; Icon: typeof Users; active: boolean; onClick?: () => void;
+function NavItem({
+  to,
+  label,
+  Icon,
+  active,
+  onClick,
+}: {
+  to: string;
+  label: string;
+  Icon: typeof Users;
+  active: boolean;
+  onClick?: () => void;
 }) {
   return (
     <Link
@@ -62,7 +88,8 @@ export function AppShell() {
   const [open, setOpen] = useState(false);
 
   const roles = user?.roles ?? [];
-  const isActive = (to: string) => location.pathname === to || location.pathname.startsWith(to + "/");
+  const isActive = (to: string) =>
+    location.pathname === to || location.pathname.startsWith(to + "/");
   const primaryNav = filterByRole(PRIMARY, roles);
   const opsNav = filterByRole(OPS, roles);
 
@@ -86,10 +113,12 @@ export function AppShell() {
       </header>
 
       <div className="md:grid md:grid-cols-[260px_1fr] md:gap-2 md:p-2">
-        <aside className={cn(
-          "md:sticky md:top-2 md:h-[calc(100vh-1rem)] md:rounded-xl bg-sidebar text-sidebar-foreground overflow-y-auto flex flex-col",
-          open ? "block" : "hidden md:flex",
-        )}>
+        <aside
+          className={cn(
+            "md:sticky md:top-2 md:h-[calc(100vh-1rem)] md:rounded-xl bg-sidebar text-sidebar-foreground overflow-y-auto flex flex-col",
+            open ? "block" : "hidden md:flex",
+          )}
+        >
           <div className="px-5 pt-5 pb-3 hidden md:block">
             <div className="flex items-center gap-2">
               <span className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground">
@@ -104,31 +133,59 @@ export function AppShell() {
 
           <nav className="px-2 py-2 space-y-1">
             {primaryNav.map((i) => (
-              <NavItem key={i.to} to={i.to} label={i.label} Icon={i.icon} active={isActive(i.to)} onClick={() => setOpen(false)} />
+              <NavItem
+                key={i.to}
+                to={i.to}
+                label={i.label}
+                Icon={i.icon}
+                active={isActive(i.to)}
+                onClick={() => setOpen(false)}
+              />
             ))}
           </nav>
 
           {opsNav.length > 0 && (
             <div className="mx-2 my-2 rounded-lg bg-sidebar-accent/40 p-2">
-              <div className="px-2 py-1 text-xs uppercase tracking-wider text-sidebar-foreground/60">Operations</div>
+              <div className="px-2 py-1 text-xs uppercase tracking-wider text-sidebar-foreground/60">
+                Operations
+              </div>
               <nav className="mt-1 space-y-1">
                 {opsNav.map((i) => (
-                  <NavItem key={i.to} to={i.to} label={i.label} Icon={i.icon} active={isActive(i.to)} onClick={() => setOpen(false)} />
+                  <NavItem
+                    key={i.to}
+                    to={i.to}
+                    label={i.label}
+                    Icon={i.icon}
+                    active={isActive(i.to)}
+                    onClick={() => setOpen(false)}
+                  />
                 ))}
               </nav>
             </div>
           )}
 
           <div className="mt-auto border-t border-sidebar-border p-3 space-y-2">
-            <div className="flex items-center justify-center"><ThemeToggle /></div>
+            <div className="flex items-center justify-center">
+              <ThemeToggle />
+            </div>
             {!isAuthenticated ? (
               <div className="space-y-1">
                 <NavItem to="/sign-in" label="Sign in" Icon={LogIn} active={isActive("/sign-in")} />
-                <NavItem to="/sign-up" label="Sign up" Icon={UserPlus} active={isActive("/sign-up")} />
+                <NavItem
+                  to="/sign-up"
+                  label="Sign up"
+                  Icon={UserPlus}
+                  active={isActive("/sign-up")}
+                />
               </div>
             ) : (
               <div className="space-y-1">
-                <NavItem to="/profile" label="Profile" Icon={UserCircle2} active={isActive("/profile")} />
+                <NavItem
+                  to="/profile"
+                  label="Profile"
+                  Icon={UserCircle2}
+                  active={isActive("/profile")}
+                />
                 <button
                   type="button"
                   onClick={onLogout}
@@ -141,13 +198,20 @@ export function AppShell() {
                     {user?.displayName ?? user?.email}
                   </div>
                   {user?.email && (
-                    <div className="text-[11px] text-sidebar-foreground/60 truncate">{user.email}</div>
+                    <div className="text-[11px] text-sidebar-foreground/60 truncate">
+                      {user.email}
+                    </div>
                   )}
-                  <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/50">{ORG_NAME}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/50">
+                    {ORG_NAME}
+                  </div>
                   {roles.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       {roles.map((r) => (
-                        <span key={r} className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                        <span
+                          key={r}
+                          className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-medium text-primary"
+                        >
                           {r}
                         </span>
                       ))}

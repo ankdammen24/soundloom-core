@@ -42,9 +42,17 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Catalogus Musicus – Media Rosenqvist Music Catalog" },
-      { name: "description", content: "Catalogus Musicus is the catalog and upload interface for Media Rosenqvist — manage artists, releases and tracks across Radio Core, Music Core and Radio Uppsala." },
+      {
+        name: "description",
+        content:
+          "Catalogus Musicus is the catalog and upload interface for Media Rosenqvist — manage artists, releases and tracks across Radio Core, Music Core and Radio Uppsala.",
+      },
       { property: "og:title", content: "Catalogus Musicus – Media Rosenqvist Music Catalog" },
-      { property: "og:description", content: "Catalog and upload interface for Media Rosenqvist — artists, releases and tracks across radio and music services." },
+      {
+        property: "og:description",
+        content:
+          "Catalog and upload interface for Media Rosenqvist — artists, releases and tracks across radio and music services.",
+      },
       { property: "og:url", content: CANONICAL_URL },
     ],
     links: [{ rel: "canonical", href: CANONICAL_URL }],
@@ -70,7 +78,10 @@ function useAuthCallbackOnRoot(): { processing: boolean; error: string | null } 
         const params = new URLSearchParams(hash);
         const access_token = params.get("access_token") ?? "";
         const refresh_token = params.get("refresh_token") ?? "";
-        console.log("[index/callback] tokens parsed", { hasAccess: !!access_token, hasRefresh: !!refresh_token });
+        console.log("[index/callback] tokens parsed", {
+          hasAccess: !!access_token,
+          hasRefresh: !!refresh_token,
+        });
 
         // Strip token material from the URL immediately so it cannot leak via
         // referrer, history, or analytics.
@@ -99,7 +110,12 @@ function useAuthCallbackOnRoot(): { processing: boolean; error: string | null } 
         authStore.setFromSession(session, roles);
 
         const target = callbackLanding(next, roles);
-        console.log("[index/callback] roles + redirect", { userId: session.user.id, next, roles, target });
+        console.log("[index/callback] roles + redirect", {
+          userId: session.user.id,
+          next,
+          roles,
+          target,
+        });
         await navigate({ to: target });
       } catch (err) {
         console.error("[index/callback] error", err);
@@ -149,7 +165,9 @@ function Home() {
         style={{ background: "var(--gradient-hero)" }}
       >
         <div className="relative z-10 max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary">Catalogus Musicus</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+            Catalogus Musicus
+          </p>
           <h1 className="mt-2 text-4xl md:text-5xl font-bold tracking-tight">God morgon 👋</h1>
           <p className="mt-3 text-base text-foreground/80">
             Frontend för Media Rosenqvists musikkatalog

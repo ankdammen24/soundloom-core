@@ -16,9 +16,24 @@ export const Route = createFileRoute("/_authenticated/settings")({
 
 function SettingsPage() {
   const items = [
-    { icon: Database, title: "Database", desc: "Lovable Cloud (Postgres + Row Level Security)", connected: true },
-    { icon: ShieldCheck, title: "Authentication", desc: "Email + Google via Lovable Cloud", connected: true },
-    { icon: Cloud, title: "Storage", desc: "audio-uploads (private), audio-previews (public), artwork (public)", connected: true },
+    {
+      icon: Database,
+      title: "Database",
+      desc: "Lovable Cloud (Postgres + Row Level Security)",
+      connected: true,
+    },
+    {
+      icon: ShieldCheck,
+      title: "Authentication",
+      desc: "Email + Google via Lovable Cloud",
+      connected: true,
+    },
+    {
+      icon: Cloud,
+      title: "Storage",
+      desc: "audio-uploads (private), audio-previews (public), artwork (public)",
+      connected: true,
+    },
   ];
 
   return (
@@ -27,7 +42,10 @@ function SettingsPage() {
 
       <section className="space-y-3">
         {items.map((i) => (
-          <div key={i.title} className="flex flex-col gap-3 rounded-lg border border-border bg-card p-5 sm:flex-row sm:items-center">
+          <div
+            key={i.title}
+            className="flex flex-col gap-3 rounded-lg border border-border bg-card p-5 sm:flex-row sm:items-center"
+          >
             <div className="grid h-10 w-10 place-items-center rounded-md bg-accent text-accent-foreground">
               <i.icon className="h-5 w-5" />
             </div>
@@ -45,7 +63,8 @@ function SettingsPage() {
       <section className="mt-8 rounded-lg border border-border bg-card p-5">
         <h2 className="text-sm font-semibold">Organization</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Media Rosenqvist — single-tenant catalog. Multi-tenant org support is planned for a later phase.
+          Media Rosenqvist — single-tenant catalog. Multi-tenant org support is planned for a later
+          phase.
         </p>
       </section>
     </>

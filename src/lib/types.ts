@@ -4,8 +4,15 @@
 // and switch imports there. Until then this hand-written shape is the contract.
 
 export type TrackStatus =
-  | "draft" | "uploaded" | "processing" | "needs_metadata" | "needs_rights_check"
-  | "approved" | "published" | "distributed" | "archived";
+  | "draft"
+  | "uploaded"
+  | "processing"
+  | "needs_metadata"
+  | "needs_rights_check"
+  | "approved"
+  | "published"
+  | "distributed"
+  | "archived";
 export type RightsStatus = "unknown" | "incomplete" | "cleared" | "blocked";
 export type AlbumStatus = "draft" | "scheduled" | "released" | "archived";
 export type ReleaseStatus = "draft" | "scheduled" | "live" | "takedown";
