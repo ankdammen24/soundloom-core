@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SetupBanner, LoadingRows, ErrorRow, EmptyRow } from "@/components/Setup";
-import { Toolbar } from "./albums";
+import { Toolbar } from "./_authenticated.albums";
 import { useRights, useTracks, useArtists, buildLookup } from "@/lib/catalog";
 import { Check, X, Scale } from "lucide-react";
 
