@@ -23,7 +23,7 @@ function SignInPage() {
 export function AuthForm({ initialMode = "sign-in" }: { initialMode?: Mode }) {
   const { t } = useTranslation("auth");
   const { isAuthenticated, user, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple } = useAuth();
-  const search = Route.useSearch();
+  const search = useSearch({ strict: false }) as { redirect?: string };
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
