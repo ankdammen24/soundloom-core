@@ -5,9 +5,17 @@ import { lovable } from "@/integrations/lovable";
 
 export type SupportedProvider = "google" | "apple";
 
+function safeRedirectTarget(redirectTo?: string) {
+  if (!redirectTo) return "";
+  if (!redirectTo.startsWith("/") || redirectTo.startsWith("//")) return "";
+  if (redirectTo.startsWith("/auth/callback")) return "";
+  return redirectTo;
+}
+
 function callbackUrl(redirectTo?: string) {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
-  return `${origin}/auth/callback${redirectTo ? `?next=${encodeURIComponent(redirectTo)}` : ""}`;
+  const safe = safeRedirectTarget(redirectTo) || "/profile";
+  return `${origin}/auth/callback?next=${encodeURIComponent(safe)}`;
 }
 
 export function useAuth() {

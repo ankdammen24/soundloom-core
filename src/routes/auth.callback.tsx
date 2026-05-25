@@ -7,12 +7,37 @@ import { authStore } from "@/lib/auth/store";
 import { Button } from "@/components/ui/button";
 
 const CALLBACK_TIMEOUT_MS = 10000;
+const AUTH_SEARCH_KEYS = [
+  "access_token",
+  "refresh_token",
+  "expires_at",
+  "expires_in",
+  "token_type",
+  "type",
+  "sb",
+];
 
 function internalTarget(target: string): string {
   if (!target) return "";
   if (!target.startsWith("/") || target.startsWith("//")) return "";
-  // Only allow simple internal paths.
+  if (target.startsWith("/auth/callback")) return "";
   return target;
+}
+
+function withTimeout<T>(promise: Promise<T>, message: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error(message)), CALLBACK_TIMEOUT_MS);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (reason) => {
+        window.clearTimeout(timer);
+        reject(reason);
+      },
+    );
+  });
 }
 
 export const Route = createFileRoute("/auth/callback")({
@@ -39,75 +64,68 @@ function AuthCallbackPage() {
       window.location.replace(to);
     }
 
-    function parseHash(): { access_token: string; refresh_token: string } | null {
+    function parseTokens(): { access_token: string; refresh_token: string } | null {
       if (typeof window === "undefined") return null;
       const raw = window.location.hash.startsWith("#")
         ? window.location.hash.slice(1)
         : "";
-      if (!raw) return null;
-      const params = new URLSearchParams(raw);
+      const params = new URLSearchParams(raw || window.location.search.slice(1));
       const access_token = params.get("access_token");
       const refresh_token = params.get("refresh_token");
       if (!access_token || !refresh_token) return null;
       return { access_token, refresh_token };
     }
 
+    function cleanUrl() {
+      if (typeof window === "undefined") return;
+      const url = new URL(window.location.href);
+      url.hash = "";
+      AUTH_SEARCH_KEYS.forEach((key) => url.searchParams.delete(key));
+      window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+    }
+
     async function run() {
       try {
-        // 1) If we already have a session, just go.
-        const existing = await supabase.auth.getSession();
-        if (cancelled) return;
-        if (existing.data.session) {
-          authStore.setFromSession(existing.data.session, []);
+        // Always consume fresh callback tokens before trusting any old cached session.
+        const tokens = parseTokens();
+        if (tokens) {
+          cleanUrl();
+
+          const { data, error: setErr } = await withTimeout(
+            supabase.auth.setSession(tokens),
+            t("callback.timeout"),
+          );
+          if (cancelled) return;
+          if (setErr) throw setErr;
+
+          const { data: userData, error: userErr } = await withTimeout(
+            supabase.auth.getUser(),
+            t("callback.timeout"),
+          );
+          if (cancelled) return;
+          if (userErr || !userData.user) throw userErr ?? new Error(t("callback.timeout"));
+
+          const session = data.session ?? (await supabase.auth.getSession()).data.session;
+          if (!session) throw new Error(t("callback.timeout"));
+
+          authStore.setFromSession(session, []);
           hardRedirect(landTarget());
           return;
         }
 
-        // 2) Try to consume tokens from the hash fragment.
-        const tokens = parseHash();
-        if (tokens) {
-          // Strip the hash immediately so tokens don't linger in history.
-          const cleanUrl = `${window.location.pathname}${window.location.search}`;
-          window.history.replaceState({}, "", cleanUrl);
+        const { data: userData, error: userErr } = await withTimeout(
+          supabase.auth.getUser(),
+          t("callback.timeout"),
+        );
+        if (cancelled) return;
+        if (userErr || !userData.user) throw userErr ?? new Error(t("callback.timeout"));
 
-          const { data, error: setErr } = await supabase.auth.setSession(tokens);
-          if (cancelled) return;
-          if (setErr) {
-            setError(setErr.message);
-            return;
-          }
-          if (data.session) {
-            authStore.setFromSession(data.session, []);
-            hardRedirect(landTarget());
-            return;
-          }
-        }
+        const existing = await supabase.auth.getSession();
+        if (cancelled) return;
+        if (!existing.data.session) throw new Error(t("callback.timeout"));
 
-        // 3) Last resort: wait briefly for an auth-state event (e.g. PKCE).
-        const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-          if (cancelled) return;
-          if (
-            session &&
-            (event === "SIGNED_IN" ||
-              event === "INITIAL_SESSION" ||
-              event === "TOKEN_REFRESHED")
-          ) {
-            sub.subscription.unsubscribe();
-            authStore.setFromSession(session, []);
-            hardRedirect(landTarget());
-          }
-        });
-
-        const timeout = setTimeout(() => {
-          if (cancelled) return;
-          sub.subscription.unsubscribe();
-          setError(t("callback.timeout"));
-        }, CALLBACK_TIMEOUT_MS);
-
-        return () => {
-          clearTimeout(timeout);
-          sub.subscription.unsubscribe();
-        };
+        authStore.setFromSession(existing.data.session, []);
+        hardRedirect(landTarget());
       } catch (err) {
         if (!cancelled) setError((err as Error)?.message ?? "Session error");
       }
