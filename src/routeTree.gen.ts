@@ -9,52 +9,43 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UploadsRouteImport } from './routes/uploads'
-import { Route as TracksRouteImport } from './routes/tracks'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as SignInRouteImport } from './routes/sign-in'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as RightsRouteImport } from './routes/rights'
-import { Route as ReleasesRouteImport } from './routes/releases'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as ProcessingRouteImport } from './routes/processing'
-import { Route as PlaylistsRouteImport } from './routes/playlists'
-import { Route as OrganizationsRouteImport } from './routes/organizations'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as LibraryRouteImport } from './routes/library'
-import { Route as DistributionRouteImport } from './routes/distribution'
 import { Route as DiscoverRouteImport } from './routes/discover'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as AssetsRouteImport } from './routes/assets'
-import { Route as ArtistsRouteImport } from './routes/artists'
-import { Route as AlbumsRouteImport } from './routes/albums'
-import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as TracksIdRouteImport } from './routes/tracks.$id'
-import { Route as ReleasesIdRouteImport } from './routes/releases.$id'
-import { Route as ArtistsIdRouteImport } from './routes/artists.$id'
-import { Route as AdminWorkersRouteImport } from './routes/admin.workers'
-import { Route as AdminStorageRouteImport } from './routes/admin.storage'
-import { Route as AdminQueuesRouteImport } from './routes/admin.queues'
-import { Route as AdminProcessingMetricsRouteImport } from './routes/admin.processing-metrics'
-import { Route as AdminLogsRouteImport } from './routes/admin.logs'
-import { Route as AdminJobsRouteImport } from './routes/admin.jobs'
-import { Route as AdminDiagnosticsRouteImport } from './routes/admin.diagnostics'
-import { Route as AdminAuditRouteImport } from './routes/admin.audit'
-import { Route as AdminApiUsageRouteImport } from './routes/admin.api-usage'
+import { Route as AuthenticatedUploadsRouteImport } from './routes/_authenticated.uploads'
+import { Route as AuthenticatedTracksRouteImport } from './routes/_authenticated.tracks'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated.settings'
+import { Route as AuthenticatedRightsRouteImport } from './routes/_authenticated.rights'
+import { Route as AuthenticatedReleasesRouteImport } from './routes/_authenticated.releases'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated.profile'
+import { Route as AuthenticatedProcessingRouteImport } from './routes/_authenticated.processing'
+import { Route as AuthenticatedPlaylistsRouteImport } from './routes/_authenticated.playlists'
+import { Route as AuthenticatedOrganizationsRouteImport } from './routes/_authenticated.organizations'
+import { Route as AuthenticatedLibraryRouteImport } from './routes/_authenticated.library'
+import { Route as AuthenticatedDistributionRouteImport } from './routes/_authenticated.distribution'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
+import { Route as AuthenticatedAssetsRouteImport } from './routes/_authenticated.assets'
+import { Route as AuthenticatedArtistsRouteImport } from './routes/_authenticated.artists'
+import { Route as AuthenticatedAlbumsRouteImport } from './routes/_authenticated.albums'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
+import { Route as AuthenticatedTracksIdRouteImport } from './routes/_authenticated.tracks.$id'
+import { Route as AuthenticatedReleasesIdRouteImport } from './routes/_authenticated.releases.$id'
+import { Route as AuthenticatedArtistsIdRouteImport } from './routes/_authenticated.artists.$id'
+import { Route as AuthenticatedAdminWorkersRouteImport } from './routes/_authenticated.admin.workers'
+import { Route as AuthenticatedAdminStorageRouteImport } from './routes/_authenticated.admin.storage'
+import { Route as AuthenticatedAdminQueuesRouteImport } from './routes/_authenticated.admin.queues'
+import { Route as AuthenticatedAdminProcessingMetricsRouteImport } from './routes/_authenticated.admin.processing-metrics'
+import { Route as AuthenticatedAdminLogsRouteImport } from './routes/_authenticated.admin.logs'
+import { Route as AuthenticatedAdminJobsRouteImport } from './routes/_authenticated.admin.jobs'
+import { Route as AuthenticatedAdminDiagnosticsRouteImport } from './routes/_authenticated.admin.diagnostics'
+import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated.admin.audit'
+import { Route as AuthenticatedAdminApiUsageRouteImport } from './routes/_authenticated.admin.api-usage'
 
-const UploadsRoute = UploadsRouteImport.update({
-  id: '/uploads',
-  path: '/uploads',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TracksRoute = TracksRouteImport.update({
-  id: '/tracks',
-  path: '/tracks',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const StatusRoute = StatusRouteImport.update({
   id: '/status',
   path: '/status',
@@ -75,54 +66,9 @@ const SignInRoute = SignInRouteImport.update({
   path: '/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RightsRoute = RightsRouteImport.update({
-  id: '/rights',
-  path: '/rights',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReleasesRoute = ReleasesRouteImport.update({
-  id: '/releases',
-  path: '/releases',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProcessingRoute = ProcessingRouteImport.update({
-  id: '/processing',
-  path: '/processing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlaylistsRoute = PlaylistsRouteImport.update({
-  id: '/playlists',
-  path: '/playlists',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OrganizationsRoute = OrganizationsRouteImport.update({
-  id: '/organizations',
-  path: '/organizations',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LibraryRoute = LibraryRouteImport.update({
-  id: '/library',
-  path: '/library',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DistributionRoute = DistributionRouteImport.update({
-  id: '/distribution',
-  path: '/distribution',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiscoverRoute = DiscoverRouteImport.update({
@@ -130,29 +76,8 @@ const DiscoverRoute = DiscoverRouteImport.update({
   path: '/discover',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AssetsRoute = AssetsRouteImport.update({
-  id: '/assets',
-  path: '/assets',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ArtistsRoute = ArtistsRouteImport.update({
-  id: '/artists',
-  path: '/artists',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AlbumsRoute = AlbumsRouteImport.update({
-  id: '/albums',
-  path: '/albums',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -160,192 +85,285 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TracksIdRoute = TracksIdRouteImport.update({
+const AuthenticatedUploadsRoute = AuthenticatedUploadsRouteImport.update({
+  id: '/uploads',
+  path: '/uploads',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTracksRoute = AuthenticatedTracksRouteImport.update({
+  id: '/tracks',
+  path: '/tracks',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedRightsRoute = AuthenticatedRightsRouteImport.update({
+  id: '/rights',
+  path: '/rights',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedReleasesRoute = AuthenticatedReleasesRouteImport.update({
+  id: '/releases',
+  path: '/releases',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedProcessingRoute = AuthenticatedProcessingRouteImport.update({
+  id: '/processing',
+  path: '/processing',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPlaylistsRoute = AuthenticatedPlaylistsRouteImport.update({
+  id: '/playlists',
+  path: '/playlists',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedOrganizationsRoute =
+  AuthenticatedOrganizationsRouteImport.update({
+    id: '/organizations',
+    path: '/organizations',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedLibraryRoute = AuthenticatedLibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedDistributionRoute =
+  AuthenticatedDistributionRouteImport.update({
+    id: '/distribution',
+    path: '/distribution',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAssetsRoute = AuthenticatedAssetsRouteImport.update({
+  id: '/assets',
+  path: '/assets',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedArtistsRoute = AuthenticatedArtistsRouteImport.update({
+  id: '/artists',
+  path: '/artists',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAlbumsRoute = AuthenticatedAlbumsRouteImport.update({
+  id: '/albums',
+  path: '/albums',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTracksIdRoute = AuthenticatedTracksIdRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => TracksRoute,
+  getParentRoute: () => AuthenticatedTracksRoute,
 } as any)
-const ReleasesIdRoute = ReleasesIdRouteImport.update({
+const AuthenticatedReleasesIdRoute = AuthenticatedReleasesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => ReleasesRoute,
+  getParentRoute: () => AuthenticatedReleasesRoute,
 } as any)
-const ArtistsIdRoute = ArtistsIdRouteImport.update({
+const AuthenticatedArtistsIdRoute = AuthenticatedArtistsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => ArtistsRoute,
+  getParentRoute: () => AuthenticatedArtistsRoute,
 } as any)
-const AdminWorkersRoute = AdminWorkersRouteImport.update({
-  id: '/workers',
-  path: '/workers',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminStorageRoute = AdminStorageRouteImport.update({
-  id: '/storage',
-  path: '/storage',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminQueuesRoute = AdminQueuesRouteImport.update({
-  id: '/queues',
-  path: '/queues',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminProcessingMetricsRoute = AdminProcessingMetricsRouteImport.update({
-  id: '/processing-metrics',
-  path: '/processing-metrics',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminLogsRoute = AdminLogsRouteImport.update({
+const AuthenticatedAdminWorkersRoute =
+  AuthenticatedAdminWorkersRouteImport.update({
+    id: '/workers',
+    path: '/workers',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminStorageRoute =
+  AuthenticatedAdminStorageRouteImport.update({
+    id: '/storage',
+    path: '/storage',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminQueuesRoute =
+  AuthenticatedAdminQueuesRouteImport.update({
+    id: '/queues',
+    path: '/queues',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminProcessingMetricsRoute =
+  AuthenticatedAdminProcessingMetricsRouteImport.update({
+    id: '/processing-metrics',
+    path: '/processing-metrics',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminLogsRoute = AuthenticatedAdminLogsRouteImport.update({
   id: '/logs',
   path: '/logs',
-  getParentRoute: () => AdminRoute,
+  getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
-const AdminJobsRoute = AdminJobsRouteImport.update({
+const AuthenticatedAdminJobsRoute = AuthenticatedAdminJobsRouteImport.update({
   id: '/jobs',
   path: '/jobs',
-  getParentRoute: () => AdminRoute,
+  getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
-const AdminDiagnosticsRoute = AdminDiagnosticsRouteImport.update({
-  id: '/diagnostics',
-  path: '/diagnostics',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminAuditRoute = AdminAuditRouteImport.update({
+const AuthenticatedAdminDiagnosticsRoute =
+  AuthenticatedAdminDiagnosticsRouteImport.update({
+    id: '/diagnostics',
+    path: '/diagnostics',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
-  getParentRoute: () => AdminRoute,
+  getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
-const AdminApiUsageRoute = AdminApiUsageRouteImport.update({
-  id: '/api-usage',
-  path: '/api-usage',
-  getParentRoute: () => AdminRoute,
-} as any)
+const AuthenticatedAdminApiUsageRoute =
+  AuthenticatedAdminApiUsageRouteImport.update({
+    id: '/api-usage',
+    path: '/api-usage',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/albums': typeof AlbumsRoute
-  '/artists': typeof ArtistsRouteWithChildren
-  '/assets': typeof AssetsRoute
-  '/dashboard': typeof DashboardRoute
   '/discover': typeof DiscoverRoute
-  '/distribution': typeof DistributionRoute
-  '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
-  '/organizations': typeof OrganizationsRoute
-  '/playlists': typeof PlaylistsRoute
-  '/processing': typeof ProcessingRoute
-  '/profile': typeof ProfileRoute
-  '/releases': typeof ReleasesRouteWithChildren
-  '/rights': typeof RightsRoute
-  '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
-  '/tracks': typeof TracksRouteWithChildren
-  '/uploads': typeof UploadsRoute
-  '/admin/api-usage': typeof AdminApiUsageRoute
-  '/admin/audit': typeof AdminAuditRoute
-  '/admin/diagnostics': typeof AdminDiagnosticsRoute
-  '/admin/jobs': typeof AdminJobsRoute
-  '/admin/logs': typeof AdminLogsRoute
-  '/admin/processing-metrics': typeof AdminProcessingMetricsRoute
-  '/admin/queues': typeof AdminQueuesRoute
-  '/admin/storage': typeof AdminStorageRoute
-  '/admin/workers': typeof AdminWorkersRoute
-  '/artists/$id': typeof ArtistsIdRoute
-  '/releases/$id': typeof ReleasesIdRoute
-  '/tracks/$id': typeof TracksIdRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/albums': typeof AuthenticatedAlbumsRoute
+  '/artists': typeof AuthenticatedArtistsRouteWithChildren
+  '/assets': typeof AuthenticatedAssetsRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/distribution': typeof AuthenticatedDistributionRoute
+  '/library': typeof AuthenticatedLibraryRoute
+  '/organizations': typeof AuthenticatedOrganizationsRoute
+  '/playlists': typeof AuthenticatedPlaylistsRoute
+  '/processing': typeof AuthenticatedProcessingRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/releases': typeof AuthenticatedReleasesRouteWithChildren
+  '/rights': typeof AuthenticatedRightsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/tracks': typeof AuthenticatedTracksRouteWithChildren
+  '/uploads': typeof AuthenticatedUploadsRoute
+  '/admin/api-usage': typeof AuthenticatedAdminApiUsageRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/diagnostics': typeof AuthenticatedAdminDiagnosticsRoute
+  '/admin/jobs': typeof AuthenticatedAdminJobsRoute
+  '/admin/logs': typeof AuthenticatedAdminLogsRoute
+  '/admin/processing-metrics': typeof AuthenticatedAdminProcessingMetricsRoute
+  '/admin/queues': typeof AuthenticatedAdminQueuesRoute
+  '/admin/storage': typeof AuthenticatedAdminStorageRoute
+  '/admin/workers': typeof AuthenticatedAdminWorkersRoute
+  '/artists/$id': typeof AuthenticatedArtistsIdRoute
+  '/releases/$id': typeof AuthenticatedReleasesIdRoute
+  '/tracks/$id': typeof AuthenticatedTracksIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/albums': typeof AlbumsRoute
-  '/artists': typeof ArtistsRouteWithChildren
-  '/assets': typeof AssetsRoute
-  '/dashboard': typeof DashboardRoute
   '/discover': typeof DiscoverRoute
-  '/distribution': typeof DistributionRoute
-  '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
-  '/organizations': typeof OrganizationsRoute
-  '/playlists': typeof PlaylistsRoute
-  '/processing': typeof ProcessingRoute
-  '/profile': typeof ProfileRoute
-  '/releases': typeof ReleasesRouteWithChildren
-  '/rights': typeof RightsRoute
-  '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
-  '/tracks': typeof TracksRouteWithChildren
-  '/uploads': typeof UploadsRoute
-  '/admin/api-usage': typeof AdminApiUsageRoute
-  '/admin/audit': typeof AdminAuditRoute
-  '/admin/diagnostics': typeof AdminDiagnosticsRoute
-  '/admin/jobs': typeof AdminJobsRoute
-  '/admin/logs': typeof AdminLogsRoute
-  '/admin/processing-metrics': typeof AdminProcessingMetricsRoute
-  '/admin/queues': typeof AdminQueuesRoute
-  '/admin/storage': typeof AdminStorageRoute
-  '/admin/workers': typeof AdminWorkersRoute
-  '/artists/$id': typeof ArtistsIdRoute
-  '/releases/$id': typeof ReleasesIdRoute
-  '/tracks/$id': typeof TracksIdRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/albums': typeof AuthenticatedAlbumsRoute
+  '/artists': typeof AuthenticatedArtistsRouteWithChildren
+  '/assets': typeof AuthenticatedAssetsRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/distribution': typeof AuthenticatedDistributionRoute
+  '/library': typeof AuthenticatedLibraryRoute
+  '/organizations': typeof AuthenticatedOrganizationsRoute
+  '/playlists': typeof AuthenticatedPlaylistsRoute
+  '/processing': typeof AuthenticatedProcessingRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/releases': typeof AuthenticatedReleasesRouteWithChildren
+  '/rights': typeof AuthenticatedRightsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/tracks': typeof AuthenticatedTracksRouteWithChildren
+  '/uploads': typeof AuthenticatedUploadsRoute
+  '/admin/api-usage': typeof AuthenticatedAdminApiUsageRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/diagnostics': typeof AuthenticatedAdminDiagnosticsRoute
+  '/admin/jobs': typeof AuthenticatedAdminJobsRoute
+  '/admin/logs': typeof AuthenticatedAdminLogsRoute
+  '/admin/processing-metrics': typeof AuthenticatedAdminProcessingMetricsRoute
+  '/admin/queues': typeof AuthenticatedAdminQueuesRoute
+  '/admin/storage': typeof AuthenticatedAdminStorageRoute
+  '/admin/workers': typeof AuthenticatedAdminWorkersRoute
+  '/artists/$id': typeof AuthenticatedArtistsIdRoute
+  '/releases/$id': typeof AuthenticatedReleasesIdRoute
+  '/tracks/$id': typeof AuthenticatedTracksIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/albums': typeof AlbumsRoute
-  '/artists': typeof ArtistsRouteWithChildren
-  '/assets': typeof AssetsRoute
-  '/dashboard': typeof DashboardRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/discover': typeof DiscoverRoute
-  '/distribution': typeof DistributionRoute
-  '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
-  '/organizations': typeof OrganizationsRoute
-  '/playlists': typeof PlaylistsRoute
-  '/processing': typeof ProcessingRoute
-  '/profile': typeof ProfileRoute
-  '/releases': typeof ReleasesRouteWithChildren
-  '/rights': typeof RightsRoute
-  '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
-  '/tracks': typeof TracksRouteWithChildren
-  '/uploads': typeof UploadsRoute
-  '/admin/api-usage': typeof AdminApiUsageRoute
-  '/admin/audit': typeof AdminAuditRoute
-  '/admin/diagnostics': typeof AdminDiagnosticsRoute
-  '/admin/jobs': typeof AdminJobsRoute
-  '/admin/logs': typeof AdminLogsRoute
-  '/admin/processing-metrics': typeof AdminProcessingMetricsRoute
-  '/admin/queues': typeof AdminQueuesRoute
-  '/admin/storage': typeof AdminStorageRoute
-  '/admin/workers': typeof AdminWorkersRoute
-  '/artists/$id': typeof ArtistsIdRoute
-  '/releases/$id': typeof ReleasesIdRoute
-  '/tracks/$id': typeof TracksIdRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/albums': typeof AuthenticatedAlbumsRoute
+  '/_authenticated/artists': typeof AuthenticatedArtistsRouteWithChildren
+  '/_authenticated/assets': typeof AuthenticatedAssetsRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/distribution': typeof AuthenticatedDistributionRoute
+  '/_authenticated/library': typeof AuthenticatedLibraryRoute
+  '/_authenticated/organizations': typeof AuthenticatedOrganizationsRoute
+  '/_authenticated/playlists': typeof AuthenticatedPlaylistsRoute
+  '/_authenticated/processing': typeof AuthenticatedProcessingRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/releases': typeof AuthenticatedReleasesRouteWithChildren
+  '/_authenticated/rights': typeof AuthenticatedRightsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/tracks': typeof AuthenticatedTracksRouteWithChildren
+  '/_authenticated/uploads': typeof AuthenticatedUploadsRoute
+  '/_authenticated/admin/api-usage': typeof AuthenticatedAdminApiUsageRoute
+  '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/_authenticated/admin/diagnostics': typeof AuthenticatedAdminDiagnosticsRoute
+  '/_authenticated/admin/jobs': typeof AuthenticatedAdminJobsRoute
+  '/_authenticated/admin/logs': typeof AuthenticatedAdminLogsRoute
+  '/_authenticated/admin/processing-metrics': typeof AuthenticatedAdminProcessingMetricsRoute
+  '/_authenticated/admin/queues': typeof AuthenticatedAdminQueuesRoute
+  '/_authenticated/admin/storage': typeof AuthenticatedAdminStorageRoute
+  '/_authenticated/admin/workers': typeof AuthenticatedAdminWorkersRoute
+  '/_authenticated/artists/$id': typeof AuthenticatedArtistsIdRoute
+  '/_authenticated/releases/$id': typeof AuthenticatedReleasesIdRoute
+  '/_authenticated/tracks/$id': typeof AuthenticatedTracksIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/discover'
+    | '/login'
+    | '/sign-in'
+    | '/sign-up'
+    | '/sitemap.xml'
+    | '/status'
     | '/admin'
     | '/albums'
     | '/artists'
     | '/assets'
     | '/dashboard'
-    | '/discover'
     | '/distribution'
     | '/library'
-    | '/login'
     | '/organizations'
     | '/playlists'
     | '/processing'
@@ -353,10 +371,6 @@ export interface FileRouteTypes {
     | '/releases'
     | '/rights'
     | '/settings'
-    | '/sign-in'
-    | '/sign-up'
-    | '/sitemap.xml'
-    | '/status'
     | '/tracks'
     | '/uploads'
     | '/admin/api-usage'
@@ -374,15 +388,19 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/discover'
+    | '/login'
+    | '/sign-in'
+    | '/sign-up'
+    | '/sitemap.xml'
+    | '/status'
     | '/admin'
     | '/albums'
     | '/artists'
     | '/assets'
     | '/dashboard'
-    | '/discover'
     | '/distribution'
     | '/library'
-    | '/login'
     | '/organizations'
     | '/playlists'
     | '/processing'
@@ -390,10 +408,6 @@ export interface FileRouteTypes {
     | '/releases'
     | '/rights'
     | '/settings'
-    | '/sign-in'
-    | '/sign-up'
-    | '/sitemap.xml'
-    | '/status'
     | '/tracks'
     | '/uploads'
     | '/admin/api-usage'
@@ -411,84 +425,56 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/admin'
-    | '/albums'
-    | '/artists'
-    | '/assets'
-    | '/dashboard'
+    | '/_authenticated'
     | '/discover'
-    | '/distribution'
-    | '/library'
     | '/login'
-    | '/organizations'
-    | '/playlists'
-    | '/processing'
-    | '/profile'
-    | '/releases'
-    | '/rights'
-    | '/settings'
     | '/sign-in'
     | '/sign-up'
     | '/sitemap.xml'
     | '/status'
-    | '/tracks'
-    | '/uploads'
-    | '/admin/api-usage'
-    | '/admin/audit'
-    | '/admin/diagnostics'
-    | '/admin/jobs'
-    | '/admin/logs'
-    | '/admin/processing-metrics'
-    | '/admin/queues'
-    | '/admin/storage'
-    | '/admin/workers'
-    | '/artists/$id'
-    | '/releases/$id'
-    | '/tracks/$id'
+    | '/_authenticated/admin'
+    | '/_authenticated/albums'
+    | '/_authenticated/artists'
+    | '/_authenticated/assets'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/distribution'
+    | '/_authenticated/library'
+    | '/_authenticated/organizations'
+    | '/_authenticated/playlists'
+    | '/_authenticated/processing'
+    | '/_authenticated/profile'
+    | '/_authenticated/releases'
+    | '/_authenticated/rights'
+    | '/_authenticated/settings'
+    | '/_authenticated/tracks'
+    | '/_authenticated/uploads'
+    | '/_authenticated/admin/api-usage'
+    | '/_authenticated/admin/audit'
+    | '/_authenticated/admin/diagnostics'
+    | '/_authenticated/admin/jobs'
+    | '/_authenticated/admin/logs'
+    | '/_authenticated/admin/processing-metrics'
+    | '/_authenticated/admin/queues'
+    | '/_authenticated/admin/storage'
+    | '/_authenticated/admin/workers'
+    | '/_authenticated/artists/$id'
+    | '/_authenticated/releases/$id'
+    | '/_authenticated/tracks/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRouteWithChildren
-  AlbumsRoute: typeof AlbumsRoute
-  ArtistsRoute: typeof ArtistsRouteWithChildren
-  AssetsRoute: typeof AssetsRoute
-  DashboardRoute: typeof DashboardRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   DiscoverRoute: typeof DiscoverRoute
-  DistributionRoute: typeof DistributionRoute
-  LibraryRoute: typeof LibraryRoute
   LoginRoute: typeof LoginRoute
-  OrganizationsRoute: typeof OrganizationsRoute
-  PlaylistsRoute: typeof PlaylistsRoute
-  ProcessingRoute: typeof ProcessingRoute
-  ProfileRoute: typeof ProfileRoute
-  ReleasesRoute: typeof ReleasesRouteWithChildren
-  RightsRoute: typeof RightsRoute
-  SettingsRoute: typeof SettingsRoute
   SignInRoute: typeof SignInRoute
   SignUpRoute: typeof SignUpRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StatusRoute: typeof StatusRoute
-  TracksRoute: typeof TracksRouteWithChildren
-  UploadsRoute: typeof UploadsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/uploads': {
-      id: '/uploads'
-      path: '/uploads'
-      fullPath: '/uploads'
-      preLoaderRoute: typeof UploadsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tracks': {
-      id: '/tracks'
-      path: '/tracks'
-      fullPath: '/tracks'
-      preLoaderRoute: typeof TracksRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/status': {
       id: '/status'
       path: '/status'
@@ -517,74 +503,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignInRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/rights': {
-      id: '/rights'
-      path: '/rights'
-      fullPath: '/rights'
-      preLoaderRoute: typeof RightsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/releases': {
-      id: '/releases'
-      path: '/releases'
-      fullPath: '/releases'
-      preLoaderRoute: typeof ReleasesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/processing': {
-      id: '/processing'
-      path: '/processing'
-      fullPath: '/processing'
-      preLoaderRoute: typeof ProcessingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/playlists': {
-      id: '/playlists'
-      path: '/playlists'
-      fullPath: '/playlists'
-      preLoaderRoute: typeof PlaylistsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/organizations': {
-      id: '/organizations'
-      path: '/organizations'
-      fullPath: '/organizations'
-      preLoaderRoute: typeof OrganizationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/library': {
-      id: '/library'
-      path: '/library'
-      fullPath: '/library'
-      preLoaderRoute: typeof LibraryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/distribution': {
-      id: '/distribution'
-      path: '/distribution'
-      fullPath: '/distribution'
-      preLoaderRoute: typeof DistributionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/discover': {
@@ -594,39 +517,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DiscoverRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/assets': {
-      id: '/assets'
-      path: '/assets'
-      fullPath: '/assets'
-      preLoaderRoute: typeof AssetsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/artists': {
-      id: '/artists'
-      path: '/artists'
-      fullPath: '/artists'
-      preLoaderRoute: typeof ArtistsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/albums': {
-      id: '/albums'
-      path: '/albums'
-      fullPath: '/albums'
-      preLoaderRoute: typeof AlbumsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -636,177 +531,319 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tracks/$id': {
-      id: '/tracks/$id'
+    '/_authenticated/uploads': {
+      id: '/_authenticated/uploads'
+      path: '/uploads'
+      fullPath: '/uploads'
+      preLoaderRoute: typeof AuthenticatedUploadsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tracks': {
+      id: '/_authenticated/tracks'
+      path: '/tracks'
+      fullPath: '/tracks'
+      preLoaderRoute: typeof AuthenticatedTracksRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/rights': {
+      id: '/_authenticated/rights'
+      path: '/rights'
+      fullPath: '/rights'
+      preLoaderRoute: typeof AuthenticatedRightsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/releases': {
+      id: '/_authenticated/releases'
+      path: '/releases'
+      fullPath: '/releases'
+      preLoaderRoute: typeof AuthenticatedReleasesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/processing': {
+      id: '/_authenticated/processing'
+      path: '/processing'
+      fullPath: '/processing'
+      preLoaderRoute: typeof AuthenticatedProcessingRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/playlists': {
+      id: '/_authenticated/playlists'
+      path: '/playlists'
+      fullPath: '/playlists'
+      preLoaderRoute: typeof AuthenticatedPlaylistsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/organizations': {
+      id: '/_authenticated/organizations'
+      path: '/organizations'
+      fullPath: '/organizations'
+      preLoaderRoute: typeof AuthenticatedOrganizationsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/library': {
+      id: '/_authenticated/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof AuthenticatedLibraryRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/distribution': {
+      id: '/_authenticated/distribution'
+      path: '/distribution'
+      fullPath: '/distribution'
+      preLoaderRoute: typeof AuthenticatedDistributionRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/assets': {
+      id: '/_authenticated/assets'
+      path: '/assets'
+      fullPath: '/assets'
+      preLoaderRoute: typeof AuthenticatedAssetsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/artists': {
+      id: '/_authenticated/artists'
+      path: '/artists'
+      fullPath: '/artists'
+      preLoaderRoute: typeof AuthenticatedArtistsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/albums': {
+      id: '/_authenticated/albums'
+      path: '/albums'
+      fullPath: '/albums'
+      preLoaderRoute: typeof AuthenticatedAlbumsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tracks/$id': {
+      id: '/_authenticated/tracks/$id'
       path: '/$id'
       fullPath: '/tracks/$id'
-      preLoaderRoute: typeof TracksIdRouteImport
-      parentRoute: typeof TracksRoute
+      preLoaderRoute: typeof AuthenticatedTracksIdRouteImport
+      parentRoute: typeof AuthenticatedTracksRoute
     }
-    '/releases/$id': {
-      id: '/releases/$id'
+    '/_authenticated/releases/$id': {
+      id: '/_authenticated/releases/$id'
       path: '/$id'
       fullPath: '/releases/$id'
-      preLoaderRoute: typeof ReleasesIdRouteImport
-      parentRoute: typeof ReleasesRoute
+      preLoaderRoute: typeof AuthenticatedReleasesIdRouteImport
+      parentRoute: typeof AuthenticatedReleasesRoute
     }
-    '/artists/$id': {
-      id: '/artists/$id'
+    '/_authenticated/artists/$id': {
+      id: '/_authenticated/artists/$id'
       path: '/$id'
       fullPath: '/artists/$id'
-      preLoaderRoute: typeof ArtistsIdRouteImport
-      parentRoute: typeof ArtistsRoute
+      preLoaderRoute: typeof AuthenticatedArtistsIdRouteImport
+      parentRoute: typeof AuthenticatedArtistsRoute
     }
-    '/admin/workers': {
-      id: '/admin/workers'
+    '/_authenticated/admin/workers': {
+      id: '/_authenticated/admin/workers'
       path: '/workers'
       fullPath: '/admin/workers'
-      preLoaderRoute: typeof AdminWorkersRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminWorkersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/storage': {
-      id: '/admin/storage'
+    '/_authenticated/admin/storage': {
+      id: '/_authenticated/admin/storage'
       path: '/storage'
       fullPath: '/admin/storage'
-      preLoaderRoute: typeof AdminStorageRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminStorageRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/queues': {
-      id: '/admin/queues'
+    '/_authenticated/admin/queues': {
+      id: '/_authenticated/admin/queues'
       path: '/queues'
       fullPath: '/admin/queues'
-      preLoaderRoute: typeof AdminQueuesRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminQueuesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/processing-metrics': {
-      id: '/admin/processing-metrics'
+    '/_authenticated/admin/processing-metrics': {
+      id: '/_authenticated/admin/processing-metrics'
       path: '/processing-metrics'
       fullPath: '/admin/processing-metrics'
-      preLoaderRoute: typeof AdminProcessingMetricsRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminProcessingMetricsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/logs': {
-      id: '/admin/logs'
+    '/_authenticated/admin/logs': {
+      id: '/_authenticated/admin/logs'
       path: '/logs'
       fullPath: '/admin/logs'
-      preLoaderRoute: typeof AdminLogsRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminLogsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/jobs': {
-      id: '/admin/jobs'
+    '/_authenticated/admin/jobs': {
+      id: '/_authenticated/admin/jobs'
       path: '/jobs'
       fullPath: '/admin/jobs'
-      preLoaderRoute: typeof AdminJobsRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminJobsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/diagnostics': {
-      id: '/admin/diagnostics'
+    '/_authenticated/admin/diagnostics': {
+      id: '/_authenticated/admin/diagnostics'
       path: '/diagnostics'
       fullPath: '/admin/diagnostics'
-      preLoaderRoute: typeof AdminDiagnosticsRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminDiagnosticsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/audit': {
-      id: '/admin/audit'
+    '/_authenticated/admin/audit': {
+      id: '/_authenticated/admin/audit'
       path: '/audit'
       fullPath: '/admin/audit'
-      preLoaderRoute: typeof AdminAuditRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/api-usage': {
-      id: '/admin/api-usage'
+    '/_authenticated/admin/api-usage': {
+      id: '/_authenticated/admin/api-usage'
       path: '/api-usage'
       fullPath: '/admin/api-usage'
-      preLoaderRoute: typeof AdminApiUsageRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminApiUsageRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
   }
 }
 
-interface AdminRouteChildren {
-  AdminApiUsageRoute: typeof AdminApiUsageRoute
-  AdminAuditRoute: typeof AdminAuditRoute
-  AdminDiagnosticsRoute: typeof AdminDiagnosticsRoute
-  AdminJobsRoute: typeof AdminJobsRoute
-  AdminLogsRoute: typeof AdminLogsRoute
-  AdminProcessingMetricsRoute: typeof AdminProcessingMetricsRoute
-  AdminQueuesRoute: typeof AdminQueuesRoute
-  AdminStorageRoute: typeof AdminStorageRoute
-  AdminWorkersRoute: typeof AdminWorkersRoute
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminApiUsageRoute: typeof AuthenticatedAdminApiUsageRoute
+  AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
+  AuthenticatedAdminDiagnosticsRoute: typeof AuthenticatedAdminDiagnosticsRoute
+  AuthenticatedAdminJobsRoute: typeof AuthenticatedAdminJobsRoute
+  AuthenticatedAdminLogsRoute: typeof AuthenticatedAdminLogsRoute
+  AuthenticatedAdminProcessingMetricsRoute: typeof AuthenticatedAdminProcessingMetricsRoute
+  AuthenticatedAdminQueuesRoute: typeof AuthenticatedAdminQueuesRoute
+  AuthenticatedAdminStorageRoute: typeof AuthenticatedAdminStorageRoute
+  AuthenticatedAdminWorkersRoute: typeof AuthenticatedAdminWorkersRoute
 }
 
-const AdminRouteChildren: AdminRouteChildren = {
-  AdminApiUsageRoute: AdminApiUsageRoute,
-  AdminAuditRoute: AdminAuditRoute,
-  AdminDiagnosticsRoute: AdminDiagnosticsRoute,
-  AdminJobsRoute: AdminJobsRoute,
-  AdminLogsRoute: AdminLogsRoute,
-  AdminProcessingMetricsRoute: AdminProcessingMetricsRoute,
-  AdminQueuesRoute: AdminQueuesRoute,
-  AdminStorageRoute: AdminStorageRoute,
-  AdminWorkersRoute: AdminWorkersRoute,
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminApiUsageRoute: AuthenticatedAdminApiUsageRoute,
+  AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
+  AuthenticatedAdminDiagnosticsRoute: AuthenticatedAdminDiagnosticsRoute,
+  AuthenticatedAdminJobsRoute: AuthenticatedAdminJobsRoute,
+  AuthenticatedAdminLogsRoute: AuthenticatedAdminLogsRoute,
+  AuthenticatedAdminProcessingMetricsRoute:
+    AuthenticatedAdminProcessingMetricsRoute,
+  AuthenticatedAdminQueuesRoute: AuthenticatedAdminQueuesRoute,
+  AuthenticatedAdminStorageRoute: AuthenticatedAdminStorageRoute,
+  AuthenticatedAdminWorkersRoute: AuthenticatedAdminWorkersRoute,
 }
 
-const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
-interface ArtistsRouteChildren {
-  ArtistsIdRoute: typeof ArtistsIdRoute
+interface AuthenticatedArtistsRouteChildren {
+  AuthenticatedArtistsIdRoute: typeof AuthenticatedArtistsIdRoute
 }
 
-const ArtistsRouteChildren: ArtistsRouteChildren = {
-  ArtistsIdRoute: ArtistsIdRoute,
+const AuthenticatedArtistsRouteChildren: AuthenticatedArtistsRouteChildren = {
+  AuthenticatedArtistsIdRoute: AuthenticatedArtistsIdRoute,
 }
 
-const ArtistsRouteWithChildren =
-  ArtistsRoute._addFileChildren(ArtistsRouteChildren)
+const AuthenticatedArtistsRouteWithChildren =
+  AuthenticatedArtistsRoute._addFileChildren(AuthenticatedArtistsRouteChildren)
 
-interface ReleasesRouteChildren {
-  ReleasesIdRoute: typeof ReleasesIdRoute
+interface AuthenticatedReleasesRouteChildren {
+  AuthenticatedReleasesIdRoute: typeof AuthenticatedReleasesIdRoute
 }
 
-const ReleasesRouteChildren: ReleasesRouteChildren = {
-  ReleasesIdRoute: ReleasesIdRoute,
+const AuthenticatedReleasesRouteChildren: AuthenticatedReleasesRouteChildren = {
+  AuthenticatedReleasesIdRoute: AuthenticatedReleasesIdRoute,
 }
 
-const ReleasesRouteWithChildren = ReleasesRoute._addFileChildren(
-  ReleasesRouteChildren,
+const AuthenticatedReleasesRouteWithChildren =
+  AuthenticatedReleasesRoute._addFileChildren(
+    AuthenticatedReleasesRouteChildren,
+  )
+
+interface AuthenticatedTracksRouteChildren {
+  AuthenticatedTracksIdRoute: typeof AuthenticatedTracksIdRoute
+}
+
+const AuthenticatedTracksRouteChildren: AuthenticatedTracksRouteChildren = {
+  AuthenticatedTracksIdRoute: AuthenticatedTracksIdRoute,
+}
+
+const AuthenticatedTracksRouteWithChildren =
+  AuthenticatedTracksRoute._addFileChildren(AuthenticatedTracksRouteChildren)
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedAlbumsRoute: typeof AuthenticatedAlbumsRoute
+  AuthenticatedArtistsRoute: typeof AuthenticatedArtistsRouteWithChildren
+  AuthenticatedAssetsRoute: typeof AuthenticatedAssetsRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDistributionRoute: typeof AuthenticatedDistributionRoute
+  AuthenticatedLibraryRoute: typeof AuthenticatedLibraryRoute
+  AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRoute
+  AuthenticatedPlaylistsRoute: typeof AuthenticatedPlaylistsRoute
+  AuthenticatedProcessingRoute: typeof AuthenticatedProcessingRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedReleasesRoute: typeof AuthenticatedReleasesRouteWithChildren
+  AuthenticatedRightsRoute: typeof AuthenticatedRightsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedTracksRoute: typeof AuthenticatedTracksRouteWithChildren
+  AuthenticatedUploadsRoute: typeof AuthenticatedUploadsRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedAlbumsRoute: AuthenticatedAlbumsRoute,
+  AuthenticatedArtistsRoute: AuthenticatedArtistsRouteWithChildren,
+  AuthenticatedAssetsRoute: AuthenticatedAssetsRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDistributionRoute: AuthenticatedDistributionRoute,
+  AuthenticatedLibraryRoute: AuthenticatedLibraryRoute,
+  AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRoute,
+  AuthenticatedPlaylistsRoute: AuthenticatedPlaylistsRoute,
+  AuthenticatedProcessingRoute: AuthenticatedProcessingRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedReleasesRoute: AuthenticatedReleasesRouteWithChildren,
+  AuthenticatedRightsRoute: AuthenticatedRightsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedTracksRoute: AuthenticatedTracksRouteWithChildren,
+  AuthenticatedUploadsRoute: AuthenticatedUploadsRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
 )
-
-interface TracksRouteChildren {
-  TracksIdRoute: typeof TracksIdRoute
-}
-
-const TracksRouteChildren: TracksRouteChildren = {
-  TracksIdRoute: TracksIdRoute,
-}
-
-const TracksRouteWithChildren =
-  TracksRoute._addFileChildren(TracksRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRouteWithChildren,
-  AlbumsRoute: AlbumsRoute,
-  ArtistsRoute: ArtistsRouteWithChildren,
-  AssetsRoute: AssetsRoute,
-  DashboardRoute: DashboardRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
   DiscoverRoute: DiscoverRoute,
-  DistributionRoute: DistributionRoute,
-  LibraryRoute: LibraryRoute,
   LoginRoute: LoginRoute,
-  OrganizationsRoute: OrganizationsRoute,
-  PlaylistsRoute: PlaylistsRoute,
-  ProcessingRoute: ProcessingRoute,
-  ProfileRoute: ProfileRoute,
-  ReleasesRoute: ReleasesRouteWithChildren,
-  RightsRoute: RightsRoute,
-  SettingsRoute: SettingsRoute,
   SignInRoute: SignInRoute,
   SignUpRoute: SignUpRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StatusRoute: StatusRoute,
-  TracksRoute: TracksRouteWithChildren,
-  UploadsRoute: UploadsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
