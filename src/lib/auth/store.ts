@@ -1,8 +1,7 @@
-// Minimal reactive auth store, no extra dependencies.
-// Mirrors the MSAL active account into a React-subscribable state.
+// Minimal reactive auth store backed by Connect session.
 
 import { useSyncExternalStore } from "react";
-import type { AccountInfo } from "@azure/msal-browser";
+import type { ConnectClaims, ConnectUser } from "@/lib/connectAuth";
 
 export type AuthUser = {
   id: string;
@@ -10,7 +9,9 @@ export type AuthUser = {
   displayName?: string;
   name?: string;
   avatarUrl?: string;
-  [k: string]: unknown;
+  roles: string[];
+  permissions: string[];
+  claims: ConnectClaims;
 };
 
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
@@ -18,14 +19,9 @@ export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 type State = {
   status: AuthStatus;
   user: AuthUser | null;
-  account: AccountInfo | null;
 };
 
-let state: State = {
-  status: "loading",
-  user: null,
-  account: null,
-};
+let state: State = { status: "loading", user: null };
 
 const listeners = new Set<() => void>();
 function emit() { for (const l of listeners) l(); }
@@ -40,25 +36,27 @@ export const authStore = {
     state = { ...state, ...patch };
     emit();
   },
-  setFromAccount: (account: AccountInfo | null) => {
-    if (!account) {
-      state = { status: "unauthenticated", user: null, account: null };
+  setFromUser: (user: ConnectUser | null) => {
+    if (!user) {
+      state = { status: "unauthenticated", user: null };
     } else {
       state = {
         status: "authenticated",
-        account,
         user: {
-          id: account.localAccountId ?? account.homeAccountId ?? account.username,
-          email: account.username,
-          name: account.name ?? account.username,
-          displayName: account.name ?? account.username,
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          displayName: user.displayName,
+          roles: user.roles,
+          permissions: user.permissions,
+          claims: user.claims,
         },
       };
     }
     emit();
   },
   signOut: () => {
-    state = { status: "unauthenticated", user: null, account: null };
+    state = { status: "unauthenticated", user: null };
     emit();
   },
 };

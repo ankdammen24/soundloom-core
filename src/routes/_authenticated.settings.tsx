@@ -3,8 +3,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { supabaseConfigured, SUPABASE_URL } from "@/lib/supabase";
 import { API_BASE_URL } from "@/lib/api";
-import { msalConfigured } from "@/lib/auth/msal";
-import { AUTH_API_BASE, authApiConfigured } from "@/lib/auth/connect";
+import { connectConfigured } from "@/lib/connectAuth";
 import { Database, Cloud, ShieldCheck, KeyRound, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -13,7 +12,6 @@ export const Route = createFileRoute("/_authenticated/settings")({
 });
 
 function SettingsPage() {
-  const authConnected = msalConfigured && authApiConfigured;
   const integrations = [
     {
       icon: Database, title: "Supabase",
@@ -29,10 +27,10 @@ function SettingsPage() {
     },
     {
       icon: ShieldCheck, title: "Authentication",
-      desc: authConnected
-        ? `Microsoft Entra (MSAL PKCE redirect). Profile loaded from ${AUTH_API_BASE}/auth/me. Bearer token attached to ${API_BASE_URL || "the Catalogus Musicus API"}.`
-        : "Set VITE_ENTRA_CLIENT_ID, VITE_ENTRA_AUTHORITY, VITE_ENTRA_AUDIENCE and VITE_AUTH_API_URL to enable sign-in.",
-      status: authConnected ? "connected" : "not_configured",
+      desc: connectConfigured
+        ? `Media Rosenqvist Connect (OAuth2 + PKCE). Bearer token attached to ${API_BASE_URL || "the Catalogus Musicus API"}.`
+        : "Set VITE_CONNECT_BASE_URL, VITE_CONNECT_CLIENT_ID and VITE_CONNECT_REDIRECT_URI to enable sign-in.",
+      status: connectConfigured ? "connected" : "not_configured",
     },
   ] as const;
 

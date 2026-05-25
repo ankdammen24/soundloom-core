@@ -1,77 +1,29 @@
 import { useEffect, type ReactNode } from "react";
 import { setApiTokenGetter } from "@/lib/api";
 import { authStore } from "./store";
-import {
-  initMsal,
-  msalInstance,
-  getActiveAccount,
-  acquireAccessToken,
-  msalConfigured,
-} from "./msal";
-import { fetchMe, authApiConfigured } from "./connect";
+import { getAccessToken, getCurrentUser, connectConfigured } from "@/lib/connectAuth";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
-    setApiTokenGetter(() => acquireAccessToken());
+    setApiTokenGetter(() => getAccessToken());
 
-    let cancelled = false;
-
-    async function hydrateProfile() {
-      if (!authApiConfigured) return;
-      const token = await acquireAccessToken();
-      if (!token || cancelled) return;
-      try {
-        const me = await fetchMe(token);
-        if (!me || cancelled) return;
-        const current = authStore.getState();
-        if (current.status !== "authenticated") return;
-        authStore.set({
-          user: {
-            ...(current.user ?? {}),
-            id: me.id ?? me.sub ?? current.user?.id ?? "",
-            email: me.email ?? current.user?.email,
-            name: me.name ?? me.displayName ?? current.user?.name,
-            displayName: me.displayName ?? me.name ?? current.user?.displayName,
-            avatarUrl: me.avatarUrl ?? current.user?.avatarUrl,
-            roles: me.roles,
-          },
-        });
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.warn("[auth] profile hydration failed", e);
-      }
+    if (!connectConfigured) {
+      authStore.set({ status: "unauthenticated", user: null });
+      return () => setApiTokenGetter(null);
     }
 
-    async function bootstrap() {
-      if (!msalConfigured) {
-        authStore.set({ status: "unauthenticated", user: null, account: null });
-        return;
-      }
-      try {
-        await initMsal();
-        const redirectResult = await msalInstance.handleRedirectPromise();
-        if (cancelled) return;
+    const user = getCurrentUser();
+    authStore.setFromUser(user);
 
-        if (redirectResult?.account) {
-          msalInstance.setActiveAccount(redirectResult.account);
-        } else {
-          const existing = getActiveAccount();
-          if (existing) msalInstance.setActiveAccount(existing);
-        }
-
-        const account = getActiveAccount();
-        authStore.setFromAccount(account);
-        if (account) void hydrateProfile();
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error("[auth] MSAL bootstrap failed", e);
-        if (!cancelled) authStore.set({ status: "unauthenticated", user: null, account: null });
+    // Cross-tab sync: if another tab signs in/out, mirror it here.
+    function onStorage(e: StorageEvent) {
+      if (e.key === "connect.session") {
+        authStore.setFromUser(getCurrentUser());
       }
     }
-
-    void bootstrap();
+    window.addEventListener("storage", onStorage);
     return () => {
-      cancelled = true;
+      window.removeEventListener("storage", onStorage);
       setApiTokenGetter(null);
     };
   }, []);
