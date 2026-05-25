@@ -1,4 +1,19 @@
 {
   "title": "Profil",
-  "subtitle": "Hantera dina kontouppgifter."
+  "subtitle": "Hantera dina kontouppgifter.",
+  "account": "Konto",
+  "details": "Profiluppgifter",
+  "detailsDesc": "Uppdatera ditt visningsnamn och din profilbild.",
+  "displayName": "Visningsnamn",
+  "displayNamePlaceholder": "Ditt namn",
+  "avatarUrl": "Profilbild (URL)",
+  "avatarUrlPlaceholder": "https://...",
+  "email": "E-post",
+  "emailReadonly": "E-post hanteras via inloggning.",
+  "save": "Spara ändringar",
+  "saving": "Sparar...",
+  "saved": "Sparat",
+  "loadError": "Kunde inte ladda profil.",
+  "saveError": "Kunde inte spara profil.",
+  "signOut": "Logga ut"
 }
