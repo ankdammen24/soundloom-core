@@ -138,6 +138,11 @@ function Home() {
   ];
   return (
     <div className="space-y-8">
+      {callback.error && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          Inloggningen kunde inte slutföras: {callback.error}
+        </div>
+      )}
       <section
         className="relative overflow-hidden rounded-2xl p-8 md:p-12"
         style={{ background: "var(--gradient-hero)" }}
