@@ -7,7 +7,7 @@ import {
 
 import "../styles.css";
 import { AppShell } from "@/components/layout/AppShell";
-import { AuthProvider } from "@/lib/auth";
+import { AuthProvider } from "@/lib/auth/AuthProvider";
 import { ThemeProvider } from "@/lib/theme";
 
 function NotFoundComponent() {
