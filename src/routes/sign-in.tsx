@@ -2,7 +2,7 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Music2, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth/useAuth";
-import { msalConfigured } from "@/lib/auth/msal";
+import { connectConfigured } from "@/lib/connectAuth";
 
 export const Route = createFileRoute("/sign-in")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -34,22 +34,22 @@ function SignInPage() {
     <AuthShell>
       <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Sign in to your Catalogus Musicus workspace with your Microsoft account.
+        Logga in via Media Rosenqvist Connect för att komma åt din musikkatalog.
       </p>
 
       <div className="mt-6 space-y-3">
         <button
           type="button"
           onClick={onSignIn}
-          disabled={submitting || !msalConfigured}
+          disabled={submitting || !connectConfigured}
           className="inline-flex w-full items-center justify-center gap-3 rounded-md bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:opacity-60"
         >
-          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <MicrosoftLogo />}
-          Sign in with Microsoft
+          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          Logga in med Connect
         </button>
-        {!msalConfigured && (
+        {!connectConfigured && (
           <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-            Entra is not configured. Set VITE_ENTRA_CLIENT_ID, VITE_ENTRA_AUTHORITY and VITE_ENTRA_AUDIENCE.
+            Connect är inte konfigurerat. Sätt VITE_CONNECT_BASE_URL, VITE_CONNECT_CLIENT_ID och VITE_CONNECT_REDIRECT_URI.
           </p>
         )}
         {error && (
@@ -60,21 +60,9 @@ function SignInPage() {
       </div>
 
       <p className="mt-8 text-xs text-muted-foreground">
-        By signing in you agree to your organization's Entra ID terms. New accounts are provisioned by an
-        administrator.
+        Genom att logga in godkänner du villkoren från Media Rosenqvist Connect. Nya konton provisioneras av en administratör.
       </p>
     </AuthShell>
-  );
-}
-
-function MicrosoftLogo() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect x="1" y="1" width="6.5" height="6.5" fill="#F25022" />
-      <rect x="8.5" y="1" width="6.5" height="6.5" fill="#7FBA00" />
-      <rect x="1" y="8.5" width="6.5" height="6.5" fill="#00A4EF" />
-      <rect x="8.5" y="8.5" width="6.5" height="6.5" fill="#FFB900" />
-    </svg>
   );
 }
 
