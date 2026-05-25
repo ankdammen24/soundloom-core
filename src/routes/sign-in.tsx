@@ -8,16 +8,20 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export const Route = createFileRoute("/sign-in")({
   validateSearch: (search: Record<string, unknown>) => ({
-    redirect: typeof search.redirect === "string" ? search.redirect : "/dashboard",
+    redirect: typeof search.redirect === "string" ? search.redirect : "",
   }),
   component: SignInPage,
 });
+
+function landingFor(roles: string[] | undefined) {
+  return roles?.includes("admin") ? "/dashboard" : "/";
+}
 
 type Mode = "sign-in" | "sign-up";
 
 function SignInPage() {
   const { t } = useTranslation("auth");
-  const { isAuthenticated, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple, signInWithSSO } = useAuth();
+  const { isAuthenticated, user, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple, signInWithSSO } = useAuth();
   const search = Route.useSearch();
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
@@ -29,7 +33,10 @@ function SignInPage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
-  if (isAuthenticated) return <Navigate to={search.redirect} />;
+  if (isAuthenticated) {
+    const target = search.redirect || landingFor(user?.roles);
+    return <Navigate to={target} />;
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();

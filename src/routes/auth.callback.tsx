@@ -7,10 +7,19 @@ import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/auth/callback")({
   validateSearch: (search: Record<string, unknown>) => ({
-    next: typeof search.next === "string" ? search.next : "/dashboard",
+    next: typeof search.next === "string" ? search.next : "",
   }),
   component: AuthCallbackPage,
 });
+
+async function fetchRolesFor(userId: string): Promise<string[]> {
+  try {
+    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+    return (data ?? []).map((r) => r.role as string);
+  } catch {
+    return [];
+  }
+}
 
 function AuthCallbackPage() {
   const navigate = useNavigate();
@@ -21,11 +30,18 @@ function AuthCallbackPage() {
   useEffect(() => {
     let cancelled = false;
 
+    async function resolveTarget(userId: string) {
+      if (next) return next;
+      const roles = await fetchRolesFor(userId);
+      return roles.includes("admin") ? "/dashboard" : "/";
+    }
+
     async function waitForSession() {
       const { data, error: getErr } = await supabase.auth.getSession();
       if (cancelled) return;
       if (data.session) {
-        navigate({ to: next, replace: true });
+        const target = await resolveTarget(data.session.user.id);
+        if (!cancelled) navigate({ to: target, replace: true });
         return;
       }
       if (getErr) {
@@ -36,7 +52,9 @@ function AuthCallbackPage() {
         if (cancelled) return;
         if (event === "SIGNED_IN" && session) {
           sub.subscription.unsubscribe();
-          navigate({ to: next, replace: true });
+          void resolveTarget(session.user.id).then((target) => {
+            if (!cancelled) navigate({ to: target, replace: true });
+          });
         }
       });
       setTimeout(() => {
