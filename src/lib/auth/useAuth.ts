@@ -3,7 +3,7 @@ import { useAuthState } from "./store";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
 import { lovable } from "@/integrations/lovable";
 
-export type SupportedProvider = "google";
+export type SupportedProvider = "google" | "apple";
 
 function callbackUrl(redirectTo?: string) {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
@@ -45,6 +45,14 @@ export function useAuth() {
     if (result.error) throw result.error;
   }, []);
 
+  const signInWithApple = useCallback(async (redirectTo?: string) => {
+    if (!supabaseConfigured) throw new Error("Backend är inte konfigurerat.");
+    const result = await lovable.auth.signInWithOAuth("apple", {
+      redirect_uri: callbackUrl(redirectTo),
+    });
+    if (result.error) throw result.error;
+  }, []);
+
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
   }, []);
@@ -53,9 +61,10 @@ export function useAuth() {
   const signInWith = useCallback(
     async (provider: SupportedProvider, redirectTo?: string) => {
       if (provider === "google") return signInWithGoogle(redirectTo);
+      if (provider === "apple") return signInWithApple(redirectTo);
       throw new Error(`Provider ${provider} stöds inte längre.`);
     },
-    [signInWithGoogle],
+    [signInWithGoogle, signInWithApple],
   );
 
   return {
@@ -66,13 +75,14 @@ export function useAuth() {
     signInWithEmail,
     signUpWithEmail,
     signInWithGoogle,
+    signInWithApple,
     signInWith,
     signOut,
     loginRedirect: (_redirect?: string) =>
-      Promise.reject(new Error("Use signInWithEmail or signInWithGoogle.")),
+      Promise.reject(new Error("Use signInWithEmail, signInWithGoogle or signInWithApple.")),
     logoutRedirect: signOut,
     login: (_redirect?: string) =>
-      Promise.reject(new Error("Use signInWithEmail or signInWithGoogle.")),
+      Promise.reject(new Error("Use signInWithEmail, signInWithGoogle or signInWithApple.")),
     logout: signOut,
   };
 }
