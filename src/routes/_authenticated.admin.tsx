@@ -2,6 +2,7 @@ import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-rout
 import { useQuery } from "@tanstack/react-query";
 import { api, ApiError } from "@/lib/api";
 import { MetricCard } from "@/components/admin/MetricCard";
+import { requireRole } from "@/lib/auth/guards";
 import {
   Activity, Cpu, Database, HardDrive, ListChecks, ScrollText, Stethoscope,
   ShieldAlert, Gauge, Layers, Server,
@@ -11,6 +12,7 @@ import { cn } from "@/lib/utils";
 const URL = "https://catalogusmusicus.mediarosenqvist.com/admin";
 
 export const Route = createFileRoute("/_authenticated/admin")({
+  beforeLoad: ({ location }) => requireRole(["admin"], { href: location.href }),
   head: () => ({
     meta: [
       { title: "Admin & Operations – Catalogus Musicus" },
