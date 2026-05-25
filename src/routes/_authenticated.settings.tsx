@@ -5,11 +5,22 @@ import { supabaseConfigured, SUPABASE_URL } from "@/lib/supabase";
 import { API_BASE_URL } from "@/lib/api";
 import { supabaseConfigured as connectConfigured } from "@/lib/supabase";
 import { Database, Cloud, ShieldCheck, KeyRound, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { requireRole } from "@/lib/auth/guards";
+import { RoleGuard } from "@/components/auth/RoleGuard";
 
 export const Route = createFileRoute("/_authenticated/settings")({
+  beforeLoad: ({ location }) => requireRole(["admin"], { href: location.href }),
   head: () => ({ meta: [{ title: "Settings – Music Catalog Core" }] }),
-  component: SettingsPage,
+  component: SettingsGuarded,
 });
+
+function SettingsGuarded() {
+  return (
+    <RoleGuard roles={["admin"]}>
+      <SettingsPage />
+    </RoleGuard>
+  );
+}
 
 function SettingsPage() {
   const integrations = [
