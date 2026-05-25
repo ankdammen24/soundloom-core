@@ -14,13 +14,13 @@ export const Route = createFileRoute("/sign-in")({
 type Mode = "sign-in" | "sign-up";
 
 function SignInPage() {
-  const { isAuthenticated, signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
+  const { isAuthenticated, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple } = useAuth();
   const search = Route.useSearch();
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [busy, setBusy] = useState<"google" | "email" | null>(null);
+  const [busy, setBusy] = useState<"google" | "apple" | "email" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
@@ -68,6 +68,18 @@ function SignInPage() {
     }
   }
 
+  async function onApple() {
+    setError(null);
+    setInfo(null);
+    setBusy("apple");
+    try {
+      await signInWithApple(search.redirect);
+    } catch (err) {
+      setError((err as Error)?.message ?? "Apple-inloggning misslyckades.");
+      setBusy(null);
+    }
+  }
+
   return (
     <AuthShell>
       <h1 className="text-2xl font-bold tracking-tight">
@@ -79,15 +91,26 @@ function SignInPage() {
           : "Registrera ett nytt Music Catalog-konto."}
       </p>
 
-      <button
-        type="button"
-        onClick={() => void onGoogle()}
-        disabled={busy !== null || !supabaseConfigured}
-        className="mt-6 inline-flex w-full items-center justify-center gap-3 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
-      >
-        {busy === "google" ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleLogo />}
-        Fortsätt med Google
-      </button>
+      <div className="mt-6 space-y-2">
+        <button
+          type="button"
+          onClick={() => void onGoogle()}
+          disabled={busy !== null || !supabaseConfigured}
+          className="inline-flex w-full items-center justify-center gap-3 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
+        >
+          {busy === "google" ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleLogo />}
+          Fortsätt med Google
+        </button>
+        <button
+          type="button"
+          onClick={() => void onApple()}
+          disabled={busy !== null || !supabaseConfigured}
+          className="inline-flex w-full items-center justify-center gap-3 rounded-md border border-border bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:opacity-60"
+        >
+          {busy === "apple" ? <Loader2 className="h-4 w-4 animate-spin" /> : <AppleLogo />}
+          Fortsätt med Apple
+        </button>
+      </div>
 
       <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
         <div className="h-px flex-1 bg-border" />
@@ -215,6 +238,14 @@ function GoogleLogo() {
       <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
       <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35 26.7 36 24 36c-5.3 0-9.7-3.1-11.3-7.6l-6.5 5C9.7 39.7 16.3 44 24 44z" />
       <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.2 5.2C40.7 36.4 44 30.8 44 24c0-1.2-.1-2.3-.4-3.5z" />
+    </svg>
+  );
+}
+
+function AppleLogo() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M17.05 12.04c-.03-2.86 2.34-4.23 2.45-4.3-1.34-1.96-3.42-2.23-4.16-2.26-1.77-.18-3.46 1.04-4.36 1.04-.91 0-2.3-1.02-3.78-.99-1.94.03-3.74 1.13-4.74 2.87-2.02 3.5-.52 8.69 1.45 11.54.96 1.39 2.11 2.95 3.6 2.9 1.45-.06 1.99-.94 3.73-.94 1.74 0 2.23.94 3.76.91 1.55-.03 2.54-1.42 3.49-2.81 1.1-1.61 1.56-3.18 1.58-3.26-.04-.02-3.03-1.16-3.06-4.6zM14.32 3.69c.8-.97 1.34-2.32 1.19-3.66-1.15.05-2.54.77-3.37 1.74-.74.85-1.39 2.23-1.22 3.54 1.28.1 2.6-.65 3.4-1.62z" />
     </svg>
   );
 }
