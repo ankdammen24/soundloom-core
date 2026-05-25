@@ -1,27 +1,22 @@
-# Problem
-SAML SSO-providern återskapades, vilket skapade en ny auth-användare för `caj.rosenqvist@mediarosenqvist.com` (`d29faa36-…`). Den gamla user_id:n (`4403b2d3-…`) hade `admin + viewer`, men det nya kontot har bara `viewer` — så `landingForRoles()` returnerar korrekt `/profile`.
+## Mål
+Få loginflödet att fungera praktiskt: efter Google eller SAML SSO ska användaren lämna `/sign-in`, sessionen fångas upp korrekt och redirect ska styras av rollerna (`admin` → `/dashboard`, `editor` → `/review`, `artist` → `/uploads`, annars `/profile`).
 
-# Åtgärd
+## Det jag hittade
+- Google och SAML använder olika tekniker, men båda skickas idag till `/?next=...` efter login.
+- Auth-callback-sidan som innehåller tokenhantering och rollbaserad redirect ligger på `/auth/callback`.
+- Det gör att OAuth/SSO kan komma tillbaka till startsidan utan att callback-logiken körs, vilket matchar symptomet “kommer inte ifrån /sign-in”.
+- SAML är aktiverat i backend, men jag kan inte se om din Entra-provider/domän är registrerad därifrån med nuvarande åtkomst. Det behöver antingen verifieras via Cloud UI eller konfigureras med metadata-URL.
 
-## 1. Ge nya SAML-användaren admin-rollen (migration)
-```sql
-INSERT INTO public.user_roles (user_id, role)
-VALUES ('d29faa36-b996-46ba-8a55-55646113d291', 'admin')
-ON CONFLICT (user_id, role) DO NOTHING;
-```
+## Plan
+1. Ändra callback-URL:er för Google, Apple, SAML och signup från `/?next=...` till `/auth/callback?next=...`.
+2. Behåll befintlig logik i `/auth/callback`: konsumera tokens, hämta användare, hämta `user_roles`, beräkna target och redirecta.
+3. Lägg till tydligare felhantering i SSO-knappen så den visar om SAML-provider saknas för domänen, i stället för att bara kännas som att inget händer.
+4. Uppdatera testet för redirect-kontraktet så det verifierar att `callbackUrl()` pekar på `/auth/callback` och att admin fortfarande hamnar på `/dashboard` även med `next=/profile`.
+5. Efter implementation: kör relevant Vitest-test och kontrollera att callback-URL:erna i koden är konsekventa.
 
-## 2. Städa bort föräldralösa rollrader för det gamla kontot
-Det gamla `auth.users`-id:t finns sannolikt inte kvar (eller är ohänvisbart). Vi tar bort dess rader i `user_roles` så vi inte har spöken som blockerar `handle_new_user`-triggern från att ge admin till framtida förste-användare-promotion (mindre relevant nu, men håller datan ren):
-```sql
-DELETE FROM public.user_roles
-WHERE user_id = '4403b2d3-d081-4651-8bec-90badb5165a0';
-```
+## För SAML/Entra efter kodfixen
+Om SAML fortfarande inte startar behöver vi bara registrera/verifiera SAML-providern i Lovable Cloud med:
+- Entra App Federation Metadata URL
+- din e-postdomän
 
-## 3. Verifiera
-Efter migrationen: läs `user_roles` för `d29faa36-…` och bekräfta `admin + viewer`. Du loggar ut, loggar in via SSO igen, och ska nu landa på `/dashboard`.
-
-# Förebyggande (rekommendation, ej kodändring nu)
-SAML-providern bör inte raderas/återskapas i drift — det kapar identiteten för alla SSO-användare. Om Entity ID/metadata ändras hos IdP:n, uppdatera providern i stället för att radera + skapa ny. Vill du att jag lägger till en kort runbook-anteckning om detta i `README.md` eller en separat `docs/sso.md`?
-
-# Filer som ändras
-- Ny migration (SQL ovan). Inga frontend-ändringar behövs — landningslogiken är redan korrekt.
+Google bör fungera utan extra Entra-konfiguration när callback-URL:en är rätt.
