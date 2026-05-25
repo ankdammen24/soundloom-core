@@ -1,65 +1,72 @@
 ## Mål
 
-Byt ut den externa OAuth-vyn (Microsoft/Apple/GitHub) mot en lokal Lovable Cloud-lösning som fungerar direkt: e-post + lösenord och Google. Lägg till en `profiles`-tabell + roller så vi senare kan styra behörigheter. Behåll all befintlig katalogfunktionalitet.
+Inför tvåspråkigt UI (svenska + engelska) i hela appen — inklusive admin-vyer — med automatiskt språkval från webbläsaren och en språkväljare både i AppShell-headern och på sign-in/sign-up.
 
-## Databas (migration)
+## Stack
 
-1. `profiles`-tabell
-   - `id uuid primary key references auth.users(id) on delete cascade`
-   - `email text`, `display_name text`, `avatar_url text`
-   - `created_at`, `updated_at` (default now())
-   - RLS på: användare kan SELECT/UPDATE sin egen rad; INSERT tillåten för egen `id`.
+- `i18next` + `react-i18next` + `i18next-browser-languagedetector`
+- Namespaces per yt-område för att hålla filer hanterbara
+- JSON-resurser i `src/i18n/locales/{sv,en}/*.json`
+- Val sparas i `localStorage` under `lang` och sätts på `<html lang>`
 
-2. Roller (separat tabell — undviker privilege escalation)
-   - `create type app_role as enum ('admin','editor','viewer')`
-   - `user_roles(id, user_id → auth.users, role app_role, unique(user_id, role))`
-   - RLS: bara läsbar för inloggad användares egna rader.
-   - `has_role(_user_id uuid, _role app_role)` security definer-funktion.
+## Filer som skapas
 
-3. Trigger: `handle_new_user()` skapar automatiskt en `profiles`-rad + en `user_roles`-rad med `'viewer'` när någon registrerar sig.
-
-## Frontend
-
-### `src/routes/sign-in.tsx`
-- Ta bort Microsoft/Apple/GitHub-knapparna.
-- Två flikar: **Logga in** och **Skapa konto**.
-- Fält: e-post, lösenord (signup också: display name).
-- `supabase.auth.signInWithPassword({ email, password })` resp. `supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + '/auth/callback', data: { display_name } } })`.
-- Knapp "Fortsätt med Google" → `supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/auth/callback' } })`.
-- Svenska fel- och informationsmeddelanden (t.ex. "Felaktig e-post eller lösenord", "Vi har skickat en bekräftelselänk till din e-post").
-
-### `src/routes/auth.callback.tsx`
-- Behåll — fungerar redan för OAuth + magic links. Verifiera att den läser session via `onAuthStateChange` och redirectar till `?redirect` eller `/dashboard`.
-
-### `src/lib/auth/useAuth.ts` / `store.ts` / `AuthProvider.tsx`
-- Ta bort `SupportedProvider`-listan med azure/github/apple.
-- Lägg till `signInWithEmail`, `signUpWithEmail`, `signInWithGoogle`.
-- Hämta `roles` från `user_roles`-tabellen efter login (en query) och exponera via `useAuth()`.
-
-### `src/lib/auth/permissions.ts`
-- `useHasRole('admin' | 'editor' | 'viewer')` baserat på roller från store.
-
-### Cleanup
-- Ta bort referenser till Microsoft/Apple/GitHub i sign-in och dokumentation.
-- Behåll `/debug/token`-länken i menyn.
-
-## Verifiering
-
-- Bygg passerar.
-- `/sign-in` visar e-post/lösenord-formulär + Google-knapp.
-- Ny användare kan registrera sig → profile + viewer-roll skapas automatiskt.
-- `/admin` skyddas fortfarande via `_authenticated`-guarden.
-
-## Vad användaren behöver göra själv
-
-- Inget för e-post/lösenord — fungerar direkt.
-- För Google-knappen: aktivera Google-providern i Lovable Cloud → Users → Auth Settings (eller så kan jag göra det åt dig efter att planen godkänts).
+```text
+src/i18n/
+  index.ts                 // init: språk, detektor, fallback (en), resurser
+  resources.ts             // typad import av alla JSON-namespaces
+  locales/sv/common.json   // knappar, labels, status, generella ord
+  locales/sv/auth.json     // sign-in, sign-up, callback, fel
+  locales/sv/shell.json    // navigation, header, footer, språkväljare
+  locales/sv/dashboard.json
+  locales/sv/library.json  // releases, tracks, artists, albums, playlists
+  locales/sv/uploads.json
+  locales/sv/processing.json
+  locales/sv/distribution.json
+  locales/sv/rights.json
+  locales/sv/profile.json
+  locales/sv/settings.json
+  locales/sv/admin.json    // alla _authenticated.admin.*-vyer
+  locales/en/... (samma struktur)
+src/components/LanguageSwitcher.tsx  // SV/EN dropdown, återanvänds
+```
 
 ## Filer som ändras
 
-- ny migration (profiles, user_roles, app_role, has_role, handle_new_user trigger)
-- `src/routes/sign-in.tsx`
-- `src/lib/auth/useAuth.ts`
-- `src/lib/auth/store.ts`
-- `src/lib/auth/AuthProvider.tsx`
-- `src/lib/auth/permissions.ts`
+- `src/main.tsx` — importera `./i18n` så init körs innan render
+- `src/components/layout/AppShell.tsx` — språkväljare bredvid `ThemeToggle`, översätt nav
+- `src/routes/sign-in.tsx` — språkväljare uppe till höger, alla strängar via `t()`
+- `src/routes/sign-up.tsx` — samma
+- `src/routes/auth.callback.tsx` — översätt status/fel
+- Alla `src/routes/_authenticated.*.tsx` (dashboard, releases, tracks, artists, albums, uploads, profile, settings, processing, distribution, rights, playlists, library, organizations, assets) — strängar via `useTranslation`
+- Alla `src/routes/_authenticated.admin.*.tsx` (api-usage, audit, diagnostics, jobs, logs, processing-metrics, queues, storage, workers) — strängar via `useTranslation`
+- `src/components/*` (PageHeader, StatusBadge, ProcessingTimeline, Setup, CatalogTable, EditableField, DropZone, m.fl.) — strängar via `useTranslation`
+- `index.html` — `<html lang="sv">` som utgångsläge (uppdateras runtime av i18n)
+
+## Beteende
+
+1. **Init-ordning**: `i18next` läser `localStorage.lang` först. Om saknas — `navigator.language`: börjar med `sv` → `sv`, annars `en`. Faller tillbaka på `en` om en nyckel saknas.
+2. **Språkväljare** (`LanguageSwitcher`): liten dropdown med `SV / EN`. Vid byte: `i18n.changeLanguage(lng)` + `localStorage.setItem("lang", lng)` + `document.documentElement.lang = lng`. Synkroniseras via `i18n.on("languageChanged")`.
+3. **Placering**:
+   - AppShell-header: bredvid `ThemeToggle` (alltid synlig när inloggad).
+   - Sign-in/Sign-up: absolut positionerad uppe till höger i `AuthShell`.
+4. **Datum/tal**: använd `Intl.DateTimeFormat` och `Intl.NumberFormat` med `i18n.language` där datum/tal redan formateras (mest i admin/processing-vyer).
+5. **Felmeddelanden**: regex-matchningar mot Supabase-fel (t.ex. `invalid login credentials`) flyttas till en helper som returnerar en översättningsnyckel istället för en hårdkodad svensk sträng.
+
+## Översättningsstrategi
+
+- Befintlig text är delvis svensk, delvis engelsk. Svenska behåller sin nuvarande ton (du-form, "Logga in", "Skapa konto"). Engelsk variant använder samma terminologi som koden redan har ("Releases", "Tracks", "Uploads", "Processing", "Distribution", "Rights").
+- Domänord lämnas oöversatta i båda språken: *Release*, *Track*, *Catalog*, *Artwork*, *SSO*, *SAML*, *Lovable Cloud*.
+- Nyckelnamn på engelska, kebab-style inom namespace: `auth:sign-in.title`, `shell:nav.releases`, `admin:queues.heading`.
+
+## Out of scope
+
+- Översättning av e-postmallar (`src/lib/email-templates/*`) — separat uppgift, kräver att mejlflödet vet mottagarens språk.
+- Översättning av loggar/serverfel i `src/routes/lovable/*` (interna endpoints).
+- RTL-stöd.
+
+## Verifiering
+
+- Bygg passerar utan saknade nycklar (`returnNull: false`, `saveMissing` i dev loggar varningar i konsolen).
+- Manuell rundtur: sign-in → dashboard → releases → admin/queues, byt språk i headern, ladda om — språket sitter kvar.
+- `<html lang>` växlar mellan `sv` och `en`.
