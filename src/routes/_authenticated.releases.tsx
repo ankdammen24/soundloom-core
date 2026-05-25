@@ -1,74 +1,32 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { Plus, Send, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/lib/auth/useAuth";
+import { artistsApi, releasesApi, type Release } from "@/lib/api/catalog";
 
 export const Route = createFileRoute("/_authenticated/releases")({
   head: () => ({ meta: [{ title: "Releases – Music Catalog" }] }),
   component: ReleasesPage,
 });
 
-type Release = {
-  id: string;
-  title: string;
-  slug: string;
-  type: string;
-  release_date: string | null;
-  artist_id: string;
-  upc: string | null;
-};
-type Artist = { id: string; name: string };
-
-function slugify(s: string) {
-  return (
-    s
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || `release-${Date.now()}`
-  );
-}
-
 function ReleasesPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const [form, setForm] = useState({ title: "", artist_id: "", type: "single" });
-
-  const releases = useQuery({
-    queryKey: ["releases"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("releases")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as Release[];
-    },
+  const [form, setForm] = useState<{ title: string; artist_id: string; type: Release["type"] }>({
+    title: "",
+    artist_id: "",
+    type: "single",
   });
 
-  const artists = useQuery({
-    queryKey: ["artists"],
-    queryFn: async () => {
-      const { data } = await supabase.from("artists").select("id, name").order("name");
-      return (data ?? []) as Artist[];
-    },
-  });
+  const releases = useQuery({ queryKey: ["releases"], queryFn: () => releasesApi.list() });
+  const artists = useQuery({ queryKey: ["artists"], queryFn: () => artistsApi.list() });
 
   const create = useMutation({
-    mutationFn: async (v: typeof form) => {
-      const { error } = await supabase.from("releases").insert({
-        title: v.title,
-        slug: slugify(v.title),
-        type: v.type as "single" | "ep" | "album",
-        artist_id: v.artist_id,
-        created_by: user?.id,
-      });
-      if (error) throw error;
-    },
+    mutationFn: (v: typeof form) =>
+      releasesApi.create({ title: v.title, artist_id: v.artist_id, type: v.type }),
     onSuccess: () => {
       setForm({ title: "", artist_id: "", type: "single" });
       qc.invalidateQueries({ queryKey: ["releases"] });
@@ -120,7 +78,9 @@ function ReleasesPage() {
             <select
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={form.type}
-              onChange={(e) => setForm({ ...form, type: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, type: e.target.value as Release["type"] })
+              }
             >
               <option value="single">Single</option>
               <option value="ep">EP</option>

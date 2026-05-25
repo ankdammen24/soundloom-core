@@ -1,63 +1,28 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { Plus, Music2, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/lib/auth/useAuth";
+import { artistsApi, tracksApi } from "@/lib/api/catalog";
 
 export const Route = createFileRoute("/_authenticated/tracks")({
   head: () => ({ meta: [{ title: "Tracks – Music Catalog" }] }),
   component: TracksPage,
 });
 
-type Track = {
-  id: string;
-  title: string;
-  artist_id: string;
-  release_id: string | null;
-  isrc: string | null;
-  genre: string | null;
-  duration_seconds: number | null;
-};
-type Artist = { id: string; name: string };
-
 function TracksPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [form, setForm] = useState({ title: "", artist_id: "", isrc: "" });
 
-  const tracks = useQuery({
-    queryKey: ["tracks"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("tracks")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as Track[];
-    },
-  });
-
-  const artists = useQuery({
-    queryKey: ["artists"],
-    queryFn: async () => {
-      const { data } = await supabase.from("artists").select("id, name").order("name");
-      return (data ?? []) as Artist[];
-    },
-  });
+  const tracks = useQuery({ queryKey: ["tracks"], queryFn: () => tracksApi.list() });
+  const artists = useQuery({ queryKey: ["artists"], queryFn: () => artistsApi.list() });
 
   const create = useMutation({
-    mutationFn: async (v: typeof form) => {
-      const { error } = await supabase.from("tracks").insert({
-        title: v.title,
-        artist_id: v.artist_id,
-        isrc: v.isrc || null,
-        created_by: user?.id,
-      });
-      if (error) throw error;
-    },
+    mutationFn: (v: typeof form) =>
+      tracksApi.create({ title: v.title, artist_id: v.artist_id, isrc: v.isrc || null }),
     onSuccess: () => {
       setForm({ title: "", artist_id: "", isrc: "" });
       qc.invalidateQueries({ queryKey: ["tracks"] });
@@ -104,13 +69,13 @@ function TracksPage() {
               ))}
             </select>
           </div>
-          <div className="w-44">
+          <div className="w-40">
             <label className="block text-xs font-medium text-muted-foreground mb-1">ISRC</label>
             <input
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={form.isrc}
               onChange={(e) => setForm({ ...form, isrc: e.target.value })}
-              placeholder="SE-XXX-25-00001"
+              placeholder="Optional"
             />
           </div>
           <Btn type="submit" disabled={!form.title || !form.artist_id || create.isPending}>
@@ -151,9 +116,7 @@ function TracksPage() {
                   <td className="px-4 py-3 text-muted-foreground">
                     {artistMap.get(t.artist_id) ?? "—"}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                    {t.isrc ?? "—"}
-                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">{t.isrc ?? "—"}</td>
                   <td className="px-4 py-3 text-muted-foreground">{t.genre ?? "—"}</td>
                 </tr>
               ))}

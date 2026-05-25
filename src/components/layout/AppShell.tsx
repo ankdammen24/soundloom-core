@@ -20,6 +20,7 @@ import {
   Music2 as Brand,
   ShieldCheck,
   Bug,
+  Activity,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -42,6 +43,7 @@ const OPS: NavLink[] = [
   { to: "/review", label: "Review", icon: ClipboardCheck, roles: ["admin", "editor"] },
   { to: "/api-keys", label: "API access", icon: KeyRound, roles: ["admin"] },
   { to: "/admin/users", label: "Users & roles", icon: ShieldCheck, roles: ["admin"] },
+  { to: "/admin/health", label: "API health", icon: Activity, roles: ["admin"] },
   { to: "/admin/debug", label: "Auth debug", icon: Bug, roles: ["admin"] },
   { to: "/settings", label: "Settings", icon: SettingsIcon, roles: ["admin"] },
   { to: "/system-overview", label: "System Overview", icon: BookOpen, roles: ["admin"] },

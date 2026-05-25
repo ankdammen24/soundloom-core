@@ -39,6 +39,37 @@ npm run build
 npm run preview
 ```
 
+## Backend API integration (media-catalog)
+
+soundloom-core is a UI-only frontend. All catalog data, file metadata and
+upload presigning are served by the **media-catalog** backend at
+`VITE_API_BASE_URL` (defaults to `https://api.mediarosenqvist.com`).
+
+- Central client: `src/lib/api/client.ts` (auth, 401/403/429 handling)
+- Endpoints used:
+  - `GET/POST /api/v1/music/artists`
+  - `GET/POST /api/v1/music/releases`
+  - `GET/POST /api/v1/music/tracks`
+  - `POST    /api/v1/uploads/presign`
+  - `GET     /health`, `/health/storage`, `/health/database`
+
+Authentication still flows through Supabase Auth (Lovable Cloud). The
+client attaches the Supabase access token as `Authorization: Bearer <jwt>`
+on every backend call.
+
+### Upload flow
+
+1. User selects an audio file in the **Upload** page.
+2. The browser calls `POST /api/v1/uploads/presign` and receives a signed URL.
+3. The browser PUTs the file binary directly to R2 using that URL.
+4. soundloom-core never sees or stores the file bytes.
+
+### Admin · API health
+
+Admins see `/admin/health` in the sidebar. It pings `/health`,
+`/health/storage` and `/health/database` every 30s and shows latency +
+status. The configured API base URL is displayed at the top of the page.
+
 ## API behavior
 
 - All API calls are routed through `src/lib/api.ts`.

@@ -29,6 +29,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedArtistsRouteImport } from './routes/_authenticated.artists'
 import { Route as AuthenticatedApiKeysRouteImport } from './routes/_authenticated.api-keys'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated.admin.users'
+import { Route as AuthenticatedAdminHealthRouteImport } from './routes/_authenticated.admin.health'
 import { Route as AuthenticatedAdminDebugRouteImport } from './routes/_authenticated.admin.debug'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
@@ -134,6 +135,12 @@ const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminHealthRoute =
+  AuthenticatedAdminHealthRouteImport.update({
+    id: '/admin/health',
+    path: '/admin/health',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAdminDebugRoute = AuthenticatedAdminDebugRouteImport.update({
   id: '/admin/debug',
   path: '/admin/debug',
@@ -176,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/uploads': typeof AuthenticatedUploadsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/admin/debug': typeof AuthenticatedAdminDebugRoute
+  '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -201,6 +209,7 @@ export interface FileRoutesByTo {
   '/uploads': typeof AuthenticatedUploadsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/admin/debug': typeof AuthenticatedAdminDebugRoute
+  '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -228,6 +237,7 @@ export interface FileRoutesById {
   '/_authenticated/uploads': typeof AuthenticatedUploadsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/_authenticated/admin/debug': typeof AuthenticatedAdminDebugRoute
+  '/_authenticated/admin/health': typeof AuthenticatedAdminHealthRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -255,6 +265,7 @@ export interface FileRouteTypes {
     | '/uploads'
     | '/auth/callback'
     | '/admin/debug'
+    | '/admin/health'
     | '/admin/users'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -280,6 +291,7 @@ export interface FileRouteTypes {
     | '/uploads'
     | '/auth/callback'
     | '/admin/debug'
+    | '/admin/health'
     | '/admin/users'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -306,6 +318,7 @@ export interface FileRouteTypes {
     | '/_authenticated/uploads'
     | '/auth/callback'
     | '/_authenticated/admin/debug'
+    | '/_authenticated/admin/health'
     | '/_authenticated/admin/users'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -468,6 +481,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/health': {
+      id: '/_authenticated/admin/health'
+      path: '/admin/health'
+      fullPath: '/admin/health'
+      preLoaderRoute: typeof AuthenticatedAdminHealthRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/admin/debug': {
       id: '/_authenticated/admin/debug'
       path: '/admin/debug'
@@ -512,6 +532,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTracksRoute: typeof AuthenticatedTracksRoute
   AuthenticatedUploadsRoute: typeof AuthenticatedUploadsRoute
   AuthenticatedAdminDebugRoute: typeof AuthenticatedAdminDebugRoute
+  AuthenticatedAdminHealthRoute: typeof AuthenticatedAdminHealthRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
 }
 
@@ -528,6 +549,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTracksRoute: AuthenticatedTracksRoute,
   AuthenticatedUploadsRoute: AuthenticatedUploadsRoute,
   AuthenticatedAdminDebugRoute: AuthenticatedAdminDebugRoute,
+  AuthenticatedAdminHealthRoute: AuthenticatedAdminHealthRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
 }
 
