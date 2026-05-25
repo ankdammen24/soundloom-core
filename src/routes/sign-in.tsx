@@ -17,10 +17,14 @@ export const Route = createFileRoute("/sign-in")({
 type Mode = "sign-in" | "sign-up";
 
 function SignInPage() {
+  return <AuthForm initialMode="sign-in" />;
+}
+
+export function AuthForm({ initialMode = "sign-in" }: { initialMode?: Mode }) {
   const { t } = useTranslation("auth");
   const { isAuthenticated, user, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple } = useAuth();
   const search = Route.useSearch();
-  const [mode, setMode] = useState<Mode>("sign-in");
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
