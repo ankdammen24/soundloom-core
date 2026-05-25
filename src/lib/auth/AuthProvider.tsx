@@ -1,5 +1,4 @@
 import { useEffect, type ReactNode } from "react";
-import { setApiTokenGetter } from "@/lib/api";
 import { authStore } from "./store";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
 
@@ -25,11 +24,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    setApiTokenGetter(async () => {
-      const { data } = await supabase.auth.getSession();
-      return data.session?.access_token ?? null;
-    });
-
     const hydrate = (session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
       if (!session?.user) {
         activeRoleRequest += 1;
@@ -37,7 +31,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       authStore.setFromSession(session, []);
-      // Fetch roles in the background; role lookup must never block login/profile landing.
       const requestId = activeRoleRequest + 1;
       activeRoleRequest = requestId;
       void fetchRoles(session.user.id).then((roles) => {
@@ -53,7 +46,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       subscription.unsubscribe();
-      setApiTokenGetter(null);
     };
   }, []);
 
