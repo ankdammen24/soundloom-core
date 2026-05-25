@@ -29,5 +29,12 @@
   },
   "searchPlaceholder": "Sök artister, releaser, spår…",
   "logoutTitle": "Logga ut",
-  "toggleNav": "Växla navigation"
+  "toggleNav": "Växla navigation",
+  "access": {
+    "title": "Åtkomst",
+    "roles": "Roller",
+    "permissions": "Behörigheter",
+    "noRoles": "Inga roller tilldelade",
+    "noPermissions": "Inga särskilda behörigheter"
+  }
 }
