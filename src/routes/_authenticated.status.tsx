@@ -9,7 +9,7 @@ import type { ComponentType } from "react";
 
 const URL = "https://catalogusmusicus.mediarosenqvist.com/status";
 
-export const Route = createFileRoute("/status")({
+export const Route = createFileRoute("/_authenticated/status")({
   head: () => ({
     meta: [
       { title: "Platform Status – Catalogus Musicus" },
