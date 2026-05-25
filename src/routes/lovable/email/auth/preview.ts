@@ -61,9 +61,10 @@ const SAMPLE_DATA: Record<string, object> = {
 }
 
 export const Route = createFileRoute("/lovable/email/auth/preview")({
+  // @ts-expect-error tanstack-start server handler block not in route typings
   server: {
     handlers: {
-      POST: async ({ request }) => {
+      POST: async ({ request }: { request: Request }) => {
         const apiKey = process.env.LOVABLE_API_KEY
 
         if (!apiKey) {
