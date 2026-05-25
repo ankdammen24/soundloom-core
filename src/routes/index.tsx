@@ -2,7 +2,7 @@ import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-ro
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { authStore } from "@/lib/auth/store";
-import { callbackLanding, fetchUserRoles, landingForRoles, safeInternalTarget } from "@/lib/auth/landing";
+import { callbackLanding, fetchUserRoles, landingForRoles } from "@/lib/auth/landing";
 import { supabase } from "@/integrations/supabase/client";
 
 const CANONICAL_URL = "https://catalogusmusicus.mediarosenqvist.com/";
