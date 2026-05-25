@@ -59,18 +59,27 @@ export function useAuth() {
     if (result.error) throw result.error;
   }, []);
 
+  const signInWithMicrosoft = useCallback(async (redirectTo?: string) => {
+    if (!supabaseConfigured) throw new Error("Backend är inte konfigurerat.");
+    const result = await lovable.auth.signInWithOAuth("microsoft", {
+      redirect_uri: callbackUrl(redirectTo),
+    });
+    if (result.error) throw result.error;
+  }, []);
+
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
   }, []);
 
   const signInWith = useCallback(
-    async (provider: "google" | "apple", redirectTo?: string) => {
+    async (provider: "google" | "apple" | "microsoft", redirectTo?: string) => {
       if (provider === "google") return signInWithGoogle(redirectTo);
       if (provider === "apple") return signInWithApple(redirectTo);
+      if (provider === "microsoft") return signInWithMicrosoft(redirectTo);
       throw new Error(`Provider ${provider} stöds inte.`);
     },
-    [signInWithGoogle, signInWithApple],
+    [signInWithGoogle, signInWithApple, signInWithMicrosoft],
   );
 
   return {
@@ -82,7 +91,8 @@ export function useAuth() {
     signUpWithEmail,
     signInWithGoogle,
     signInWithApple,
-    
+    signInWithMicrosoft,
+
     signInWith,
     signOut,
     loginRedirect: signOut,

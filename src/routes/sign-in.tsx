@@ -22,13 +22,13 @@ function SignInPage() {
 
 export function AuthForm({ initialMode = "sign-in" }: { initialMode?: Mode }) {
   const { t } = useTranslation("auth");
-  const { isAuthenticated, user, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple } = useAuth();
+  const { isAuthenticated, user, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple, signInWithMicrosoft } = useAuth();
   const search = useSearch({ strict: false }) as { redirect?: string };
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [busy, setBusy] = useState<"google" | "apple" | "email" | null>(null);
+  const [busy, setBusy] = useState<"google" | "apple" | "microsoft" | "email" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
@@ -90,6 +90,18 @@ export function AuthForm({ initialMode = "sign-in" }: { initialMode?: Mode }) {
     }
   }
 
+  async function onMicrosoft() {
+    setError(null);
+    setInfo(null);
+    setBusy("microsoft");
+    try {
+      await signInWithMicrosoft(search.redirect);
+    } catch (err) {
+      setError((err as Error)?.message ?? t("errors.microsoftFailed"));
+      setBusy(null);
+    }
+  }
+
   return (
     <AuthShell>
       <h1 className="text-2xl font-bold tracking-tight">
@@ -108,6 +120,15 @@ export function AuthForm({ initialMode = "sign-in" }: { initialMode?: Mode }) {
         >
           {busy === "google" ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleLogo />}
           {t("signIn.continueWithGoogle")}
+        </button>
+        <button
+          type="button"
+          onClick={() => void onMicrosoft()}
+          disabled={busy !== null || !supabaseConfigured}
+          className="inline-flex w-full items-center justify-center gap-3 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
+        >
+          {busy === "microsoft" ? <Loader2 className="h-4 w-4 animate-spin" /> : <MicrosoftLogo />}
+          {t("signIn.continueWithMicrosoft")}
         </button>
         <button
           type="button"
@@ -255,6 +276,17 @@ function AppleLogo() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M17.05 12.04c-.03-2.86 2.34-4.23 2.45-4.3-1.34-1.96-3.42-2.23-4.16-2.26-1.77-.18-3.46 1.04-4.36 1.04-.91 0-2.3-1.02-3.78-.99-1.94.03-3.74 1.13-4.74 2.87-2.02 3.5-.52 8.69 1.45 11.54.96 1.39 2.11 2.95 3.6 2.9 1.45-.06 1.99-.94 3.73-.94 1.74 0 2.23.94 3.76.91 1.55-.03 2.54-1.42 3.49-2.81 1.1-1.61 1.56-3.18 1.58-3.26-.04-.02-3.03-1.16-3.06-4.6zM14.32 3.69c.8-.97 1.34-2.32 1.19-3.66-1.15.05-2.54.77-3.37 1.74-.74.85-1.39 2.23-1.22 3.54 1.28.1 2.6-.65 3.4-1.62z" />
+    </svg>
+  );
+}
+
+function MicrosoftLogo() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 23 23" aria-hidden>
+      <path fill="#F25022" d="M1 1h10v10H1z" />
+      <path fill="#7FBA00" d="M12 1h10v10H12z" />
+      <path fill="#00A4EF" d="M1 12h10v10H1z" />
+      <path fill="#FFB900" d="M12 12h10v10H12z" />
     </svg>
   );
 }
