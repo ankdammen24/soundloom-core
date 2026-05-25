@@ -130,6 +130,39 @@ function SignInPage() {
           {busy === "apple" ? <Loader2 className="h-4 w-4 animate-spin" /> : <AppleLogo />}
           Fortsätt med Apple
         </button>
+        <button
+          type="button"
+          onClick={() => setShowSso((v) => !v)}
+          disabled={busy !== null || !supabaseConfigured}
+          className="inline-flex w-full items-center justify-center gap-3 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
+        >
+          Logga in med SSO (SAML)
+        </button>
+        {showSso && (
+          <form onSubmit={onSso} className="space-y-2 rounded-md border border-border bg-muted/30 p-3">
+            <label className="text-xs font-medium text-muted-foreground" htmlFor="sso-email">
+              Företags-e-post
+            </label>
+            <input
+              id="sso-email"
+              type="email"
+              required
+              autoComplete="email"
+              placeholder="du@dittforetag.se"
+              value={ssoEmail}
+              onChange={(e) => setSsoEmail(e.target.value)}
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ring"
+            />
+            <button
+              type="submit"
+              disabled={busy !== null}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+            >
+              {busy === "sso" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              Fortsätt till din identitetsleverantör
+            </button>
+          </form>
+        )}
       </div>
 
       <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
