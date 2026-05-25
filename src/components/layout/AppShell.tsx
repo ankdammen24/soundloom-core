@@ -26,36 +26,12 @@ import {
   KeyRound,
 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { PlayerBar } from "@/features/player/PlayerBar";
 import { AudioEngine } from "@/features/player/AudioEngine";
 import { ThemeToggle } from "@/components/ThemeToggle";
-
-const mainNav = [
-  { to: "/", label: "Home", icon: Home },
-  { to: "/discover", label: "Discover", icon: Compass },
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/status", label: "Platform Status", icon: Activity },
-] as const;
-
-const workspaceNav = [
-  { to: "/processing", label: "Processing", icon: Cpu },
-  { to: "/distribution", label: "Distribution", icon: Radio },
-  { to: "/organizations", label: "Organizations", icon: Building2 },
-  { to: "/settings", label: "Settings", icon: SettingsIcon },
-] as const;
-
-const opsNav = [
-  { to: "/admin", label: "Admin", icon: ShieldAlert },
-] as const;
-
-const libraryNav = [
-  { to: "/artists", label: "Artists", icon: Users },
-  { to: "/releases", label: "Releases", icon: Send },
-  { to: "/tracks", label: "Tracks", icon: Music2 },
-  { to: "/assets", label: "Assets", icon: Boxes },
-  { to: "/uploads", label: "Uploads", icon: Upload },
-] as const;
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 function NavItem({
   to,
@@ -135,8 +111,35 @@ export function AppShell() {
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation("shell");
   const isActive = (to: string) =>
     to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
+
+  const mainNav = [
+    { to: "/", label: t("nav.home"), icon: Home },
+    { to: "/discover", label: t("nav.discover"), icon: Compass },
+    { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
+    { to: "/status", label: t("nav.status"), icon: Activity },
+  ] as const;
+
+  const libraryNav = [
+    { to: "/artists", label: t("nav.artists"), icon: Users },
+    { to: "/releases", label: t("nav.releases"), icon: Send },
+    { to: "/tracks", label: t("nav.tracks"), icon: Music2 },
+    { to: "/assets", label: t("nav.assets"), icon: Boxes },
+    { to: "/uploads", label: t("nav.uploads"), icon: Upload },
+  ] as const;
+
+  const workspaceNav = [
+    { to: "/processing", label: t("nav.processing"), icon: Cpu },
+    { to: "/distribution", label: t("nav.distribution"), icon: Radio },
+    { to: "/organizations", label: t("nav.organizations"), icon: Building2 },
+    { to: "/settings", label: t("nav.settings"), icon: SettingsIcon },
+  ] as const;
+
+  const opsNav = [
+    { to: "/admin", label: t("nav.admin"), icon: ShieldAlert },
+  ] as const;
 
   async function onLogout() {
     await logout();
@@ -150,11 +153,14 @@ export function AppShell() {
           <span className="grid h-8 w-8 place-items-center rounded-full bg-primary text-primary-foreground">
             <Music2 className="h-4 w-4" />
           </span>
-          Catalogus Musicus
+          {t("brand")}
         </div>
-        <button onClick={() => setOpen((v) => !v)} aria-label="Toggle navigation">
-          {open ? <X /> : <Menu />}
-        </button>
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher variant="compact" />
+          <button onClick={() => setOpen((v) => !v)} aria-label={t("toggleNav")}>
+            {open ? <X /> : <Menu />}
+          </button>
+        </div>
       </header>
 
       <div className="md:grid md:grid-cols-[72px_1fr] lg:grid-cols-[260px_1fr] md:gap-2 md:p-2">
@@ -169,10 +175,10 @@ export function AppShell() {
               <span className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 flex-shrink-0">
                 <Music2 className="h-4 w-4" />
               </span>
-              <span className="hidden lg:inline text-lg font-bold tracking-tight">Catalogus Musicus</span>
+              <span className="hidden lg:inline text-lg font-bold tracking-tight">{t("brand")}</span>
             </div>
             <p className="hidden lg:block mt-1 pl-11 text-[11px] text-sidebar-foreground/60">
-              The modern music catalog and distribution platform
+              {t("tagline")}
             </p>
           </div>
 
@@ -193,65 +199,66 @@ export function AppShell() {
           </nav>
 
           <div className="hidden lg:block">
-            <NavGroup title="Catalog" Icon={Library} items={libraryNav} isActive={isActive} onItemClick={() => setOpen(false)} />
-            <NavGroup title="Workspace" Icon={SettingsIcon} items={workspaceNav} isActive={isActive} onItemClick={() => setOpen(false)} />
-            <NavGroup title="Operations" Icon={ShieldAlert} items={opsNav} isActive={isActive} onItemClick={() => setOpen(false)} />
+            <NavGroup title={t("groups.catalog")} Icon={Library} items={libraryNav} isActive={isActive} onItemClick={() => setOpen(false)} />
+            <NavGroup title={t("groups.workspace")} Icon={SettingsIcon} items={workspaceNav} isActive={isActive} onItemClick={() => setOpen(false)} />
+            <NavGroup title={t("groups.operations")} Icon={ShieldAlert} items={opsNav} isActive={isActive} onItemClick={() => setOpen(false)} />
           </div>
           <div className="hidden md:block lg:hidden">
-            <NavGroup title="Catalog" Icon={Library} items={libraryNav} isActive={isActive} onItemClick={() => setOpen(false)} compact />
-            <NavGroup title="Workspace" Icon={SettingsIcon} items={workspaceNav} isActive={isActive} onItemClick={() => setOpen(false)} compact />
-            <NavGroup title="Operations" Icon={ShieldAlert} items={opsNav} isActive={isActive} onItemClick={() => setOpen(false)} compact />
+            <NavGroup title={t("groups.catalog")} Icon={Library} items={libraryNav} isActive={isActive} onItemClick={() => setOpen(false)} compact />
+            <NavGroup title={t("groups.workspace")} Icon={SettingsIcon} items={workspaceNav} isActive={isActive} onItemClick={() => setOpen(false)} compact />
+            <NavGroup title={t("groups.operations")} Icon={ShieldAlert} items={opsNav} isActive={isActive} onItemClick={() => setOpen(false)} compact />
           </div>
           <div className="block md:hidden">
-            <NavGroup title="Catalog" Icon={Library} items={libraryNav} isActive={isActive} onItemClick={() => setOpen(false)} />
-            <NavGroup title="Workspace" Icon={SettingsIcon} items={workspaceNav} isActive={isActive} onItemClick={() => setOpen(false)} />
-            <NavGroup title="Operations" Icon={ShieldAlert} items={opsNav} isActive={isActive} onItemClick={() => setOpen(false)} />
+            <NavGroup title={t("groups.catalog")} Icon={Library} items={libraryNav} isActive={isActive} onItemClick={() => setOpen(false)} />
+            <NavGroup title={t("groups.workspace")} Icon={SettingsIcon} items={workspaceNav} isActive={isActive} onItemClick={() => setOpen(false)} />
+            <NavGroup title={t("groups.operations")} Icon={ShieldAlert} items={opsNav} isActive={isActive} onItemClick={() => setOpen(false)} />
           </div>
 
           <div className="mt-auto border-t border-sidebar-border p-3 space-y-3">
-            <div className="hidden lg:flex justify-center">
+            <div className="hidden lg:flex items-center justify-center gap-2">
               <ThemeToggle />
+              <LanguageSwitcher variant="compact" />
             </div>
             {!isAuthenticated ? (
               <div className="space-y-1">
                 <div className="hidden lg:block space-y-1">
-                  <NavItem to="/sign-in" label="Sign in" Icon={LogIn} active={isActive("/sign-in")} />
-                  <NavItem to="/sign-up" label="Sign up" Icon={UserPlus} active={isActive("/sign-up")} />
+                  <NavItem to="/sign-in" label={t("nav.signIn")} Icon={LogIn} active={isActive("/sign-in")} />
+                  <NavItem to="/sign-up" label={t("nav.signUp")} Icon={UserPlus} active={isActive("/sign-up")} />
                 </div>
                 <div className="hidden md:block lg:hidden space-y-1">
-                  <NavItem to="/sign-in" label="Sign in" Icon={LogIn} active={isActive("/sign-in")} compact />
-                  <NavItem to="/sign-up" label="Sign up" Icon={UserPlus} active={isActive("/sign-up")} compact />
+                  <NavItem to="/sign-in" label={t("nav.signIn")} Icon={LogIn} active={isActive("/sign-in")} compact />
+                  <NavItem to="/sign-up" label={t("nav.signUp")} Icon={UserPlus} active={isActive("/sign-up")} compact />
                 </div>
                 <div className="md:hidden space-y-1">
-                  <NavItem to="/sign-in" label="Sign in" Icon={LogIn} active={isActive("/sign-in")} />
-                  <NavItem to="/sign-up" label="Sign up" Icon={UserPlus} active={isActive("/sign-up")} />
+                  <NavItem to="/sign-in" label={t("nav.signIn")} Icon={LogIn} active={isActive("/sign-in")} />
+                  <NavItem to="/sign-up" label={t("nav.signUp")} Icon={UserPlus} active={isActive("/sign-up")} />
                 </div>
               </div>
             ) : (
               <div className="space-y-1">
                 <div className="hidden lg:block">
-                  <NavItem to="/profile" label="Profile" Icon={UserCircle2} active={isActive("/profile")} />
-                  <NavItem to="/debug/token" label="Token claims" Icon={KeyRound} active={isActive("/debug/token")} />
+                  <NavItem to="/profile" label={t("nav.profile")} Icon={UserCircle2} active={isActive("/profile")} />
+                  <NavItem to="/debug/token" label={t("nav.tokenClaims")} Icon={KeyRound} active={isActive("/debug/token")} />
                 </div>
                 <div className="hidden md:block lg:hidden">
-                  <NavItem to="/profile" label="Profile" Icon={UserCircle2} active={isActive("/profile")} compact />
-                  <NavItem to="/debug/token" label="Token claims" Icon={KeyRound} active={isActive("/debug/token")} compact />
+                  <NavItem to="/profile" label={t("nav.profile")} Icon={UserCircle2} active={isActive("/profile")} compact />
+                  <NavItem to="/debug/token" label={t("nav.tokenClaims")} Icon={KeyRound} active={isActive("/debug/token")} compact />
                 </div>
                 <div className="md:hidden">
-                  <NavItem to="/profile" label="Profile" Icon={UserCircle2} active={isActive("/profile")} />
-                  <NavItem to="/debug/token" label="Token claims" Icon={KeyRound} active={isActive("/debug/token")} />
+                  <NavItem to="/profile" label={t("nav.profile")} Icon={UserCircle2} active={isActive("/profile")} />
+                  <NavItem to="/debug/token" label={t("nav.tokenClaims")} Icon={KeyRound} active={isActive("/debug/token")} />
                 </div>
                 <button
                   type="button"
                   onClick={onLogout}
-                  title="Logga ut"
+                  title={t("logoutTitle")}
                   className={cn(
                     "group flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
                     "lg:justify-start md:justify-center md:px-2 lg:px-3",
                   )}
                 >
                   <LogOut className="h-5 w-5 flex-shrink-0" />
-                  <span className="truncate lg:inline md:hidden lg:!inline">Logga ut</span>
+                  <span className="truncate lg:inline md:hidden lg:!inline">{t("nav.logout")}</span>
                 </button>
                 <div className="px-3 py-2 hidden lg:block">
                   <div className="text-xs font-medium text-sidebar-foreground truncate">
@@ -275,7 +282,7 @@ export function AppShell() {
 
         <main className="md:rounded-xl md:bg-card md:min-h-[calc(100vh-7rem)] p-4 md:p-6 lg:p-8 overflow-hidden">
           <div className="md:hidden mb-4 flex items-center gap-2 rounded-full bg-card px-4 py-2 text-sm text-muted-foreground">
-            <Search className="h-4 w-4" /> Search artists, releases, tracks…
+            <Search className="h-4 w-4" /> {t("searchPlaceholder")}
           </div>
           <Outlet />
         </main>
