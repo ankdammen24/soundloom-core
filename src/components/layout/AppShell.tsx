@@ -262,20 +262,54 @@ export function AppShell() {
                   <LogOut className="h-5 w-5 flex-shrink-0" />
                   <span className="truncate lg:inline md:hidden lg:!inline">{t("nav.logout")}</span>
                 </button>
-                <div className="px-3 py-2 hidden lg:block">
-                  <div className="text-xs font-medium text-sidebar-foreground truncate">
-                    {user?.displayName ?? user?.name ?? user?.email}
-                  </div>
-                  {user?.email && (
-                    <div className="text-[11px] text-sidebar-foreground/60 truncate">{user.email}</div>
-                  )}
-                  {user?.roles && user.roles.length > 0 && (
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {user.roles.slice(0, 3).map((r) => (
-                        <span key={r} className="rounded-full bg-sidebar-accent/60 px-1.5 py-0.5 text-[10px] text-sidebar-foreground/80">{r}</span>
-                      ))}
+                <div className="px-3 py-2 hidden lg:block space-y-2">
+                  <div>
+                    <div className="text-xs font-medium text-sidebar-foreground truncate">
+                      {user?.displayName ?? user?.name ?? user?.email}
                     </div>
-                  )}
+                    {user?.email && (
+                      <div className="text-[11px] text-sidebar-foreground/60 truncate">{user.email}</div>
+                    )}
+                  </div>
+                  <div className="rounded-md border border-sidebar-border/60 bg-sidebar-accent/30 p-2 space-y-2">
+                    <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
+                      {t("access.title")}
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-sidebar-foreground/60 mb-1">{t("access.roles")}</div>
+                      {user?.roles && user.roles.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {user.roles.map((r) => (
+                            <span
+                              key={r}
+                              className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-medium text-primary"
+                            >
+                              {r}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-[10px] text-sidebar-foreground/50 italic">{t("access.noRoles")}</div>
+                      )}
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-sidebar-foreground/60 mb-1">{t("access.permissions")}</div>
+                      {user?.permissions && user.permissions.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {user.permissions.map((p) => (
+                            <span
+                              key={p}
+                              className="rounded-full bg-sidebar-accent/80 px-1.5 py-0.5 text-[10px] text-sidebar-foreground/80"
+                            >
+                              {p}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-[10px] text-sidebar-foreground/50 italic">{t("access.noPermissions")}</div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
