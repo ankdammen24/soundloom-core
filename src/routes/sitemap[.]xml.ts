@@ -10,6 +10,7 @@ interface SitemapEntry {
 }
 
 export const Route = createFileRoute("/sitemap.xml")({
+  // @ts-expect-error tanstack-start server handler block not in route typings
   server: {
     handlers: {
       GET: async () => {
