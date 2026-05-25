@@ -72,16 +72,6 @@ export function useAuth() {
     await supabase.auth.signOut();
   }, []);
 
-  const signInWith = useCallback(
-    async (provider: "google" | "apple" | "microsoft", redirectTo?: string) => {
-      if (provider === "google") return signInWithGoogle(redirectTo);
-      if (provider === "apple") return signInWithApple(redirectTo);
-      if (provider === "microsoft") return signInWithMicrosoft(redirectTo);
-      throw new Error(`Provider ${provider} stöds inte.`);
-    },
-    [signInWithGoogle, signInWithApple, signInWithMicrosoft],
-  );
-
   return {
     user: state.user,
     status: state.status,
@@ -92,12 +82,8 @@ export function useAuth() {
     signInWithGoogle,
     signInWithApple,
     signInWithMicrosoft,
-
-    signInWith,
     signOut,
-    loginRedirect: signOut,
+    /** @deprecated use signOut */
     logoutRedirect: signOut,
-    login: signOut,
-    logout: signOut,
   };
 }
