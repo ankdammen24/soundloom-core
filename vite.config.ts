@@ -3,8 +3,8 @@ import path from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import tsconfigPaths from 'vite-tsconfig-paths'
-import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
+import { cloudflare } from '@cloudflare/vite-plugin'
 
 export default defineConfig(({ mode }) => {
   // Load all env vars (no prefix) into process.env so server routes can read
@@ -14,10 +14,11 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
-      TanStackRouterVite({ target: 'react', autoCodeSplitting: true }),
-      react(),
       tsconfigPaths(),
       tailwindcss(),
+      tanstackStart({ customViteReactPlugin: true, target: 'cloudflare-module' }),
+      react(),
+      cloudflare({ viteEnvironment: { name: 'ssr' } }),
     ],
     resolve: {
       alias: {
