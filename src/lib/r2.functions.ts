@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   R2_BUCKETS,
   type R2BucketKind,
@@ -21,19 +21,9 @@ export const r2Keys = {
   exportMetadata: (releaseId: string) => `exports/${releaseId}/metadata.json`,
 };
 
-function supabaseServer() {
-  const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-  const key =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ??
-    process.env.SUPABASE_PUBLISHABLE_KEY ??
-    process.env.VITE_SUPABASE_ANON_KEY ??
-    process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) throw new Error("Supabase server env not configured.");
-  return createClient(url, key, { auth: { persistSession: false } });
-}
-
 // 1) Presigned upload URL
 export const getR2UploadUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
     z
       .object({
@@ -52,6 +42,7 @@ export const getR2UploadUrl = createServerFn({ method: "POST" })
 
 // 2) Presigned download/playback URL
 export const getR2DownloadUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
     z
       .object({
@@ -74,6 +65,7 @@ export const getR2DownloadUrl = createServerFn({ method: "POST" })
 
 // 3 + 4 + 6) Upload completion: verify in R2, update tracks row + status
 export const completeR2Upload = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
     z
       .object({
@@ -84,7 +76,7 @@ export const completeR2Upload = createServerFn({ method: "POST" })
       })
       .parse(input),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const bucket = R2_BUCKETS[data.bucket as R2BucketKind];
 
     // Verify the object actually landed in R2
@@ -99,9 +91,9 @@ export const completeR2Upload = createServerFn({ method: "POST" })
       throw new Error(`Uploaded object is empty: ${bucket}/${data.key}`);
     }
 
-    // Update Supabase metadata for tracks
+    // Update Supabase metadata for tracks (RLS-scoped to the caller)
     if (data.trackId) {
-      const sb = supabaseServer();
+      const sb = context.supabase;
       const patch: Record<string, unknown> = {};
       switch (data.bucket) {
         case "masters":
@@ -121,7 +113,8 @@ export const completeR2Upload = createServerFn({ method: "POST" })
           break;
       }
       if (Object.keys(patch).length > 0) {
-        const { error } = await sb.from("tracks").update(patch).eq("id", data.trackId);
+        const { error } = await (sb as unknown as { from: (t: string) => { update: (p: Record<string, unknown>) => { eq: (c: string, v: string) => Promise<{ error: { message: string } | null }> } } })
+          .from("tracks").update(patch).eq("id", data.trackId);
         if (error) throw new Error(`Supabase update failed: ${error.message}`);
       }
     }
