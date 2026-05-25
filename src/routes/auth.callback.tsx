@@ -37,17 +37,8 @@ export const Route = createFileRoute("/auth/callback")({
   component: AuthCallbackPage,
 });
 
-async function fetchRolesFor(userId: string): Promise<string[]> {
-  try {
-    const { data } = await withTimeout(
-      supabase.from("user_roles").select("role").eq("user_id", userId),
-      4000,
-    );
-    return (data ?? []).map((r) => r.role as string);
-  } catch {
-    return [];
-  }
-}
+// Roles are no longer needed to choose the post-login landing page —
+// every signed-in user lands on their profile by default.
 
 function AuthCallbackPage() {
   const navigate = useNavigate();
@@ -58,11 +49,10 @@ function AuthCallbackPage() {
   useEffect(() => {
     let cancelled = false;
 
-    async function resolveTarget(userId: string) {
+    async function resolveTarget(_userId: string) {
       const requestedTarget = internalTarget(next);
       if (requestedTarget) return requestedTarget;
-      const roles = await fetchRolesFor(userId);
-      return roles.includes("admin") ? "/dashboard" : "/";
+      return "/profile";
     }
 
     async function consumeHashTokens() {

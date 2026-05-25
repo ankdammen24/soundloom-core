@@ -1,72 +1,63 @@
 ## Mål
 
-Inför tvåspråkigt UI (svenska + engelska) i hela appen — inklusive admin-vyer — med automatiskt språkval från webbläsaren och en språkväljare både i AppShell-headern och på sign-in/sign-up.
+1. Flytta hela backend (inkl. fillagring) till Lovable Cloud så du bara har en leverantör att betala/underhålla.
+2. Få SAML-inloggningen att gå hela vägen in i appen.
+3. Efter lyckad inloggning ska användaren landa på sin egen profilsida (`/profile`).
 
-## Stack
+---
 
-- `i18next` + `react-i18next` + `i18next-browser-languagedetector`
-- Namespaces per yt-område för att hålla filer hanterbara
-- JSON-resurser i `src/i18n/locales/{sv,en}/*.json`
-- Val sparas i `localStorage` under `lang` och sätts på `<html lang>`
+## Del 1 — Flytta fillagring från R2 till Lovable Cloud Storage
 
-## Filer som skapas
+Idag används Cloudflare R2 (`mrq-music-masters`, `-previews`, `-normalized`, `-artwork`, `-exports`) via `src/lib/r2.server.ts`, `r2.functions.ts` och `r2-client.ts`. Inget UI använder R2 ännu, så bytet är en ren server-/lagringsväxling utan dataflytt.
 
-```text
-src/i18n/
-  index.ts                 // init: språk, detektor, fallback (en), resurser
-  resources.ts             // typad import av alla JSON-namespaces
-  locales/sv/common.json   // knappar, labels, status, generella ord
-  locales/sv/auth.json     // sign-in, sign-up, callback, fel
-  locales/sv/shell.json    // navigation, header, footer, språkväljare
-  locales/sv/dashboard.json
-  locales/sv/library.json  // releases, tracks, artists, albums, playlists
-  locales/sv/uploads.json
-  locales/sv/processing.json
-  locales/sv/distribution.json
-  locales/sv/rights.json
-  locales/sv/profile.json
-  locales/sv/settings.json
-  locales/sv/admin.json    // alla _authenticated.admin.*-vyer
-  locales/en/... (samma struktur)
-src/components/LanguageSwitcher.tsx  // SV/EN dropdown, återanvänds
-```
+Steg:
+- Skapa 5 storage buckets i Lovable Cloud: `masters` (privat), `previews` (publik), `normalized` (privat), `artwork` (publik), `exports` (privat).
+- Lägg RLS-policys per bucket: inloggade användare får läsa/skriva sina egna nycklar; admin får läsa allt; `artwork` och `previews` blir publikt läsbara.
+- Ersätt R2-server-API:t med en tunn Lovable Cloud Storage-modul: signerade upload-URL:er via `storage.createSignedUploadUrl`, signerade läs-URL:er via `createSignedUrl`, publika URL:er via `getPublicUrl`.
+- Behåll samma publika funktionssignaturer i `r2.functions.ts` (`getR2UploadUrl`, etc.) så framtida UI-kod inte påverkas — bara internt byts implementationen ut. Filen får ett nytt namn (`storage.functions.ts`) och `r2.*` blir en tunn re-export tills inga konsumenter finns kvar.
+- Ta bort `@aws-sdk/client-s3` och `@aws-sdk/s3-request-presigner` ur dependencies.
+- Markera R2-secrets (`R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`, `R2_PUBLIC_ARTWORK_BASE_URL`) som obsoleta — du kan radera dem i ett senare steg när du är säker.
 
-## Filer som ändras
+Kostnad: lagring + bandbredd debiteras nu via Lovable Cloud-användning. Inga befintliga filer migreras (buckets är tomma idag).
 
-- `src/main.tsx` — importera `./i18n` så init körs innan render
-- `src/components/layout/AppShell.tsx` — språkväljare bredvid `ThemeToggle`, översätt nav
-- `src/routes/sign-in.tsx` — språkväljare uppe till höger, alla strängar via `t()`
-- `src/routes/sign-up.tsx` — samma
-- `src/routes/auth.callback.tsx` — översätt status/fel
-- Alla `src/routes/_authenticated.*.tsx` (dashboard, releases, tracks, artists, albums, uploads, profile, settings, processing, distribution, rights, playlists, library, organizations, assets) — strängar via `useTranslation`
-- Alla `src/routes/_authenticated.admin.*.tsx` (api-usage, audit, diagnostics, jobs, logs, processing-metrics, queues, storage, workers) — strängar via `useTranslation`
-- `src/components/*` (PageHeader, StatusBadge, ProcessingTimeline, Setup, CatalogTable, EditableField, DropZone, m.fl.) — strängar via `useTranslation`
-- `index.html` — `<html lang="sv">` som utgångsläge (uppdateras runtime av i18n)
+---
 
-## Beteende
+## Del 2 — Få SAML-callbacken att fungera
 
-1. **Init-ordning**: `i18next` läser `localStorage.lang` först. Om saknas — `navigator.language`: börjar med `sv` → `sv`, annars `en`. Faller tillbaka på `en` om en nyckel saknas.
-2. **Språkväljare** (`LanguageSwitcher`): liten dropdown med `SV / EN`. Vid byte: `i18n.changeLanguage(lng)` + `localStorage.setItem("lang", lng)` + `document.documentElement.lang = lng`. Synkroniseras via `i18n.on("languageChanged")`.
-3. **Placering**:
-   - AppShell-header: bredvid `ThemeToggle` (alltid synlig när inloggad).
-   - Sign-in/Sign-up: absolut positionerad uppe till höger i `AuthShell`.
-4. **Datum/tal**: använd `Intl.DateTimeFormat` och `Intl.NumberFormat` med `i18n.language` där datum/tal redan formateras (mest i admin/processing-vyer).
-5. **Felmeddelanden**: regex-matchningar mot Supabase-fel (t.ex. `invalid login credentials`) flyttas till en helper som returnerar en översättningsnyckel istället för en hårdkodad svensk sträng.
+Symptom: efter SSO-bekräftelse fastnar du på `/auth/callback#access_token=...`. Tokens kommer alltså fram, men sessionen sätts aldrig eller redirecten faller bort.
 
-## Översättningsstrategi
+Åtgärder:
+- Härda `src/routes/auth.callback.tsx` så att hash-fragmentet alltid plockas upp även när Supabase själv hinner före (`detectSessionInUrl` race). Vänta in `INITIAL_SESSION`/`SIGNED_IN` innan timeout slår till.
+- Säkerställ att SAML-providerns Redirect-URL i Supabase pekar på `https://catalog.mediarosenqvist.com/auth/callback` (utan `#`). Lägg även `soundloom-core.lovable.app` och `*.lovable.app`-previews i Auth → URL Configuration → Redirect URLs så att test-miljön funkar.
+- Verifiera att `public/_redirects` (`/* /index.html 200`) ligger med i senaste publicerade build — annars fastnar callback-routen i 404 på custom domain.
+- Logga ut den exponerade sessionen (token klistrades in i chatten) genom att klicka logga ut i appen efter fixen, så roteras refresh-tokenen.
 
-- Befintlig text är delvis svensk, delvis engelsk. Svenska behåller sin nuvarande ton (du-form, "Logga in", "Skapa konto"). Engelsk variant använder samma terminologi som koden redan har ("Releases", "Tracks", "Uploads", "Processing", "Distribution", "Rights").
-- Domänord lämnas oöversatta i båda språken: *Release*, *Track*, *Catalog*, *Artwork*, *SSO*, *SAML*, *Lovable Cloud*.
-- Nyckelnamn på engelska, kebab-style inom namespace: `auth:sign-in.title`, `shell:nav.releases`, `admin:queues.heading`.
+---
 
-## Out of scope
+## Del 3 — Landa på `/profile` efter inloggning
 
-- Översättning av e-postmallar (`src/lib/email-templates/*`) — separat uppgift, kräver att mejlflödet vet mottagarens språk.
-- Översättning av loggar/serverfel i `src/routes/lovable/*` (interna endpoints).
-- RTL-stöd.
+Idag skickar callbacken admins till `/dashboard` och alla andra till `/`. Du vill att alla landar på `/profile`.
 
-## Verifiering
+Åtgärder:
+- I `auth.callback.tsx`: ändra `resolveTarget` så standardmålet är `/profile`. En explicit `?next=...` (intern URL) respekteras fortfarande för deep links.
+- I `src/routes/_authenticated.tsx` / `index.tsx`-flödet: när en inloggad användare hamnar på `/` utan annat mål, redirecta till `/profile`. Publika besökare på `/` ser fortsatt landningssidan.
+- Sign-in-sidan skickar redan `next` när det finns; den logiken behålls.
 
-- Bygg passerar utan saknade nycklar (`returnNull: false`, `saveMissing` i dev loggar varningar i konsolen).
-- Manuell rundtur: sign-in → dashboard → releases → admin/queues, byt språk i headern, ladda om — språket sitter kvar.
-- `<html lang>` växlar mellan `sv` och `en`.
+---
+
+## Tekniska detaljer
+
+- Storage-RLS exempel (per bucket):
+  - `masters`, `normalized`, `exports`: `bucket_id = '<name>' AND (auth.uid()::text = (storage.foldername(name))[1] OR has_role(auth.uid(), 'admin'))`
+  - `artwork`, `previews`: publik SELECT; INSERT/UPDATE/DELETE kräver `authenticated` + admin eller ägarprefix.
+- `storage.functions.ts` använder den befintliga `requireSupabaseAuth`-middlewaren och `supabaseAdmin` för signerade URL:er — samma mönster som R2-modulen idag.
+- Callback-fixen håller kvar `withTimeout`, men ökar till 12s och avbryter inte om en `onAuthStateChange` redan triggat redirect.
+- Inga DB-migrationer behövs för Del 2 och 3. Del 1 kräver en migration som skapar buckets + storage-policys.
+
+---
+
+## Vad som INTE ingår
+
+- Ingen ändring av SAML-IdP-konfiguration hos Microsoft/Google — bara Supabase Redirect-URL-listan.
+- Inga UI-omskrivningar; profilsidan finns redan.
+- Ingen datamigrering från R2 (buckets är tomma).
