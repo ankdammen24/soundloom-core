@@ -1,8 +1,16 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { authStore } from "@/lib/auth/store";
 
 const URL = "https://catalogusmusicus.mediarosenqvist.com/";
 
 export const Route = createFileRoute("/")({
+  beforeLoad: () => {
+    // Signed-in users land on their own profile; the public home stays for visitors.
+    const { status } = authStore.getState();
+    if (status === "authenticated") {
+      throw redirect({ to: "/profile" });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Catalogus Musicus – Media Rosenqvist Music Catalog" },
