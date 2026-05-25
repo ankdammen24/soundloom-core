@@ -54,7 +54,7 @@ export function getActiveAccount(): AccountInfo | null {
 
 export function buildLoginRequest(redirect?: string): RedirectRequest {
   return {
-    scopes: apiScopes,
+    scopes: [...apiScopes, ...oidcScopes],
     state: redirect ? encodeURIComponent(redirect) : undefined,
     prompt: "select_account",
   };
