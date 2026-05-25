@@ -21,7 +21,7 @@ type Mode = "sign-in" | "sign-up";
 
 function SignInPage() {
   const { t } = useTranslation("auth");
-  const { isAuthenticated, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple, signInWithSSO } = useAuth();
+  const { isAuthenticated, user, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple, signInWithSSO } = useAuth();
   const search = Route.useSearch();
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
