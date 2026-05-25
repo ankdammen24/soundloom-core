@@ -4,7 +4,7 @@ import { api, type StorageStats } from "@/lib/api";
 import { DataTable, type Column } from "@/components/admin/DataTable";
 import { PageHeader } from "@/components/PageHeader";
 
-export const Route = createFileRoute("/admin/storage")({
+export const Route = createFileRoute("/_authenticated/admin/storage")({
   head: () => ({ meta: [{ title: "Storage – Admin – Catalogus Musicus" }] }),
   component: StoragePage,
 });

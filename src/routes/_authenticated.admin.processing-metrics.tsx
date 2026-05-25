@@ -8,7 +8,7 @@ import { RangePicker, type Range } from "@/components/admin/RangePicker";
 import { PageHeader } from "@/components/PageHeader";
 import { Cpu, CheckCircle2 } from "lucide-react";
 
-export const Route = createFileRoute("/admin/processing-metrics")({
+export const Route = createFileRoute("/_authenticated/admin/processing-metrics")({
   head: () => ({ meta: [{ title: "Processing metrics – Admin – Catalogus Musicus" }] }),
   component: ProcessingPage,
 });

@@ -5,7 +5,7 @@ import { DataTable, type Column } from "@/components/admin/DataTable";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { PageHeader } from "@/components/PageHeader";
 
-export const Route = createFileRoute("/admin/workers")({
+export const Route = createFileRoute("/_authenticated/admin/workers")({
   head: () => ({ meta: [{ title: "Workers – Admin – Catalogus Musicus" }] }),
   component: WorkersPage,
 });

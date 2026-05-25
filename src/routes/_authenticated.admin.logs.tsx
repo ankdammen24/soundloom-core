@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, PlugZap, AlertTriangle, Pause, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/admin/logs")({
+export const Route = createFileRoute("/_authenticated/admin/logs")({
   head: () => ({ meta: [{ title: "Logs – Admin – Catalogus Musicus" }] }),
   component: LogsPage,
 });

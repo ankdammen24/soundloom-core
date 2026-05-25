@@ -4,7 +4,7 @@ import { api, type QueueStats } from "@/lib/api";
 import { DataTable, type Column } from "@/components/admin/DataTable";
 import { PageHeader } from "@/components/PageHeader";
 
-export const Route = createFileRoute("/admin/queues")({
+export const Route = createFileRoute("/_authenticated/admin/queues")({
   head: () => ({ meta: [{ title: "Queues – Admin – Catalogus Musicus" }] }),
   component: QueuesPage,
 });
