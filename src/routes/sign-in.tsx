@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { Music2, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/lib/auth/useAuth";
+import { landingForRoles, safeInternalTarget } from "@/lib/auth/landing";
 import { supabaseConfigured } from "@/lib/supabase";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
@@ -12,20 +13,6 @@ export const Route = createFileRoute("/sign-in")({
   }),
   component: SignInPage,
 });
-
-function landingFor(roles: string[] | undefined) {
-  if (!roles || roles.length === 0) return "/profile";
-  if (roles.includes("admin")) return "/dashboard";
-  if (roles.includes("editor")) return "/review";
-  if (roles.includes("artist")) return "/uploads";
-  return "/profile";
-}
-
-function safeRedirectTarget(target: string) {
-  if (!target.startsWith("/") || target.startsWith("//")) return "";
-  if (target.startsWith("/auth/callback")) return "";
-  return target;
-}
 
 type Mode = "sign-in" | "sign-up";
 
@@ -44,7 +31,7 @@ function SignInPage() {
   const [info, setInfo] = useState<string | null>(null);
 
   if (isAuthenticated) {
-    const safe = safeRedirectTarget(search.redirect) || landingFor(user?.roles);
+    const safe = safeInternalTarget(search.redirect) || landingForRoles(user?.roles);
     return <Navigate to={safe} />;
   }
 
