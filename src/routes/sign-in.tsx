@@ -13,8 +13,11 @@ export const Route = createFileRoute("/sign-in")({
   component: SignInPage,
 });
 
-function landingFor(_roles: string[] | undefined) {
-  // All signed-in users land on their profile by default.
+function landingFor(roles: string[] | undefined) {
+  if (!roles || roles.length === 0) return "/profile";
+  if (roles.includes("admin")) return "/dashboard";
+  if (roles.includes("editor")) return "/review";
+  if (roles.includes("artist")) return "/uploads";
   return "/profile";
 }
 
