@@ -13,8 +13,9 @@ export const Route = createFileRoute("/sign-in")({
   component: SignInPage,
 });
 
-function landingFor(roles: string[] | undefined) {
-  return roles?.includes("admin") ? "/dashboard" : "/";
+function landingFor(_roles: string[] | undefined) {
+  // All signed-in users land on their profile by default.
+  return "/profile";
 }
 
 type Mode = "sign-in" | "sign-up";
