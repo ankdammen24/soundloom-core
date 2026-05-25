@@ -18,7 +18,7 @@ export type AdminUserRow = {
 };
 
 async function assertCallerIsAdmin(
-  supabase: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> },
+  supabase: SupabaseClient<Database>,
   userId: string,
 ) {
   const { data, error } = await supabase.rpc("has_role", {
