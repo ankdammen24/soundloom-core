@@ -1,28 +1,25 @@
-Jag hittade två konkreta orsaker till att det här kan fortsätta misslyckas trots callback-fixar:
+Jag hittade orsaken: backend-triggern finns, är aktiv och har skapat profil korrekt. Det finns just nu 1 auth-användare, 1 profil och 0 användare utan profil. Din senaste SSO-inloggning har alltså profilrad och roller: `admin` + `viewer`.
 
-1. Appen har ingen faktisk publik `/profile`-route. Profilen ligger som `_authenticated.profile.tsx`, men redirecten går till `/profile`. Det behöver vara konsekvent så callbacken landar på en route som faktiskt matchar och är skyddad på rätt sätt.
-2. Auth-guardens `beforeLoad` läser en global store som ofta fortfarande är `loading` när callbacken precis har satt sessionen. Det gör flödet känsligt för timing och kan fastna eller redirecta fel.
+Problemet är därför inte att profilen aldrig skapas, utan att appflödet kan landa på profilsidan innan klientens auth/session och profilhämtning är färdiga eller innan en saknad profil självläker.
 
-Plan för nästa ändring:
+Plan:
 
-1. Korrigera profilrouten
-   - Byt route-deklarationen i `src/routes/_authenticated.profile.tsx` så den matchar den URL appen faktiskt använder: `/profile`.
-   - Låt den fortfarande ligga bakom `_authenticated`-layouten enligt TanStack Start-konventionen.
+1. Gör `/profile` självläkande
+   - Om profilsidan inte hittar en profilrad för inloggad användare ska den skapa/upserta den direkt med användarens id, e-post, namn och avatar från auth-sessionen.
+   - Därefter läser den tillbaka profilen och visar den.
 
-2. Gör callbacken deterministisk
-   - I `/auth/callback`: läs hash-token direkt, skriv sessionen med `setSession`, rensa hash, verifiera med `getUser()`/`getSession()` och gör sedan `window.location.replace('/profile')`.
-   - Ta bort beroendet av auth-event race/timing som primär väg.
-   - Visa fel bara om sessionen faktiskt inte kan skapas.
+2. Flytta profilhämtningen till en skyddad serverfunktion
+   - Använd en backend-funktion som kör som inloggad användare och respekterar åtkomstregler.
+   - Det gör att profilskapande/läsning blir deterministiskt och inte beroende av timing i React-effekter.
 
-3. Täpp till redirect-parametern
-   - Tillåt bara säkra interna `next`/`redirect`-värden.
-   - Standard efter SAML ska vara `/profile`, inte `/`, `/dashboard` eller rollbaserad routing.
+3. Hårdgör auth-laddningen före profilsidan
+   - Lägg en `beforeLoad` på profilrouten som väntar på `supabase.auth.getUser()` innan sidan försöker läsa profilen.
+   - Om ingen verifierad användare finns skickas man till `/sign-in`.
 
-4. Gör auth-storen mindre skör
-   - Se till att `AuthProvider` sätter `authenticated` så fort en giltig session finns.
-   - Rollhämtning får inte blockera inloggning eller profil-landning.
+4. Behåll databastriggern men gör den mer felsäker vid behov
+   - Triggern `on_auth_user_created` finns redan på auth-användare och kör `public.handle_new_user()`.
+   - Jag lägger bara till en migration om vi behöver förstärka triggern/backfill, inte ändra fungerande schema i onödan.
 
-5. Validera innan jag säger att det är klart
-   - Kontrollera att routes finns och matchar `/auth/callback`, `/sign-in` och `/profile`.
-   - Kontrollera callbackflödet med en simulerad hash-URL utan att logga riktiga tokens.
-   - Du behöver sedan publicera och logga ut/logga in igen eftersom refresh-token har exponerats i chatten.
+5. Verifiera med riktiga databassignaler
+   - Kontrollera efter ändringen att antalet auth-användare utan profil är `0`.
+   - Kontrollera att profilsidan visar raden efter SSO/Google utan manuell refresh.
