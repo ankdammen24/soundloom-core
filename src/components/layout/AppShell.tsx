@@ -115,10 +115,12 @@ export function AppShell() {
   const isActive = (to: string) =>
     to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
 
+  const isAdmin = (user?.roles ?? []).includes("admin");
+
   const mainNav = [
     { to: "/", label: t("nav.home"), icon: Home },
     { to: "/discover", label: t("nav.discover"), icon: Compass },
-    { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
+    ...(isAdmin ? [{ to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard }] : []),
     { to: "/status", label: t("nav.status"), icon: Activity },
   ] as const;
 
@@ -134,7 +136,7 @@ export function AppShell() {
     { to: "/processing", label: t("nav.processing"), icon: Cpu },
     { to: "/distribution", label: t("nav.distribution"), icon: Radio },
     { to: "/organizations", label: t("nav.organizations"), icon: Building2 },
-    { to: "/settings", label: t("nav.settings"), icon: SettingsIcon },
+    ...(isAdmin ? [{ to: "/settings", label: t("nav.settings"), icon: SettingsIcon }] : []),
   ] as const;
 
   const opsNav = [
