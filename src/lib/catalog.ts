@@ -6,14 +6,24 @@ import type {
 
 const enabled = supabaseConfigured;
 
+// Catalog tables live in an external API schema and aren't part of the
+// generated Supabase types — cast through `any` to keep queries working.
+const sb = supabase as unknown as {
+  from: (n: string) => {
+    select: (s: string) => {
+      order: (c: string, o: { ascending: boolean }) => Promise<{ data: unknown; error: Error | null }>;
+    };
+  };
+};
+
 function table<T>(name: string, order: { column: string; ascending: boolean } = { column: "created_at", ascending: false }) {
   return async (): Promise<T[]> => {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from(name)
       .select("*")
       .order(order.column, { ascending: order.ascending });
     if (error) throw error;
-    return (data ?? []) as T[];
+    return ((data as T[]) ?? []) as T[];
   };
 }
 

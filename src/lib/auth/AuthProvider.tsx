@@ -3,6 +3,19 @@ import { setApiTokenGetter } from "@/lib/api";
 import { authStore } from "./store";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
 
+async function fetchRoles(userId: string): Promise<string[]> {
+  try {
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+    if (error) return [];
+    return (data ?? []).map((r) => String((r as { role: string }).role));
+  } catch {
+    return [];
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!supabaseConfigured) {
@@ -10,20 +23,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Token getter for the API client — always pulls the freshest access token.
     setApiTokenGetter(async () => {
       const { data } = await supabase.auth.getSession();
       return data.session?.access_token ?? null;
     });
 
-    // Subscribe FIRST, then hydrate, per Supabase guidance.
+    const hydrate = async (session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
+      if (!session?.user) {
+        authStore.setFromSession(null);
+        return;
+      }
+      authStore.setFromSession(session, []);
+      // Defer role fetch so UI renders immediately, then patch roles in.
+      const roles = await fetchRoles(session.user.id);
+      authStore.setRoles(roles);
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      authStore.setFromSession(session);
+      void hydrate(session);
     });
 
-    void supabase.auth.getSession().then(({ data }) => {
-      authStore.setFromSession(data.session);
-    });
+    void supabase.auth.getSession().then(({ data }) => void hydrate(data.session));
 
     return () => {
       subscription.unsubscribe();

@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 
-export type AuthProvider = "google" | "github" | "azure" | "apple" | string;
+export type AuthProviderId = "google" | "email" | string;
 
 export type AuthUser = {
   id: string;
@@ -11,10 +11,10 @@ export type AuthUser = {
   displayName?: string;
   name?: string;
   avatarUrl?: string;
-  provider?: AuthProvider;
+  provider?: AuthProviderId;
   roles: string[];
   permissions: string[];
-  // Raw JWT app_metadata/user_metadata bag for debug.
+  // Raw user_metadata/app_metadata bag for debug.
   claims: Record<string, unknown>;
 };
 
@@ -30,18 +30,23 @@ let state: State = { status: "loading", user: null };
 const listeners = new Set<() => void>();
 function emit() { for (const l of listeners) l(); }
 
-function mapUser(u: User, session?: Session | null): AuthUser {
+function mapUser(u: User, session?: Session | null, roles: string[] = []): AuthUser {
   const meta = (u.user_metadata ?? {}) as Record<string, unknown>;
   const app = (u.app_metadata ?? {}) as Record<string, unknown>;
   const provider = (app.provider as string | undefined) ?? session?.user.app_metadata?.provider;
-  const roles = Array.isArray((app as { roles?: unknown }).roles)
-    ? ((app as { roles: string[] }).roles)
-    : [];
   return {
     id: u.id,
     email: u.email ?? (meta.email as string | undefined),
-    name: (meta.full_name as string | undefined) ?? (meta.name as string | undefined) ?? u.email,
-    displayName: (meta.full_name as string | undefined) ?? (meta.name as string | undefined) ?? u.email,
+    name:
+      (meta.display_name as string | undefined) ??
+      (meta.full_name as string | undefined) ??
+      (meta.name as string | undefined) ??
+      u.email,
+    displayName:
+      (meta.display_name as string | undefined) ??
+      (meta.full_name as string | undefined) ??
+      (meta.name as string | undefined) ??
+      u.email,
     avatarUrl: (meta.avatar_url as string | undefined) ?? (meta.picture as string | undefined),
     provider,
     roles,
@@ -60,13 +65,19 @@ export const authStore = {
     state = { ...state, ...patch };
     emit();
   },
-  setFromSession: (session: Session | null) => {
+  setFromSession: (session: Session | null, roles: string[] = []) => {
     if (!session?.user) {
       state = { status: "unauthenticated", user: null };
     } else {
-      state = { status: "authenticated", user: mapUser(session.user, session) };
+      state = { status: "authenticated", user: mapUser(session.user, session, roles) };
     }
     emit();
+  },
+  setRoles: (roles: string[]) => {
+    if (state.user) {
+      state = { ...state, user: { ...state.user, roles } };
+      emit();
+    }
   },
   signOut: () => {
     state = { status: "unauthenticated", user: null };

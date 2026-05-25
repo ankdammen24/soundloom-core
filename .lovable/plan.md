@@ -1,89 +1,65 @@
-# Plan: Connect-baserad autentisering
+## Mål
 
-Byter ut hela MSAL/Entra-stacken mot Media Rosenqvist Connect som central auth-gateway. All login går via redirect till Connect; frontend hanterar bara PKCE-codeswitch, tokenförvaring och Bearer-injektion.
+Byt ut den externa OAuth-vyn (Microsoft/Apple/GitHub) mot en lokal Lovable Cloud-lösning som fungerar direkt: e-post + lösenord och Google. Lägg till en `profiles`-tabell + roller så vi senare kan styra behörigheter. Behåll all befintlig katalogfunktionalitet.
 
-## 1. Miljövariabler (.env, .env.example)
+## Databas (migration)
 
-Lägg till:
-```
-VITE_CONNECT_BASE_URL=https://connect.mediarosenqvist.com
-VITE_CONNECT_CLIENT_ID=music-catalog-frontend
-VITE_CONNECT_REDIRECT_URI=https://catalogusmusicus.mediarosenqvist.com/auth/callback
-VITE_CONNECT_AUDIENCE=music-catalog-core
-VITE_API_BASE_URL=https://api.mediarosenqvist.com   # finns redan
-```
-Ta bort: `VITE_AUTH_API_URL`, `VITE_ENTRA_CLIENT_ID`, `VITE_ENTRA_AUTHORITY`, `VITE_ENTRA_AUDIENCE`.
+1. `profiles`-tabell
+   - `id uuid primary key references auth.users(id) on delete cascade`
+   - `email text`, `display_name text`, `avatar_url text`
+   - `created_at`, `updated_at` (default now())
+   - RLS på: användare kan SELECT/UPDATE sin egen rad; INSERT tillåten för egen `id`.
 
-## 2. Ny auth-klient — `src/lib/connectAuth.ts`
+2. Roller (separat tabell — undviker privilege escalation)
+   - `create type app_role as enum ('admin','editor','viewer')`
+   - `user_roles(id, user_id → auth.users, role app_role, unique(user_id, role))`
+   - RLS: bara läsbar för inloggad användares egna rader.
+   - `has_role(_user_id uuid, _role app_role)` security definer-funktion.
 
-Implementerar OAuth2 Authorization Code + PKCE mot Connect:
+3. Trigger: `handle_new_user()` skapar automatiskt en `profiles`-rad + en `user_roles`-rad med `'viewer'` när någon registrerar sig.
 
-- `redirectToLogin(returnTo?: string)` — genererar `code_verifier` + `code_challenge` (S256), lagrar verifier + returnTo i `sessionStorage`, redirectar till
-  `${CONNECT_BASE_URL}/login?client_id=...&redirect_uri=...&audience=music-catalog-core&response_type=code&code_challenge=...&code_challenge_method=S256&state=<random>`.
-- `handleCallback()` — läser `code` + `state`, verifierar state, POSTar till `${CONNECT_BASE_URL}/oauth/token` med `grant_type=authorization_code`, `code_verifier`, redirect_uri, client_id. Sparar `{ access_token, refresh_token?, expires_at }` i `localStorage` (key: `connect.session`).
-- `getAccessToken()` — returnerar giltig token, försöker refresh om utgången och `refresh_token` finns; annars `null`.
-- `getCurrentUser()` — dekodar JWT-payload (`atob` på del 2), exponerar `{ sub, email, name, roles, permissions, scp, aud, iss, exp }`.
-- `isAuthenticated()` — token finns och inte utgången.
-- `logout()` — rensar storage, redirectar till `${CONNECT_BASE_URL}/logout?client_id=...&post_logout_redirect_uri=<origin>`.
+## Frontend
 
-Permissions läses **från JWT-claim** (`permissions[]` eller `scp` space-separerad sträng — stöd båda).
+### `src/routes/sign-in.tsx`
+- Ta bort Microsoft/Apple/GitHub-knapparna.
+- Två flikar: **Logga in** och **Skapa konto**.
+- Fält: e-post, lösenord (signup också: display name).
+- `supabase.auth.signInWithPassword({ email, password })` resp. `supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + '/auth/callback', data: { display_name } } })`.
+- Knapp "Fortsätt med Google" → `supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/auth/callback' } })`.
+- Svenska fel- och informationsmeddelanden (t.ex. "Felaktig e-post eller lösenord", "Vi har skickat en bekräftelselänk till din e-post").
 
-## 3. Auth-store + Provider
+### `src/routes/auth.callback.tsx`
+- Behåll — fungerar redan för OAuth + magic links. Verifiera att den läser session via `onAuthStateChange` och redirectar till `?redirect` eller `/dashboard`.
 
-- Förenkla `src/lib/auth/store.ts` så `AuthUser` får `roles: string[]`, `permissions: string[]`, `claims: { aud, iss, scp, exp }`.
-- Ersätt `src/lib/auth/AuthProvider.tsx`: vid mount, läs token från storage, hydrera store, registrera `setApiTokenGetter(getAccessToken)`. Lyssna inte på MSAL.
-- Ersätt `src/lib/auth/useAuth.ts`: `loginRedirect → redirectToLogin`, `logoutRedirect → logout`. Inga popups.
-- Ta bort `src/lib/auth/msal.ts` och `src/lib/auth/connect.ts` (gamla /auth/me-hjälparen).
-- Avinstallera `@azure/msal-browser`.
+### `src/lib/auth/useAuth.ts` / `store.ts` / `AuthProvider.tsx`
+- Ta bort `SupportedProvider`-listan med azure/github/apple.
+- Lägg till `signInWithEmail`, `signUpWithEmail`, `signInWithGoogle`.
+- Hämta `roles` från `user_roles`-tabellen efter login (en query) och exponera via `useAuth()`.
 
-## 4. Callback-route — `src/routes/auth.callback.tsx`
+### `src/lib/auth/permissions.ts`
+- `useHasRole('admin' | 'editor' | 'viewer')` baserat på roller från store.
 
-Skriv om: vid mount kör `await handleCallback()`, hydrera authStore, navigera till sparad `returnTo` (default `/dashboard`). Vid fel: visa tydligt felmeddelande + knapp "Försök logga in igen".
+### Cleanup
+- Ta bort referenser till Microsoft/Apple/GitHub i sign-in och dokumentation.
+- Behåll `/debug/token`-länken i menyn.
 
-## 5. Sign-in-sida
+## Verifiering
 
-`src/routes/sign-in.tsx`: behåll layout, men knappen kallar `redirectToLogin(search.redirect)` istället för popup. Ta bort MSAL-specifika varningar.
+- Bygg passerar.
+- `/sign-in` visar e-post/lösenord-formulär + Google-knapp.
+- Ny användare kan registrera sig → profile + viewer-roll skapas automatiskt.
+- `/admin` skyddas fortfarande via `_authenticated`-guarden.
 
-## 6. API-klient — `src/lib/api.ts`
+## Vad användaren behöver göra själv
 
-Redan tokengetter-baserad. Justeringar:
-- Vid 401: anropa `connectAuth.logout()`-light (rensa storage) och redirecta till `/sign-in?redirect=<current>`.
-- Vid 403: kasta `ApiError` med svenskt meddelande "Du saknar behörighet för den här åtgärden."
-- Vid network-fail: meddelande "Kunde inte nå musikkatalogens API."
-- Behåll alla `api.*` domain-helpers oförändrade.
+- Inget för e-post/lösenord — fungerar direkt.
+- För Google-knappen: aktivera Google-providern i Lovable Cloud → Users → Auth Settings (eller så kan jag göra det åt dig efter att planen godkänts).
 
-## 7. Permission-aware UI
+## Filer som ändras
 
-Lägg till `src/lib/auth/permissions.ts`:
-```ts
-export function useHasPermission(p: string): boolean
-export function useHasAnyPermission(ps: string[]): boolean
-export const PERMISSIONS = { CATALOG_READ: "catalog.read", ARTISTS_MANAGE: "artists.manage", RELEASES_MANAGE: "releases.manage", TRACKS_UPLOAD: "tracks.upload", TRACKS_PROCESS: "tracks.process", METADATA_EDIT: "metadata.edit", USERS_MANAGE: "users.manage" }
-```
-Wrappa skapa/redigera/upload-knappar i `artists.tsx`, `releases.tsx`, `tracks.tsx`, `uploads.tsx` med `useHasPermission(...)`. Endast UX-skydd; backend är fortsatt sanningskällan.
-
-## 8. User menu
-
-I `src/components/layout/AppShell.tsx`: lägg en `DropdownMenu` i headern som visar namn/email, roles som badges, samt "Logga ut"-knapp som kallar `logout()`.
-
-## 9. Debug-token-sidan
-
-`src/routes/_authenticated.debug.token.tsx` uppdateras till att läsa claims via `getCurrentUser()` istället för MSAL.
-
-## 10. Behåller
-
-Alla katalogsidor, player, admin-vyer, R2-uppladdning — orörda förutom permission-wrappar runt action-knappar.
-
----
-
-### Tekniska detaljer
-
-- PKCE: `crypto.subtle.digest("SHA-256", verifier)` → base64url. Verifier: 64-char random från `crypto.getRandomValues`.
-- JWT-decode: ren `atob` + `JSON.parse` — ingen signaturverifiering på klienten (backend gör det).
-- Token-refresh: om Connect returnerar `refresh_token`, kör `grant_type=refresh_token` när token har <60s kvar.
-- `sessionStorage` för PKCE-verifier + returnTo (rensas efter callback). `localStorage` för session (överlever reload).
-- Inga ändringar i routeTree.gen.ts (auto-genereras).
-
-### Sammanfattning till användaren efter implementation
-
-Vid avslut redovisas: ändrade filer, login-flöde steg-för-steg, hur Bearer-token sätts på varje request, var permissions kollas i UI, samt vilka env-vars som måste finnas i prod.
+- ny migration (profiles, user_roles, app_role, has_role, handle_new_user trigger)
+- `src/routes/sign-in.tsx`
+- `src/lib/auth/useAuth.ts`
+- `src/lib/auth/store.ts`
+- `src/lib/auth/AuthProvider.tsx`
+- `src/lib/auth/permissions.ts`
