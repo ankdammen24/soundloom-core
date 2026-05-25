@@ -59,19 +59,6 @@ export function useAuth() {
     if (result.error) throw result.error;
   }, []);
 
-  const signInWithSSO = useCallback(async (email: string, redirectTo?: string) => {
-    if (!supabaseConfigured) throw new Error("Backend är inte konfigurerat.");
-    const domain = email.split("@")[1]?.trim().toLowerCase();
-    if (!domain) throw new Error("Ange en giltig e-postadress.");
-    const { data, error } = await supabase.auth.signInWithSSO({
-      domain,
-      options: { redirectTo: callbackUrl(redirectTo) },
-    });
-    if (error) throw error;
-    if (data?.url && typeof window !== "undefined") {
-      window.location.href = data.url;
-    }
-  }, []);
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
@@ -95,7 +82,7 @@ export function useAuth() {
     signUpWithEmail,
     signInWithGoogle,
     signInWithApple,
-    signInWithSSO,
+    
     signInWith,
     signOut,
     loginRedirect: signOut,

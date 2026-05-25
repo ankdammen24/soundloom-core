@@ -18,17 +18,16 @@ type Mode = "sign-in" | "sign-up";
 
 function SignInPage() {
   const { t } = useTranslation("auth");
-  const { isAuthenticated, user, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple, signInWithSSO } = useAuth();
+  const { isAuthenticated, user, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple } = useAuth();
   const search = Route.useSearch();
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [busy, setBusy] = useState<"google" | "apple" | "email" | "sso" | null>(null);
-  const [showSso, setShowSso] = useState(false);
-  const [ssoEmail, setSsoEmail] = useState("");
+  const [busy, setBusy] = useState<"google" | "apple" | "email" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+
 
   if (isAuthenticated) {
     const safe = safeInternalTarget(search.redirect) || landingForRoles(user?.roles);
@@ -87,24 +86,6 @@ function SignInPage() {
     }
   }
 
-  async function onSso(e: FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setInfo(null);
-    setBusy("sso");
-    try {
-      await signInWithSSO(ssoEmail, search.redirect);
-    } catch (err) {
-      const msg = (err as Error)?.message ?? "";
-      if (/no sso provider/i.test(msg) || /not found/i.test(msg)) {
-        setError(t("errors.ssoNoProvider"));
-      } else {
-        setError(msg || t("errors.ssoFailed"));
-      }
-      setBusy(null);
-    }
-  }
-
   return (
     <AuthShell>
       <h1 className="text-2xl font-bold tracking-tight">
@@ -133,40 +114,8 @@ function SignInPage() {
           {busy === "apple" ? <Loader2 className="h-4 w-4 animate-spin" /> : <AppleLogo />}
           {t("signIn.continueWithApple")}
         </button>
-        <button
-          type="button"
-          onClick={() => setShowSso((v) => !v)}
-          disabled={busy !== null || !supabaseConfigured}
-          className="inline-flex w-full items-center justify-center gap-3 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
-        >
-          {t("signIn.continueWithSso")}
-        </button>
-        {showSso && (
-          <form onSubmit={onSso} className="space-y-2 rounded-md border border-border bg-muted/30 p-3">
-            <label className="text-xs font-medium text-muted-foreground" htmlFor="sso-email">
-              {t("signIn.ssoEmailLabel")}
-            </label>
-            <input
-              id="sso-email"
-              type="email"
-              required
-              autoComplete="email"
-              placeholder={t("signIn.ssoEmailPlaceholder")}
-              value={ssoEmail}
-              onChange={(e) => setSsoEmail(e.target.value)}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ring"
-            />
-            <button
-              type="submit"
-              disabled={busy !== null}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
-            >
-              {busy === "sso" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              {t("signIn.ssoSubmit")}
-            </button>
-          </form>
-        )}
       </div>
+
 
       <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
         <div className="h-px flex-1 bg-border" />
