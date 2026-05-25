@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import { authStore } from "@/lib/auth/store";
 import { supabase } from "@/integrations/supabase/client";
 
-const URL = "https://catalogusmusicus.mediarosenqvist.com/";
+const CANONICAL_URL = "https://catalogusmusicus.mediarosenqvist.com/";
 
 const AUTH_SEARCH_KEYS = [
   "access_token",
@@ -51,9 +51,9 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Catalogus Musicus is the catalog and upload interface for Media Rosenqvist — manage artists, releases and tracks across Radio Core, Music Core and Radio Uppsala." },
       { property: "og:title", content: "Catalogus Musicus – Media Rosenqvist Music Catalog" },
       { property: "og:description", content: "Catalog and upload interface for Media Rosenqvist — artists, releases and tracks across radio and music services." },
-      { property: "og:url", content: URL },
+      { property: "og:url", content: CANONICAL_URL },
     ],
-    links: [{ rel: "canonical", href: URL }],
+    links: [{ rel: "canonical", href: CANONICAL_URL }],
   }),
   component: Home,
 });
