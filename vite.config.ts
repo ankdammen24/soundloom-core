@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       tsconfigPaths(),
       tailwindcss(),
-      tanstackStart({ target: 'cloudflare-module' }),
+      tanstackStart(),
       react(),
       cloudflare({ viteEnvironment: { name: 'ssr' } }),
     ],
