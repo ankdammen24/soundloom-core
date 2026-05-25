@@ -192,7 +192,7 @@ async function safeFetch(finalUrl: string, init: {
     console.error("[api] ✗ fetch failed", diagnostics);
     throw new ApiError(
       0,
-      `Network fetch failed (${diagnostics.errorName ?? "Error"}): ${diagnostics.errorMessage ?? "Unknown error"}. ${diagnostics.hints.join(" ")}`,
+      `Kunde inte nå musikkatalogens API (${diagnostics.errorName ?? "Error"}): ${diagnostics.errorMessage ?? "okänt fel"}. ${diagnostics.hints.join(" ")}`,
       { diagnostics },
       diagnostics,
     );

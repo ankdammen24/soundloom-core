@@ -240,17 +240,29 @@ export function AppShell() {
                 <button
                   type="button"
                   onClick={onLogout}
-                  title="Sign out"
+                  title="Logga ut"
                   className={cn(
                     "group flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
                     "lg:justify-start md:justify-center md:px-2 lg:px-3",
                   )}
                 >
                   <LogOut className="h-5 w-5 flex-shrink-0" />
-                  <span className="truncate lg:inline md:hidden lg:!inline">Sign out</span>
+                  <span className="truncate lg:inline md:hidden lg:!inline">Logga ut</span>
                 </button>
-                <div className="px-3 py-2 hidden lg:block text-xs text-sidebar-foreground/60 truncate">
-                  {user?.email ?? user?.displayName ?? user?.name}
+                <div className="px-3 py-2 hidden lg:block">
+                  <div className="text-xs font-medium text-sidebar-foreground truncate">
+                    {user?.displayName ?? user?.name ?? user?.email}
+                  </div>
+                  {user?.email && (
+                    <div className="text-[11px] text-sidebar-foreground/60 truncate">{user.email}</div>
+                  )}
+                  {user?.roles && user.roles.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {user.roles.slice(0, 3).map((r) => (
+                        <span key={r} className="rounded-full bg-sidebar-accent/60 px-1.5 py-0.5 text-[10px] text-sidebar-foreground/80">{r}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
