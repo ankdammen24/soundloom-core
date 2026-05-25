@@ -113,7 +113,8 @@ export const completeR2Upload = createServerFn({ method: "POST" })
           break;
       }
       if (Object.keys(patch).length > 0) {
-        const { error } = await sb.from("tracks").update(patch).eq("id", data.trackId);
+        const { error } = await (sb as unknown as { from: (t: string) => { update: (p: Record<string, unknown>) => { eq: (c: string, v: string) => Promise<{ error: { message: string } | null }> } } })
+          .from("tracks").update(patch).eq("id", data.trackId);
         if (error) throw new Error(`Supabase update failed: ${error.message}`);
       }
     }
