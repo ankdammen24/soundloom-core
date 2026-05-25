@@ -82,6 +82,24 @@ function SignInPage() {
     }
   }
 
+  async function onSso(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setInfo(null);
+    setBusy("sso");
+    try {
+      await signInWithSSO(ssoEmail, search.redirect);
+    } catch (err) {
+      const msg = (err as Error)?.message ?? "";
+      if (/no sso provider/i.test(msg) || /not found/i.test(msg)) {
+        setError("Ingen SSO-leverantör är registrerad för den domänen.");
+      } else {
+        setError(msg || "SSO-inloggning misslyckades.");
+      }
+      setBusy(null);
+    }
+  }
+
   return (
     <AuthShell>
       <h1 className="text-2xl font-bold tracking-tight">
