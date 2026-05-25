@@ -42,6 +42,7 @@ export const getR2UploadUrl = createServerFn({ method: "POST" })
 
 // 2) Presigned download/playback URL
 export const getR2DownloadUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
     z
       .object({
