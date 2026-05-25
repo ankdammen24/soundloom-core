@@ -1,4 +1,19 @@
 {
   "title": "Profile",
-  "subtitle": "Manage your account details."
+  "subtitle": "Manage your account details.",
+  "account": "Account",
+  "details": "Profile details",
+  "detailsDesc": "Update your display name and avatar.",
+  "displayName": "Display name",
+  "displayNamePlaceholder": "Your name",
+  "avatarUrl": "Avatar URL",
+  "avatarUrlPlaceholder": "https://...",
+  "email": "Email",
+  "emailReadonly": "Email is managed via your sign-in.",
+  "save": "Save changes",
+  "saving": "Saving...",
+  "saved": "Saved",
+  "loadError": "Failed to load profile.",
+  "saveError": "Failed to save profile.",
+  "signOut": "Sign out"
 }
