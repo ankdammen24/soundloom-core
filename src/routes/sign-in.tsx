@@ -22,13 +22,13 @@ function SignInPage() {
 
 export function AuthForm({ initialMode = "sign-in" }: { initialMode?: Mode }) {
   const { t } = useTranslation("auth");
-  const { isAuthenticated, user, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple } = useAuth();
+  const { isAuthenticated, user, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple, signInWithMicrosoft } = useAuth();
   const search = useSearch({ strict: false }) as { redirect?: string };
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [busy, setBusy] = useState<"google" | "apple" | "email" | null>(null);
+  const [busy, setBusy] = useState<"google" | "apple" | "microsoft" | "email" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
