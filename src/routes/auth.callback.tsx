@@ -18,7 +18,7 @@ function internalTarget(target: string) {
   }
 }
 
-async function withTimeout<T>(promise: Promise<T>, ms = CALLBACK_TIMEOUT_MS): Promise<T> {
+async function withTimeout<T>(promise: PromiseLike<T>, ms = CALLBACK_TIMEOUT_MS): Promise<T> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => reject(new Error("Session request timed out")), ms);
