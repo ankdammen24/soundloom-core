@@ -1,24 +1,30 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/lib/auth/useAuth";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { supabase } from "@/integrations/supabase/client";
+import { getOrCreateMyProfile, updateMyProfile } from "@/lib/profile.functions";
 import { LogOut, Mail, User as UserIcon, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/profile")({ component: ProfilePage });
-
-type ProfileRow = {
-  id: string;
-  email: string | null;
-  display_name: string | null;
-  avatar_url: string | null;
-};
+export const Route = createFileRoute("/_authenticated/profile")({
+  beforeLoad: async ({ location }) => {
+    if (typeof window === "undefined") return;
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) {
+      throw redirect({ to: "/sign-in", search: { redirect: location.href } });
+    }
+  },
+  component: ProfilePage,
+});
 
 function ProfilePage() {
   const { t } = useTranslation("profile");
   const { user, logoutRedirect } = useAuth();
+  const getProfile = useServerFn(getOrCreateMyProfile);
+  const saveProfile = useServerFn(updateMyProfile);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -33,62 +39,45 @@ function ProfilePage() {
     (async () => {
       setLoading(true);
       setError(null);
-      const { data: authData } = await supabase.auth.getUser();
-      const uid = authData.user?.id;
-      if (!uid) {
-        if (!cancelled) setLoading(false);
-        return;
-      }
-      const { data, error: err } = await supabase
-        .from("profiles")
-        .select("id,email,display_name,avatar_url")
-        .eq("id", uid)
-        .maybeSingle();
+      const result = await getProfile();
       if (cancelled) return;
-      if (err) {
-        setError(t("loadError"));
-      } else if (data) {
-        const row = data as ProfileRow;
-        setDisplayName(row.display_name ?? "");
-        setAvatarUrl(row.avatar_url ?? "");
-        setEmail(row.email ?? authData.user?.email ?? "");
-      } else {
-        setEmail(authData.user?.email ?? "");
-      }
+      const row = result.profile;
+      setDisplayName(row.display_name ?? "");
+      setAvatarUrl(row.avatar_url ?? "");
+      setEmail(row.email ?? user?.email ?? "");
       setLoading(false);
+    })().catch(() => {
+      if (!cancelled) {
+        setError(t("loadError"));
+        setLoading(false);
+      }
     })();
     return () => {
       cancelled = true;
     };
-  }, [t]);
+  }, [getProfile, t, user?.email]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setSaving(true);
     setError(null);
     setSaved(false);
-    const { data: authData } = await supabase.auth.getUser();
-    const uid = authData.user?.id;
-    if (!uid) {
-      setSaving(false);
-      setError(t("saveError"));
-      return;
-    }
-    const payload = {
-      id: uid,
-      email: authData.user?.email ?? email ?? null,
-      display_name: displayName.trim() || null,
-      avatar_url: avatarUrl.trim() || null,
-    };
-    const { error: err } = await supabase
-      .from("profiles")
-      .upsert(payload, { onConflict: "id" });
-    setSaving(false);
-    if (err) {
-      setError(t("saveError"));
-    } else {
+    try {
+      const result = await saveProfile({
+        data: {
+          display_name: displayName.trim() || null,
+          avatar_url: avatarUrl.trim() || null,
+        },
+      });
+      setDisplayName(result.profile.display_name ?? "");
+      setAvatarUrl(result.profile.avatar_url ?? "");
+      setEmail(result.profile.email ?? email);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
+    } catch {
+      setError(t("saveError"));
+    } finally {
+      setSaving(false);
     }
   }
 
