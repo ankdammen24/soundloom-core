@@ -18,32 +18,44 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          created_by_email: string | null
+          environment: string
+          expires_at: string | null
           id: string
           key_hash: string
           last_used_at: string | null
           name: string
           prefix: string
           revoked_at: string | null
+          scopes: string[]
         }
         Insert: {
           created_at?: string
           created_by?: string | null
+          created_by_email?: string | null
+          environment?: string
+          expires_at?: string | null
           id?: string
           key_hash: string
           last_used_at?: string | null
           name: string
           prefix: string
           revoked_at?: string | null
+          scopes?: string[]
         }
         Update: {
           created_at?: string
           created_by?: string | null
+          created_by_email?: string | null
+          environment?: string
+          expires_at?: string | null
           id?: string
           key_hash?: string
           last_used_at?: string | null
           name?: string
           prefix?: string
           revoked_at?: string | null
+          scopes?: string[]
         }
         Relationships: []
       }
@@ -607,7 +619,48 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      api_keys_public: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          created_by_email: string | null
+          environment: string | null
+          expires_at: string | null
+          id: string | null
+          last_used_at: string | null
+          name: string | null
+          prefix: string | null
+          revoked_at: string | null
+          scopes: string[] | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          created_by_email?: string | null
+          environment?: string | null
+          expires_at?: string | null
+          id?: string | null
+          last_used_at?: string | null
+          name?: string | null
+          prefix?: string | null
+          revoked_at?: string | null
+          scopes?: string[] | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          created_by_email?: string | null
+          environment?: string | null
+          expires_at?: string | null
+          id?: string | null
+          last_used_at?: string | null
+          name?: string | null
+          prefix?: string | null
+          revoked_at?: string | null
+          scopes?: string[] | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       delete_email: {
@@ -624,6 +677,16 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_audit: {
+        Args: {
+          _action: string
+          _actor: string
+          _entity_id: string
+          _entity_type: string
+          _metadata: Json
+        }
+        Returns: string
       }
       move_to_dlq: {
         Args: {
@@ -642,9 +705,18 @@ export type Database = {
           read_ct: number
         }[]
       }
+      validate_api_key: {
+        Args: { _hash: string; _required_scope: string }
+        Returns: {
+          key_id: string
+          ok: boolean
+          reason: string
+          scopes: string[]
+        }[]
+      }
     }
     Enums: {
-      app_role: "admin" | "editor" | "viewer" | "artist"
+      app_role: "admin" | "editor" | "viewer" | "artist" | "api_client"
       job_status: "queued" | "running" | "succeeded" | "failed"
       release_type: "single" | "ep" | "album"
       review_decision: "approve" | "reject" | "changes"
@@ -784,7 +856,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "editor", "viewer", "artist"],
+      app_role: ["admin", "editor", "viewer", "artist", "api_client"],
       job_status: ["queued", "running", "succeeded", "failed"],
       release_type: ["single", "ep", "album"],
       review_decision: ["approve", "reject", "changes"],
