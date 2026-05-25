@@ -29,11 +29,9 @@ const config: Configuration = {
     authority: authority || "https://login.microsoftonline.com/common",
     redirectUri,
     postLogoutRedirectUri,
-    navigateToLoginRequestUrl: false,
   },
   cache: {
     cacheLocation: "localStorage",
-    storeAuthStateInCookie: false,
   },
 };
 
