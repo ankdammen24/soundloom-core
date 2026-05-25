@@ -1,19 +1,31 @@
 import { useCallback } from "react";
 import { useAuthState } from "./store";
-import { redirectToLogin, logout as connectLogout, connectConfigured } from "@/lib/connectAuth";
+import { supabase, supabaseConfigured } from "@/lib/supabase";
+import type { Provider } from "@supabase/supabase-js";
+
+export type SupportedProvider = "google" | "github" | "azure" | "apple";
 
 export function useAuth() {
   const state = useAuthState();
 
-  const loginRedirect = useCallback(async (redirect?: string) => {
-    if (!connectConfigured) {
-      throw new Error("Connect is not configured. Set VITE_CONNECT_BASE_URL, VITE_CONNECT_CLIENT_ID, VITE_CONNECT_REDIRECT_URI.");
+  const signInWith = useCallback(async (provider: SupportedProvider, redirectTo?: string) => {
+    if (!supabaseConfigured) {
+      throw new Error("Supabase är inte konfigurerat.");
     }
-    await redirectToLogin(redirect);
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const redirect = `${origin}/auth/callback${redirectTo ? `?next=${encodeURIComponent(redirectTo)}` : ""}`;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: provider as Provider,
+      options: {
+        redirectTo: redirect,
+        scopes: provider === "azure" ? "email openid profile" : undefined,
+      },
+    });
+    if (error) throw error;
   }, []);
 
-  const logoutRedirect = useCallback(async () => {
-    connectLogout();
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
   }, []);
 
   return {
@@ -21,10 +33,12 @@ export function useAuth() {
     status: state.status,
     isAuthenticated: state.status === "authenticated",
     isLoading: state.status === "loading",
-    loginRedirect,
-    logoutRedirect,
-    // Back-compat aliases
-    login: loginRedirect,
-    logout: logoutRedirect,
+    signInWith,
+    signOut,
+    // Back-compat aliases used elsewhere in the app
+    loginRedirect: (_redirect?: string) => Promise.reject(new Error("Use signInWith(provider).")),
+    logoutRedirect: signOut,
+    login: (_redirect?: string) => Promise.reject(new Error("Use signInWith(provider).")),
+    logout: signOut,
   };
 }
