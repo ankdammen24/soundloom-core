@@ -91,7 +91,6 @@ function ProfilePage() {
         <div className="flex items-center gap-4">
           <div className="grid h-14 w-14 place-items-center overflow-hidden rounded-full bg-primary/15 text-primary">
             {avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
               <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
             ) : (
               <span className="text-lg font-semibold">{initial}</span>
