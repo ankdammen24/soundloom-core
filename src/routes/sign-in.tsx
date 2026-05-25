@@ -1,5 +1,5 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type ReactElement } from "react";
 import { Music2, Loader2 } from "lucide-react";
 import { useAuth, type SupportedProvider } from "@/lib/auth/useAuth";
 import { supabaseConfigured } from "@/lib/supabase";
@@ -11,7 +11,7 @@ export const Route = createFileRoute("/sign-in")({
   component: SignInPage,
 });
 
-const PROVIDERS: Array<{ id: SupportedProvider; label: string; Logo: () => React.ReactElement }> = [
+const PROVIDERS: Array<{ id: SupportedProvider; label: string; Logo: () => ReactElement }> = [
   { id: "azure", label: "Fortsätt med Microsoft", Logo: MicrosoftLogo },
   { id: "google", label: "Fortsätt med Google", Logo: GoogleLogo },
   { id: "github", label: "Fortsätt med GitHub", Logo: GitHubLogo },
