@@ -13,7 +13,7 @@ function safeRedirectTarget(redirectTo?: string) {
 function callbackUrl(redirectTo?: string) {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const safe = safeRedirectTarget(redirectTo) || "/dashboard";
-  return `${origin}/?next=${encodeURIComponent(safe)}`;
+  return `${origin}/auth/callback?next=${encodeURIComponent(safe)}`;
 }
 
 export function useAuth() {
@@ -33,7 +33,7 @@ export function useAuth() {
         email,
         password,
         options: {
-          emailRedirectTo: `${origin}/?next=%2Fdashboard`,
+          emailRedirectTo: `${origin}/auth/callback?next=%2Fdashboard`,
           data: displayName ? { display_name: displayName } : undefined,
         },
       });
