@@ -1,19 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { authStore } from "./store";
+import { fetchUserRoles } from "./landing";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
-
-async function fetchRoles(userId: string): Promise<string[]> {
-  try {
-    const { data, error } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId);
-    if (error) return [];
-    return (data ?? []).map((r) => String((r as { role: string }).role));
-  } catch {
-    return [];
-  }
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
@@ -33,7 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       authStore.setFromSession(session, []);
       const requestId = activeRoleRequest + 1;
       activeRoleRequest = requestId;
-      void fetchRoles(session.user.id).then((roles) => {
+      void fetchUserRoles(session.user.id).then((roles) => {
         if (activeRoleRequest === requestId) authStore.setRoles(roles);
       });
     };

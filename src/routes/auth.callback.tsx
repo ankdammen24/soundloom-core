@@ -4,6 +4,7 @@ import { Loader2, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
 import { authStore } from "@/lib/auth/store";
+import { callbackLanding, fetchUserRoles } from "@/lib/auth/landing";
 import { Button } from "@/components/ui/button";
 
 const CALLBACK_TIMEOUT_MS = 10000;
@@ -16,13 +17,6 @@ const AUTH_SEARCH_KEYS = [
   "type",
   "sb",
 ];
-
-function internalTarget(target: string): string {
-  if (!target) return "";
-  if (!target.startsWith("/") || target.startsWith("//")) return "";
-  if (target.startsWith("/auth/callback")) return "";
-  return target;
-}
 
 function withTimeout<T>(promise: Promise<T>, message: string): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -54,10 +48,6 @@ function AuthCallbackPage() {
 
   useEffect(() => {
     let cancelled = false;
-
-    function landTarget(): string {
-      return internalTarget(next) || "/profile";
-    }
 
     function hardRedirect(to: string) {
       if (typeof window === "undefined") return;
@@ -108,8 +98,10 @@ function AuthCallbackPage() {
           const session = data.session ?? (await supabase.auth.getSession()).data.session;
           if (!session) throw new Error(t("callback.timeout"));
 
-          authStore.setFromSession(session, []);
-          hardRedirect(landTarget());
+          const roles = await withTimeout(fetchUserRoles(session.user.id), t("callback.timeout"));
+          if (cancelled) return;
+          authStore.setFromSession(session, roles);
+          hardRedirect(callbackLanding(next, roles));
           return;
         }
 
@@ -124,8 +116,10 @@ function AuthCallbackPage() {
         if (cancelled) return;
         if (!existing.data.session) throw new Error(t("callback.timeout"));
 
-        authStore.setFromSession(existing.data.session, []);
-        hardRedirect(landTarget());
+        const roles = await withTimeout(fetchUserRoles(existing.data.session.user.id), t("callback.timeout"));
+        if (cancelled) return;
+        authStore.setFromSession(existing.data.session, roles);
+        hardRedirect(callbackLanding(next, roles));
       } catch (err) {
         if (!cancelled) setError((err as Error)?.message ?? "Session error");
       }
