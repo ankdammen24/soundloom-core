@@ -18,6 +18,8 @@ async function fetchRoles(userId: string): Promise<string[]> {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
+    let activeRoleRequest = 0;
+
     if (!supabaseConfigured) {
       authStore.set({ status: "unauthenticated", user: null });
       return;
@@ -28,22 +30,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return data.session?.access_token ?? null;
     });
 
-    const hydrate = async (session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
+    const hydrate = (session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
       if (!session?.user) {
+        activeRoleRequest += 1;
         authStore.setFromSession(null);
         return;
       }
       authStore.setFromSession(session, []);
-      // Defer role fetch so UI renders immediately, then patch roles in.
-      const roles = await fetchRoles(session.user.id);
-      authStore.setRoles(roles);
+      // Fetch roles in the background; role lookup must never block login/profile landing.
+      const requestId = activeRoleRequest + 1;
+      activeRoleRequest = requestId;
+      void fetchRoles(session.user.id).then((roles) => {
+        if (activeRoleRequest === requestId) authStore.setRoles(roles);
+      });
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      void hydrate(session);
+      hydrate(session);
     });
 
-    void supabase.auth.getSession().then(({ data }) => void hydrate(data.session));
+    void supabase.auth.getSession().then(({ data }) => hydrate(data.session));
 
     return () => {
       subscription.unsubscribe();
