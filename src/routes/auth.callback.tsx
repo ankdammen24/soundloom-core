@@ -36,7 +36,41 @@ function AuthCallbackPage() {
       return roles.includes("admin") ? "/dashboard" : "/";
     }
 
+    async function consumeHashTokens() {
+      if (typeof window === "undefined") return null;
+      const hash = window.location.hash.startsWith("#")
+        ? window.location.hash.slice(1)
+        : "";
+      if (!hash) return null;
+      const params = new URLSearchParams(hash);
+      const access_token = params.get("access_token");
+      const refresh_token = params.get("refresh_token");
+      if (!access_token || !refresh_token) return null;
+      const { data, error: setErr } = await supabase.auth.setSession({
+        access_token,
+        refresh_token,
+      });
+      // Clean tokens from the URL so they aren't kept in history.
+      const cleanUrl = `${window.location.pathname}${window.location.search}`;
+      window.history.replaceState({}, "", cleanUrl);
+      if (setErr) throw setErr;
+      return data.session;
+    }
+
     async function waitForSession() {
+      try {
+        const hashSession = await consumeHashTokens();
+        if (cancelled) return;
+        if (hashSession) {
+          const target = await resolveTarget(hashSession.user.id);
+          if (!cancelled) navigate({ to: target, replace: true });
+          return;
+        }
+      } catch (err) {
+        setError((err as Error)?.message ?? "Session error");
+        return;
+      }
+
       const { data, error: getErr } = await supabase.auth.getSession();
       if (cancelled) return;
       if (data.session) {
