@@ -1,0 +1,41 @@
+{
+  "actions": {
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "delete": "Ta bort",
+    "edit": "Redigera",
+    "close": "Stäng",
+    "back": "Tillbaka",
+    "next": "Nästa",
+    "continue": "Fortsätt",
+    "retry": "Försök igen",
+    "refresh": "Uppdatera",
+    "loading": "Laddar…",
+    "search": "Sök",
+    "upload": "Ladda upp",
+    "submit": "Skicka",
+    "confirm": "Bekräfta"
+  },
+  "status": {
+    "ok": "OK",
+    "error": "Fel",
+    "warning": "Varning",
+    "success": "Klart",
+    "pending": "Väntar",
+    "processing": "Bearbetar",
+    "done": "Klar",
+    "failed": "Misslyckades"
+  },
+  "errors": {
+    "generic": "Något gick fel. Försök igen.",
+    "network": "Nätverksfel. Kontrollera anslutningen.",
+    "notFound": "Hittades inte.",
+    "unauthorized": "Du saknar behörighet."
+  },
+  "language": {
+    "label": "Språk",
+    "sv": "Svenska",
+    "en": "Engelska",
+    "short": { "sv": "SV", "en": "EN" }
+  }
+}
