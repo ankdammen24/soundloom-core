@@ -36,6 +36,7 @@ import { Route as AuthenticatedAlbumsRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 import { Route as AuthenticatedTracksIdRouteImport } from './routes/_authenticated.tracks.$id'
 import { Route as AuthenticatedReleasesIdRouteImport } from './routes/_authenticated.releases.$id'
+import { Route as AuthenticatedDebugTokenRouteImport } from './routes/_authenticated.debug.token'
 import { Route as AuthenticatedArtistsIdRouteImport } from './routes/_authenticated.artists.$id'
 import { Route as AuthenticatedAdminWorkersRouteImport } from './routes/_authenticated.admin.workers'
 import { Route as AuthenticatedAdminStorageRouteImport } from './routes/_authenticated.admin.storage'
@@ -183,6 +184,11 @@ const AuthenticatedReleasesIdRoute = AuthenticatedReleasesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedReleasesRoute,
 } as any)
+const AuthenticatedDebugTokenRoute = AuthenticatedDebugTokenRouteImport.update({
+  id: '/debug/token',
+  path: '/debug/token',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedArtistsIdRoute = AuthenticatedArtistsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -275,6 +281,7 @@ export interface FileRoutesByFullPath {
   '/admin/storage': typeof AuthenticatedAdminStorageRoute
   '/admin/workers': typeof AuthenticatedAdminWorkersRoute
   '/artists/$id': typeof AuthenticatedArtistsIdRoute
+  '/debug/token': typeof AuthenticatedDebugTokenRoute
   '/releases/$id': typeof AuthenticatedReleasesIdRoute
   '/tracks/$id': typeof AuthenticatedTracksIdRoute
 }
@@ -313,6 +320,7 @@ export interface FileRoutesByTo {
   '/admin/storage': typeof AuthenticatedAdminStorageRoute
   '/admin/workers': typeof AuthenticatedAdminWorkersRoute
   '/artists/$id': typeof AuthenticatedArtistsIdRoute
+  '/debug/token': typeof AuthenticatedDebugTokenRoute
   '/releases/$id': typeof AuthenticatedReleasesIdRoute
   '/tracks/$id': typeof AuthenticatedTracksIdRoute
 }
@@ -353,6 +361,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/storage': typeof AuthenticatedAdminStorageRoute
   '/_authenticated/admin/workers': typeof AuthenticatedAdminWorkersRoute
   '/_authenticated/artists/$id': typeof AuthenticatedArtistsIdRoute
+  '/_authenticated/debug/token': typeof AuthenticatedDebugTokenRoute
   '/_authenticated/releases/$id': typeof AuthenticatedReleasesIdRoute
   '/_authenticated/tracks/$id': typeof AuthenticatedTracksIdRoute
 }
@@ -393,6 +402,7 @@ export interface FileRouteTypes {
     | '/admin/storage'
     | '/admin/workers'
     | '/artists/$id'
+    | '/debug/token'
     | '/releases/$id'
     | '/tracks/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -431,6 +441,7 @@ export interface FileRouteTypes {
     | '/admin/storage'
     | '/admin/workers'
     | '/artists/$id'
+    | '/debug/token'
     | '/releases/$id'
     | '/tracks/$id'
   id:
@@ -470,6 +481,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/storage'
     | '/_authenticated/admin/workers'
     | '/_authenticated/artists/$id'
+    | '/_authenticated/debug/token'
     | '/_authenticated/releases/$id'
     | '/_authenticated/tracks/$id'
   fileRoutesById: FileRoutesById
@@ -677,6 +689,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReleasesIdRouteImport
       parentRoute: typeof AuthenticatedReleasesRoute
     }
+    '/_authenticated/debug/token': {
+      id: '/_authenticated/debug/token'
+      path: '/debug/token'
+      fullPath: '/debug/token'
+      preLoaderRoute: typeof AuthenticatedDebugTokenRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/artists/$id': {
       id: '/_authenticated/artists/$id'
       path: '/$id'
@@ -830,6 +849,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTracksRoute: typeof AuthenticatedTracksRouteWithChildren
   AuthenticatedUploadsRoute: typeof AuthenticatedUploadsRoute
+  AuthenticatedDebugTokenRoute: typeof AuthenticatedDebugTokenRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -849,6 +869,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTracksRoute: AuthenticatedTracksRouteWithChildren,
   AuthenticatedUploadsRoute: AuthenticatedUploadsRoute,
+  AuthenticatedDebugTokenRoute: AuthenticatedDebugTokenRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
