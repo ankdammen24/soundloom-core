@@ -65,10 +65,12 @@ function useAuthCallbackOnRoot(): { processing: boolean; error: string | null } 
 
     (async () => {
       try {
+        console.log("[index/callback] start", { next });
         const hash = window.location.hash.slice(1);
         const params = new URLSearchParams(hash);
         const access_token = params.get("access_token") ?? "";
         const refresh_token = params.get("refresh_token") ?? "";
+        console.log("[index/callback] tokens parsed", { hasAccess: !!access_token, hasRefresh: !!refresh_token });
 
         // Strip token material from the URL immediately so it cannot leak via
         // referrer, history, or analytics.
@@ -88,6 +90,7 @@ function useAuthCallbackOnRoot(): { processing: boolean; error: string | null } 
         const { data: userData, error: userErr } = await supabase.auth.getUser();
         if (cancelled) return;
         if (userErr || !userData.user) throw userErr ?? new Error("Session error");
+        console.log("[index/callback] user", { id: userData.user.id, email: userData.user.email });
 
         const session = data.session ?? (await supabase.auth.getSession()).data.session;
         if (!session) throw new Error("Session error");
@@ -96,8 +99,10 @@ function useAuthCallbackOnRoot(): { processing: boolean; error: string | null } 
         authStore.setFromSession(session, roles);
 
         const target = callbackLanding(next, roles);
+        console.log("[index/callback] roles + redirect", { userId: session.user.id, next, roles, target });
         await navigate({ to: target });
       } catch (err) {
+        console.error("[index/callback] error", err);
         if (!cancelled) {
           setError((err as Error)?.message ?? "Session error");
           setProcessing(false);
