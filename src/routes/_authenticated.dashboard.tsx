@@ -8,6 +8,7 @@ import { RoleGuard } from "@/components/auth/RoleGuard";
 const URL = "https://catalogusmusicus.mediarosenqvist.com/dashboard";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  beforeLoad: ({ location }) => requireRole(["admin"], { href: location.href }),
   head: () => ({
     meta: [
       { title: "Dashboard – Catalogus Musicus" },
@@ -22,7 +23,11 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function DashboardPage() {
-  return <DashboardContent />;
+  return (
+    <RoleGuard roles={["admin"]}>
+      <DashboardContent />
+    </RoleGuard>
+  );
 }
 
 function DashboardContent() {
