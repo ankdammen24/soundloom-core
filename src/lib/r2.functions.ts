@@ -21,19 +21,9 @@ export const r2Keys = {
   exportMetadata: (releaseId: string) => `exports/${releaseId}/metadata.json`,
 };
 
-function supabaseServer() {
-  const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-  const key =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ??
-    process.env.SUPABASE_PUBLISHABLE_KEY ??
-    process.env.VITE_SUPABASE_ANON_KEY ??
-    process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) throw new Error("Supabase server env not configured.");
-  return createClient(url, key, { auth: { persistSession: false } });
-}
-
 // 1) Presigned upload URL
 export const getR2UploadUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
     z
       .object({
