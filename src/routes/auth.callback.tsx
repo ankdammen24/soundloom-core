@@ -5,6 +5,31 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 
+const CALLBACK_TIMEOUT_MS = 8000;
+
+function internalTarget(target: string) {
+  if (!target) return "";
+  if (target.startsWith("/")) return target;
+  try {
+    const url = new URL(target, window.location.origin);
+    return url.origin === window.location.origin ? `${url.pathname}${url.search}${url.hash}` : "";
+  } catch {
+    return "";
+  }
+}
+
+async function withTimeout<T>(promise: Promise<T>, ms = CALLBACK_TIMEOUT_MS): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error("Session request timed out")), ms);
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+}
+
 export const Route = createFileRoute("/auth/callback")({
   validateSearch: (search: Record<string, unknown>) => ({
     next: typeof search.next === "string" ? search.next : "",
@@ -14,7 +39,10 @@ export const Route = createFileRoute("/auth/callback")({
 
 async function fetchRolesFor(userId: string): Promise<string[]> {
   try {
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+    const { data } = await withTimeout(
+      supabase.from("user_roles").select("role").eq("user_id", userId),
+      4000,
+    );
     return (data ?? []).map((r) => r.role as string);
   } catch {
     return [];
@@ -31,7 +59,8 @@ function AuthCallbackPage() {
     let cancelled = false;
 
     async function resolveTarget(userId: string) {
-      if (next) return next;
+      const requestedTarget = internalTarget(next);
+      if (requestedTarget) return requestedTarget;
       const roles = await fetchRolesFor(userId);
       return roles.includes("admin") ? "/dashboard" : "/";
     }
@@ -46,13 +75,15 @@ function AuthCallbackPage() {
       const access_token = params.get("access_token");
       const refresh_token = params.get("refresh_token");
       if (!access_token || !refresh_token) return null;
-      const { data, error: setErr } = await supabase.auth.setSession({
-        access_token,
-        refresh_token,
-      });
       // Clean tokens from the URL so they aren't kept in history.
       const cleanUrl = `${window.location.pathname}${window.location.search}`;
       window.history.replaceState({}, "", cleanUrl);
+      const { data, error: setErr } = await withTimeout(
+        supabase.auth.setSession({
+          access_token,
+          refresh_token,
+        }),
+      );
       if (setErr) throw setErr;
       return data.session;
     }
@@ -71,7 +102,7 @@ function AuthCallbackPage() {
         return;
       }
 
-      const { data, error: getErr } = await supabase.auth.getSession();
+      const { data, error: getErr } = await withTimeout(supabase.auth.getSession());
       if (cancelled) return;
       if (data.session) {
         const target = await resolveTarget(data.session.user.id);
@@ -84,7 +115,7 @@ function AuthCallbackPage() {
       }
       const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
         if (cancelled) return;
-        if (event === "SIGNED_IN" && session) {
+        if ((event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED") && session) {
           sub.subscription.unsubscribe();
           void resolveTarget(session.user.id).then((target) => {
             if (!cancelled) navigate({ to: target, replace: true });
@@ -95,7 +126,7 @@ function AuthCallbackPage() {
         if (cancelled) return;
         sub.subscription.unsubscribe();
         setError(t("callback.timeout"));
-      }, 8000);
+      }, CALLBACK_TIMEOUT_MS);
     }
 
     void waitForSession();
