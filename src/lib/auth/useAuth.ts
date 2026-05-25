@@ -90,6 +90,7 @@ export function useAuth() {
     signUpWithEmail,
     signInWithGoogle,
     signInWithApple,
+    signInWithSSO,
     signInWith,
     signOut,
     loginRedirect: (_redirect?: string) =>
