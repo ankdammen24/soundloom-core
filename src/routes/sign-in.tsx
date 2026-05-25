@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate, useSearch } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { Music2, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
