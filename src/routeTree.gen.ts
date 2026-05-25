@@ -33,7 +33,6 @@ import { Route as AuthenticatedAdminDebugRouteImport } from './routes/_authentic
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
-import { Route as ApiPublicV1WhoamiRouteImport } from './routes/api/public/v1/whoami'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -156,11 +155,6 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   path: '/lovable/email/auth/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicV1WhoamiRoute = ApiPublicV1WhoamiRouteImport.update({
-  id: '/api/public/v1/whoami',
-  path: '/api/public/v1/whoami',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -183,7 +177,6 @@ export interface FileRoutesByFullPath {
   '/auth/callback': typeof AuthCallbackRoute
   '/admin/debug': typeof AuthenticatedAdminDebugRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/api/public/v1/whoami': typeof ApiPublicV1WhoamiRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -209,7 +202,6 @@ export interface FileRoutesByTo {
   '/auth/callback': typeof AuthCallbackRoute
   '/admin/debug': typeof AuthenticatedAdminDebugRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/api/public/v1/whoami': typeof ApiPublicV1WhoamiRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -237,7 +229,6 @@ export interface FileRoutesById {
   '/auth/callback': typeof AuthCallbackRoute
   '/_authenticated/admin/debug': typeof AuthenticatedAdminDebugRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/api/public/v1/whoami': typeof ApiPublicV1WhoamiRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -265,7 +256,6 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/admin/debug'
     | '/admin/users'
-    | '/api/public/v1/whoami'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -291,7 +281,6 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/admin/debug'
     | '/admin/users'
-    | '/api/public/v1/whoami'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -318,7 +307,6 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/_authenticated/admin/debug'
     | '/_authenticated/admin/users'
-    | '/api/public/v1/whoami'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -333,7 +321,6 @@ export interface RootRouteChildren {
   SignUpRoute: typeof SignUpRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
-  ApiPublicV1WhoamiRoute: typeof ApiPublicV1WhoamiRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -509,13 +496,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/v1/whoami': {
-      id: '/api/public/v1/whoami'
-      path: '/api/public/v1/whoami'
-      fullPath: '/api/public/v1/whoami'
-      preLoaderRoute: typeof ApiPublicV1WhoamiRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -564,7 +544,6 @@ const rootRouteChildren: RootRouteChildren = {
   SignUpRoute: SignUpRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   AuthCallbackRoute: AuthCallbackRoute,
-  ApiPublicV1WhoamiRoute: ApiPublicV1WhoamiRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,

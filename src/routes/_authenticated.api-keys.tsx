@@ -1,104 +1,64 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { createFileRoute } from "@tanstack/react-router";
+import { KeyRound, Lock } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
-import { KeyRound } from "lucide-react";
-import { authStore } from "@/lib/auth/store";
+import { requireRole } from "@/lib/auth/guards";
 
 export const Route = createFileRoute("/_authenticated/api-keys")({
   beforeLoad: ({ location }) => {
-    const { status, user } = authStore.getState();
-    if (status === "authenticated" && !(user?.roles ?? []).includes("admin")) {
-      throw redirect({ to: "/dashboard", search: { redirect: location.href } as never });
-    }
+    requireRole(["admin"], { href: location.href });
   },
-  head: () => ({ meta: [{ title: "API keys – Music Catalog" }] }),
-  component: ApiKeysPage,
+  head: () => ({ meta: [{ title: "API access – Admin" }] }),
+  component: ApiAccessPage,
 });
 
-type ApiKey = {
-  id: string;
-  name: string;
-  prefix: string;
-  created_at: string;
-  last_used_at: string | null;
-  revoked_at: string | null;
-};
+const PLANNED_SCOPES = [
+  { name: "catalog:read", desc: "Read artists, releases and tracks." },
+  { name: "catalog:write", desc: "Create or update catalog entries." },
+  { name: "files:read", desc: "Generate signed URLs for masters and artwork." },
+  { name: "files:write", desc: "Upload new masters and artwork." },
+];
 
-function ApiKeysPage() {
-  const keys = useQuery({
-    queryKey: ["api_keys"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("api_keys")
-        .select("id, name, prefix, created_at, last_used_at, revoked_at")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as ApiKey[];
-    },
-  });
-
+function ApiAccessPage() {
   return (
-    <>
+    <div className="space-y-6">
       <PageHeader
-        title="API keys"
-        description="Manage keys for the public catalog API (Phase 3)."
+        title="API access"
+        description="External API access for partner platforms."
       />
 
-      <div className="rounded-lg border border-dashed border-border bg-card/50 p-5 mb-6 text-sm text-muted-foreground">
-        <KeyRound className="inline h-4 w-4 mr-2" />
-        Key generation, scoping, and the public catalog API ship in Phase 3. The table below shows
-        the underlying schema is live.
+      <div className="rounded-xl border border-dashed border-border bg-card/50 p-6">
+        <div className="flex items-start gap-3">
+          <span className="grid h-10 w-10 place-items-center rounded-full bg-muted text-muted-foreground">
+            <KeyRound className="h-5 w-5" />
+          </span>
+          <div className="space-y-1">
+            <h2 className="text-base font-semibold">API key management is planned</h2>
+            <p className="text-sm text-muted-foreground max-w-xl">
+              Key generation, rotation and scope enforcement will land once the public
+              catalog API surface is stable. Until then, all access goes through the
+              authenticated admin UI.
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-border bg-card">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
-            <tr>
-              <th className="px-4 py-3 text-left font-medium">Name</th>
-              <th className="px-4 py-3 text-left font-medium">Prefix</th>
-              <th className="px-4 py-3 text-left font-medium">Created</th>
-              <th className="px-4 py-3 text-left font-medium">Last used</th>
-              <th className="px-4 py-3 text-left font-medium">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {keys.isLoading && (
-              <tr>
-                <td colSpan={5} className="p-6 text-center text-muted-foreground">
-                  Loading…
-                </td>
-              </tr>
-            )}
-            {!keys.isLoading && (keys.data ?? []).length === 0 && (
-              <tr>
-                <td colSpan={5} className="p-6 text-center text-muted-foreground">
-                  No API keys yet.
-                </td>
-              </tr>
-            )}
-            {(keys.data ?? []).map((k) => (
-              <tr key={k.id} className="hover:bg-muted/30">
-                <td className="px-4 py-3 font-medium">{k.name}</td>
-                <td className="px-4 py-3 font-mono text-xs">{k.prefix}</td>
-                <td className="px-4 py-3 text-xs text-muted-foreground">
-                  {new Date(k.created_at).toLocaleString()}
-                </td>
-                <td className="px-4 py-3 text-xs text-muted-foreground">
-                  {k.last_used_at ? new Date(k.last_used_at).toLocaleString() : "—"}
-                </td>
-                <td className="px-4 py-3 text-xs">
-                  {k.revoked_at ? (
-                    <span className="text-destructive">revoked</span>
-                  ) : (
-                    <span className="text-success">active</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="rounded-xl border border-border bg-card">
+        <div className="border-b border-border px-5 py-4">
+          <h3 className="text-sm font-semibold">Planned scopes</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Keys will be issued with one or more of the following scopes.
+          </p>
+        </div>
+        <ul className="divide-y divide-border">
+          {PLANNED_SCOPES.map((s) => (
+            <li key={s.name} className="flex items-center gap-3 px-5 py-3">
+              <Lock className="h-4 w-4 text-muted-foreground" />
+              <code className="text-sm font-mono">{s.name}</code>
+              <span className="text-sm text-muted-foreground">— {s.desc}</span>
+            </li>
+          ))}
+        </ul>
       </div>
-    </>
+    </div>
   );
 }
