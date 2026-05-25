@@ -8,10 +8,14 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export const Route = createFileRoute("/sign-in")({
   validateSearch: (search: Record<string, unknown>) => ({
-    redirect: typeof search.redirect === "string" ? search.redirect : "/dashboard",
+    redirect: typeof search.redirect === "string" ? search.redirect : "",
   }),
   component: SignInPage,
 });
+
+function landingFor(roles: string[] | undefined) {
+  return roles?.includes("admin") ? "/dashboard" : "/";
+}
 
 type Mode = "sign-in" | "sign-up";
 
