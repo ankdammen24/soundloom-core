@@ -18,17 +18,16 @@ type Mode = "sign-in" | "sign-up";
 
 function SignInPage() {
   const { t } = useTranslation("auth");
-  const { isAuthenticated, user, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple, signInWithSSO } = useAuth();
+  const { isAuthenticated, user, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple } = useAuth();
   const search = Route.useSearch();
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [busy, setBusy] = useState<"google" | "apple" | "email" | "sso" | null>(null);
-  const [showSso, setShowSso] = useState(false);
-  const [ssoEmail, setSsoEmail] = useState("");
+  const [busy, setBusy] = useState<"google" | "apple" | "email" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+
 
   if (isAuthenticated) {
     const safe = safeInternalTarget(search.redirect) || landingForRoles(user?.roles);
