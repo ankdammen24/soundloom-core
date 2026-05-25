@@ -249,10 +249,10 @@ export async function apiRequest<T = unknown>(path: string, opts: RequestOpts = 
 
     let msg: string;
     if (res.status === 401) {
-      msg = `Du behöver logga in igen. ${serverMsg ?? ""}`.trim();
+      msg = `Du behöver logga in för att fortsätta. ${serverMsg ?? ""}`.trim();
       try {
-        const mod = await import("@/lib/connectAuth");
-        mod.clearLocalSession();
+        const { supabase } = await import("@/lib/supabase");
+        await supabase.auth.signOut();
         if (typeof window !== "undefined"
           && !window.location.pathname.startsWith("/sign-in")
           && !window.location.pathname.startsWith("/auth/callback")) {

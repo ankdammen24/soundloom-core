@@ -1,39 +1,55 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2, AlertCircle } from "lucide-react";
-import { handleCallback } from "@/lib/connectAuth";
-import { authStore } from "@/lib/auth/store";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/lib/auth/useAuth";
 
 export const Route = createFileRoute("/auth/callback")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    next: typeof search.next === "string" ? search.next : "/dashboard",
+  }),
   component: AuthCallbackPage,
 });
 
 function AuthCallbackPage() {
   const navigate = useNavigate();
-  const { loginRedirect } = useAuth();
+  const { next } = Route.useSearch();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      try {
-        const { user, returnTo } = await handleCallback();
-        if (cancelled) return;
-        authStore.setFromUser(user);
-        // Strip the OAuth params from the URL before navigating.
-        window.history.replaceState({}, "", returnTo);
-        navigate({ to: returnTo, replace: true });
-      } catch (e) {
-        if (cancelled) return;
-        // eslint-disable-next-line no-console
-        console.error("[auth] callback failed", e);
-        setError((e as Error)?.message ?? "Login failed.");
+
+    // Supabase's detectSessionInUrl handles ?code=... / #access_token= automatically.
+    // We just wait for a session to appear (via getSession or onAuthStateChange).
+    async function waitForSession() {
+      const { data, error: getErr } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (data.session) {
+        navigate({ to: next, replace: true });
+        return;
       }
-    })();
+      if (getErr) {
+        setError(getErr.message);
+        return;
+      }
+      // Fallback: listen briefly for SIGNED_IN; timeout after 8s.
+      const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+        if (cancelled) return;
+        if (event === "SIGNED_IN" && session) {
+          sub.subscription.unsubscribe();
+          navigate({ to: next, replace: true });
+        }
+      });
+      setTimeout(() => {
+        if (cancelled) return;
+        sub.subscription.unsubscribe();
+        setError("Inloggningen misslyckades. Försök igen.");
+      }, 8000);
+    }
+
+    void waitForSession();
     return () => { cancelled = true; };
-  }, [navigate]);
+  }, [navigate, next]);
 
   if (error) {
     return (
@@ -42,10 +58,10 @@ function AuthCallbackPage() {
           <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-destructive/10 text-destructive">
             <AlertCircle className="h-6 w-6" />
           </div>
-          <h1 className="text-xl font-semibold">Inloggning misslyckades</h1>
+          <h1 className="text-xl font-semibold">Inloggningen misslyckades</h1>
           <p className="text-sm text-muted-foreground break-words">{error}</p>
           <div className="flex justify-center gap-2">
-            <Button onClick={() => void loginRedirect("/dashboard")}>Försök igen</Button>
+            <Button onClick={() => navigate({ to: "/sign-in" })}>Tillbaka till inloggning</Button>
             <Button variant="outline" onClick={() => navigate({ to: "/" })}>Till startsidan</Button>
           </div>
         </div>

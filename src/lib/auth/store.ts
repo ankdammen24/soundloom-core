@@ -1,7 +1,9 @@
-// Minimal reactive auth store backed by Connect session.
+// Reactive auth store backed by Supabase session.
 
 import { useSyncExternalStore } from "react";
-import type { ConnectClaims, ConnectUser } from "@/lib/connectAuth";
+import type { Session, User } from "@supabase/supabase-js";
+
+export type AuthProvider = "google" | "github" | "azure" | "apple" | string;
 
 export type AuthUser = {
   id: string;
@@ -9,9 +11,11 @@ export type AuthUser = {
   displayName?: string;
   name?: string;
   avatarUrl?: string;
+  provider?: AuthProvider;
   roles: string[];
   permissions: string[];
-  claims: ConnectClaims;
+  // Raw JWT app_metadata/user_metadata bag for debug.
+  claims: Record<string, unknown>;
 };
 
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
@@ -26,6 +30,26 @@ let state: State = { status: "loading", user: null };
 const listeners = new Set<() => void>();
 function emit() { for (const l of listeners) l(); }
 
+function mapUser(u: User, session?: Session | null): AuthUser {
+  const meta = (u.user_metadata ?? {}) as Record<string, unknown>;
+  const app = (u.app_metadata ?? {}) as Record<string, unknown>;
+  const provider = (app.provider as string | undefined) ?? session?.user.app_metadata?.provider;
+  const roles = Array.isArray((app as { roles?: unknown }).roles)
+    ? ((app as { roles: string[] }).roles)
+    : [];
+  return {
+    id: u.id,
+    email: u.email ?? (meta.email as string | undefined),
+    name: (meta.full_name as string | undefined) ?? (meta.name as string | undefined) ?? u.email,
+    displayName: (meta.full_name as string | undefined) ?? (meta.name as string | undefined) ?? u.email,
+    avatarUrl: (meta.avatar_url as string | undefined) ?? (meta.picture as string | undefined),
+    provider,
+    roles,
+    permissions: [],
+    claims: { ...meta, app_metadata: app },
+  };
+}
+
 export const authStore = {
   getState: () => state,
   subscribe: (l: () => void) => {
@@ -36,22 +60,11 @@ export const authStore = {
     state = { ...state, ...patch };
     emit();
   },
-  setFromUser: (user: ConnectUser | null) => {
-    if (!user) {
+  setFromSession: (session: Session | null) => {
+    if (!session?.user) {
       state = { status: "unauthenticated", user: null };
     } else {
-      state = {
-        status: "authenticated",
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          displayName: user.displayName,
-          roles: user.roles,
-          permissions: user.permissions,
-          claims: user.claims,
-        },
-      };
+      state = { status: "authenticated", user: mapUser(session.user, session) };
     }
     emit();
   },

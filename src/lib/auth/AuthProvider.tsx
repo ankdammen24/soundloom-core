@@ -1,29 +1,32 @@
 import { useEffect, type ReactNode } from "react";
 import { setApiTokenGetter } from "@/lib/api";
 import { authStore } from "./store";
-import { getAccessToken, getCurrentUser, connectConfigured } from "@/lib/connectAuth";
+import { supabase, supabaseConfigured } from "@/lib/supabase";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
-    setApiTokenGetter(() => getAccessToken());
-
-    if (!connectConfigured) {
+    if (!supabaseConfigured) {
       authStore.set({ status: "unauthenticated", user: null });
-      return () => setApiTokenGetter(null);
+      return;
     }
 
-    const user = getCurrentUser();
-    authStore.setFromUser(user);
+    // Token getter for the API client — always pulls the freshest access token.
+    setApiTokenGetter(async () => {
+      const { data } = await supabase.auth.getSession();
+      return data.session?.access_token ?? null;
+    });
 
-    // Cross-tab sync: if another tab signs in/out, mirror it here.
-    function onStorage(e: StorageEvent) {
-      if (e.key === "connect.session") {
-        authStore.setFromUser(getCurrentUser());
-      }
-    }
-    window.addEventListener("storage", onStorage);
+    // Subscribe FIRST, then hydrate, per Supabase guidance.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      authStore.setFromSession(session);
+    });
+
+    void supabase.auth.getSession().then(({ data }) => {
+      authStore.setFromSession(data.session);
+    });
+
     return () => {
-      window.removeEventListener("storage", onStorage);
+      subscription.unsubscribe();
       setApiTokenGetter(null);
     };
   }, []);
