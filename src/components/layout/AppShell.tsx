@@ -231,12 +231,15 @@ export function AppShell() {
               <div className="space-y-1">
                 <div className="hidden lg:block">
                   <NavItem to="/profile" label="Profile" Icon={UserCircle2} active={isActive("/profile")} />
+                  <NavItem to="/debug/token" label="Token claims" Icon={KeyRound} active={isActive("/debug/token")} />
                 </div>
                 <div className="hidden md:block lg:hidden">
                   <NavItem to="/profile" label="Profile" Icon={UserCircle2} active={isActive("/profile")} compact />
+                  <NavItem to="/debug/token" label="Token claims" Icon={KeyRound} active={isActive("/debug/token")} compact />
                 </div>
                 <div className="md:hidden">
                   <NavItem to="/profile" label="Profile" Icon={UserCircle2} active={isActive("/profile")} />
+                  <NavItem to="/debug/token" label="Token claims" Icon={KeyRound} active={isActive("/debug/token")} />
                 </div>
                 <button
                   type="button"
