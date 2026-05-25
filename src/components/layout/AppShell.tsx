@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth/useAuth";
 import {
   LayoutDashboard, Users, Send, Music2, Upload, Cpu, ClipboardCheck,
   KeyRound, Settings as SettingsIcon, BookOpen, UserCircle2, LogIn, UserPlus,
-  Menu, X, LogOut, Music2 as Brand, ShieldCheck,
+  Menu, X, LogOut, Music2 as Brand, ShieldCheck, Bug,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
