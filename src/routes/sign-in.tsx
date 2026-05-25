@@ -18,6 +18,12 @@ function landingFor(_roles: string[] | undefined) {
   return "/profile";
 }
 
+function safeRedirectTarget(target: string) {
+  if (!target.startsWith("/") || target.startsWith("//")) return "";
+  if (target.startsWith("/auth/callback")) return "";
+  return target;
+}
+
 type Mode = "sign-in" | "sign-up";
 
 function SignInPage() {
@@ -35,9 +41,7 @@ function SignInPage() {
   const [info, setInfo] = useState<string | null>(null);
 
   if (isAuthenticated) {
-    const safe = search.redirect && search.redirect.startsWith("/") && !search.redirect.startsWith("//")
-      ? search.redirect
-      : landingFor(user?.roles);
+    const safe = safeRedirectTarget(search.redirect) || landingFor(user?.roles);
     return <Navigate to={safe} />;
   }
 
