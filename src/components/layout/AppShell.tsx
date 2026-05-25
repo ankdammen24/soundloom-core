@@ -1,6 +1,5 @@
-import { Link, Outlet, useLocation } from "@tanstack/react-router";
-import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
-import { clerkConfigured } from "@/lib/auth";
+import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import { useAuth } from "@/lib/auth/useAuth";
 import {
   Home,
   Send,
@@ -23,6 +22,7 @@ import {
   Cpu,
   Settings as SettingsIcon,
   ShieldAlert,
+  LogOut,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -131,9 +131,16 @@ function NavGroup({
 
 export function AppShell() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const isActive = (to: string) =>
     to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
+
+  async function onLogout() {
+    await logout();
+    navigate({ to: "/" });
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-28">
@@ -204,44 +211,47 @@ export function AppShell() {
             <div className="hidden lg:flex justify-center">
               <ThemeToggle />
             </div>
-            {clerkConfigured ? (
-              <>
-                <SignedOut>
-                  <div className="space-y-1">
-                    <div className="hidden lg:block space-y-1">
-                      <NavItem to="/sign-in" label="Sign in" Icon={LogIn} active={isActive("/sign-in")} />
-                      <NavItem to="/sign-up" label="Sign up" Icon={UserPlus} active={isActive("/sign-up")} />
-                    </div>
-                    <div className="hidden md:block lg:hidden space-y-1">
-                      <NavItem to="/sign-in" label="Sign in" Icon={LogIn} active={isActive("/sign-in")} compact />
-                      <NavItem to="/sign-up" label="Sign up" Icon={UserPlus} active={isActive("/sign-up")} compact />
-                    </div>
-                    <div className="md:hidden space-y-1">
-                      <NavItem to="/sign-in" label="Sign in" Icon={LogIn} active={isActive("/sign-in")} />
-                      <NavItem to="/sign-up" label="Sign up" Icon={UserPlus} active={isActive("/sign-up")} />
-                    </div>
-                  </div>
-                </SignedOut>
-                <SignedIn>
-                  <div className="space-y-1">
-                    <div className="hidden lg:block">
-                      <NavItem to="/profile" label="Profile" Icon={UserCircle2} active={isActive("/profile")} />
-                    </div>
-                    <div className="hidden md:block lg:hidden">
-                      <NavItem to="/profile" label="Profile" Icon={UserCircle2} active={isActive("/profile")} compact />
-                    </div>
-                    <div className="md:hidden">
-                      <NavItem to="/profile" label="Profile" Icon={UserCircle2} active={isActive("/profile")} />
-                    </div>
-                    <div className="px-3 py-2 flex justify-center lg:justify-start">
-                      <UserButton />
-                    </div>
-                  </div>
-                </SignedIn>
-              </>
+            {!isAuthenticated ? (
+              <div className="space-y-1">
+                <div className="hidden lg:block space-y-1">
+                  <NavItem to="/sign-in" label="Sign in" Icon={LogIn} active={isActive("/sign-in")} />
+                  <NavItem to="/sign-up" label="Sign up" Icon={UserPlus} active={isActive("/sign-up")} />
+                </div>
+                <div className="hidden md:block lg:hidden space-y-1">
+                  <NavItem to="/sign-in" label="Sign in" Icon={LogIn} active={isActive("/sign-in")} compact />
+                  <NavItem to="/sign-up" label="Sign up" Icon={UserPlus} active={isActive("/sign-up")} compact />
+                </div>
+                <div className="md:hidden space-y-1">
+                  <NavItem to="/sign-in" label="Sign in" Icon={LogIn} active={isActive("/sign-in")} />
+                  <NavItem to="/sign-up" label="Sign up" Icon={UserPlus} active={isActive("/sign-up")} />
+                </div>
+              </div>
             ) : (
-              <div className="hidden lg:block rounded-md border border-dashed border-sidebar-border p-3 text-xs text-sidebar-foreground/60">
-                Clerk inte konfigurerad. Sätt <code className="font-mono">VITE_CLERK_PUBLISHABLE_KEY</code> i <code className="font-mono">.env</code>.
+              <div className="space-y-1">
+                <div className="hidden lg:block">
+                  <NavItem to="/profile" label="Profile" Icon={UserCircle2} active={isActive("/profile")} />
+                </div>
+                <div className="hidden md:block lg:hidden">
+                  <NavItem to="/profile" label="Profile" Icon={UserCircle2} active={isActive("/profile")} compact />
+                </div>
+                <div className="md:hidden">
+                  <NavItem to="/profile" label="Profile" Icon={UserCircle2} active={isActive("/profile")} />
+                </div>
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  title="Sign out"
+                  className={cn(
+                    "group flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+                    "lg:justify-start md:justify-center md:px-2 lg:px-3",
+                  )}
+                >
+                  <LogOut className="h-5 w-5 flex-shrink-0" />
+                  <span className="truncate lg:inline md:hidden lg:!inline">Sign out</span>
+                </button>
+                <div className="px-3 py-2 hidden lg:block text-xs text-sidebar-foreground/60 truncate">
+                  {user?.email ?? user?.displayName ?? user?.name}
+                </div>
               </div>
             )}
           </div>
