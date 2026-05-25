@@ -15,8 +15,13 @@ const audience = (import.meta.env.VITE_ENTRA_AUDIENCE as string | undefined)?.tr
 
 export const msalConfigured = Boolean(clientId && authority && audience);
 
-/** Single API scope: `api://<client-id>/.default` — requires the app's API perms in Entra. */
-export const apiScopes = audience ? [`${audience}/.default`] : [];
+/**
+ * Delegated user scope exposed by the API app registration (Expose an API → access_as_user).
+ * `.default` against the app itself triggers AADSTS90009 in SPA/PKCE flows.
+ */
+const scopeName = (import.meta.env.VITE_ENTRA_SCOPE as string | undefined)?.trim() || "access_as_user";
+export const apiScopes = audience ? [`${audience}/${scopeName}`] : [];
+const oidcScopes = ["openid", "profile", "offline_access"];
 
 const redirectUri =
   typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : "/auth/callback";
@@ -49,7 +54,7 @@ export function getActiveAccount(): AccountInfo | null {
 
 export function buildLoginRequest(redirect?: string): RedirectRequest {
   return {
-    scopes: apiScopes,
+    scopes: [...apiScopes, ...oidcScopes],
     state: redirect ? encodeURIComponent(redirect) : undefined,
     prompt: "select_account",
   };

@@ -1,70 +1,68 @@
-## Mål
+## Problem
 
-Byt ut det egenbyggda `/auth/login`-flödet mot **MSAL Browser (PKCE redirect)** direkt mot Microsoft Entra ID. Frontend hämtar access tokens (audience `api://a523e8c6-…`) och skickar dem som `Bearer` mot `api.mediarosenqvist.com`. `connect.mediarosenqvist.com` är en backend-proxy och anropas inte alls från frontend.
+Entra error **AADSTS90009** = "Application is requesting a token for itself."
 
-## Vad som ändras
+Det händer för att MSAL just nu begär scopet:
 
-### 1. Beroenden + env
-- `bun add @azure/msal-browser @azure/msal-react`
-- `.env` / `.env.example` får:
-  - `VITE_ENTRA_CLIENT_ID=a523e8c6-0ef0-42f3-aa97-4b465bf78642`
-  - `VITE_ENTRA_AUTHORITY=https://login.microsoftonline.com/500956f1-ee20-47ea-b587-22dacb5cf39c`
-  - `VITE_ENTRA_AUDIENCE=api://a523e8c6-0ef0-42f3-aa97-4b465bf78642`
-  - `VITE_AUTH_API_URL=https://connect.mediarosenqvist.com` (sparas, ej använd från frontend just nu)
-- `VITE_SUPABASE_*` får ligga kvar (används av andra delar).
-
-### 2. MSAL-konfiguration (ny modul `src/lib/auth/msal.ts`)
-- `PublicClientApplication` med `clientId`, `authority`, `redirectUri = window.location.origin + "/auth/callback"`, `cache: { cacheLocation: "localStorage" }`.
-- `loginRequest = { scopes: [VITE_ENTRA_AUDIENCE + "/.default"] }` (kan justeras om proxyn vill ha specifika scopes).
-- `tokenRequest = { scopes: [...], account }` för silent refresh via `acquireTokenSilent`, fallback till `acquireTokenRedirect`.
-
-### 3. Ersätt egen auth med MSAL
-- `src/lib/auth/AuthProvider.tsx`:
-  - Bootstrap kör `msal.initialize()`, `handleRedirectPromise()`, plockar första kontot, sätter store-state.
-  - `setApiTokenGetter(async () => acquireTokenSilent(...).accessToken)` så `api.ts` alltid får färsk token (silent refresh sköts av MSAL).
-- `src/lib/auth/store.ts`: status (`loading|authenticated|unauthenticated`), `account` (MSAL-konto → mappar till `{ id, email, name }`).
-- `src/lib/auth/useAuth.ts`: `loginRedirect()`, `logoutRedirect()`, ingen `register`.
-- `src/lib/auth/client.ts`: tas bort (eller töms — inga egna `/auth/*`-anrop kvar).
-- `src/lib/auth/storage.ts`: tas bort (MSAL äger token-cache).
-- `src/lib/auth/guards.ts`: oförändrad (kollar `store.status === "authenticated"`).
-
-### 4. Sidor
-- **`src/routes/sign-in.tsx`**: byts till en enda knapp "Sign in with Microsoft" som anropar `loginRedirect({ scopes, state: redirect })`. Email/password-fältet tas bort (Entra äger UI). Respekterar `?redirect=` via MSAL `state`.
-- **`src/routes/sign-up.tsx`**: tas bort eller blir en "Contact admin"-info (Entra hanterar provisioning). Länkar i sidebaren rensas.
-- **`src/routes/auth.callback.tsx`** (ny): renderar spinner; `handleRedirectPromise()` körs redan i provider, så den bara navigerar till `state.redirect` eller `/dashboard` när store går till `authenticated`.
-- **`src/routes/_authenticated.profile.tsx`**: visar `account.username/name`, logout-knappen kör `logoutRedirect({ postLogoutRedirectUri: origin })`.
-- **`src/components/layout/AppShell.tsx`**: byter "Sign up"-länken till bara "Sign in" + uppdaterar profil-dropdown.
-
-### 5. API-klient
-- `src/lib/api.ts` är i princip oförändrad — den tar redan en token via `setApiTokenGetter`. Vi ändrar getter-implementationen till MSAL `acquireTokenSilent` så 401 sällan inträffar.
-- 401-hanteringen i `apiRequest` får en liten tweak: vid 401 → trigga `acquireTokenRedirect` (frisk login) istället för custom `/auth/refresh`.
-
-### 6. Rensning
-- Bort: `src/routes/login.tsx` (gamla stub), `client.ts`, `storage.ts`, ev. AuthDebug uppdateras till att visa MSAL-konto.
-- Inga ändringar i de 20+ `_authenticated.*`-routes — guarden fungerar likadant.
-
-## Tekniska detaljer
-
-**MSAL-flöde**
-1. Klick på "Sign in with Microsoft" → `msal.loginRedirect({ scopes, state: encodeURIComponent(redirect) })`.
-2. Entra redirectar till `/auth/callback` med `code`.
-3. MSAL `handleRedirectPromise()` byter code → tokens (PKCE), lagrar i localStorage.
-4. Provider sätter store → guard släpper in användaren → navigerar till `state.redirect`.
-
-**Token mot api.***
-```ts
-setApiTokenGetter(async () => {
-  const account = msal.getAllAccounts()[0];
-  if (!account) return null;
-  const res = await msal.acquireTokenSilent({ scopes, account });
-  return res.accessToken;
-});
+```
+api://a523e8c6-0ef0-42f3-aa97-4b465bf78642/.default
 ```
 
-**Logout**: `msal.logoutRedirect({ account, postLogoutRedirectUri: origin })`.
+…vilket är samma app som klienten själv. Entra tillåter inte `/.default` mot egen app-registrering i en SPA/PKCE-flow — det är ett klassiskt fel när man försöker använda en client-credentials-stil-scope i en delegated user-flow.
 
-## Inte med i denna runda
-- RBAC / roller (kommer från `roles`-claim senare).
-- Anrop mot `connect.mediarosenqvist.com` från frontend (proxyn används endast bakom api.*).
-- Sign-up UI (Entra-admin provisionar).
-- Password reset (Entra äger det).
+## Lösning
+
+I en SPA mot eget API ska man exponera en **delegated scope** i app-registreringen (t.ex. `access_as_user`) och begära den explicit, inte `.default`.
+
+### Steg 1 — Entra-portalen (du gör detta manuellt)
+
+I app-registreringen `a523e8c6-0ef0-42f3-aa97-4b465bf78642`:
+
+1. **Expose an API** → bekräfta Application ID URI = `api://a523e8c6-0ef0-42f3-aa97-4b465bf78642`
+2. **Add a scope**:
+   - Scope name: `access_as_user`
+   - Who can consent: Admins and users
+   - Admin/User consent display name + description: "Access Catalogus Musicus API as the signed-in user"
+   - State: Enabled
+3. **API permissions** → Add → My APIs → välj samma app → Delegated → `access_as_user` → Grant admin consent.
+4. (Valfritt men rekommenderat) Lägg även till `openid`, `profile`, `offline_access` under Microsoft Graph delegated om de inte redan finns — krävs för id_token + refresh.
+
+### Steg 2 — Frontend (jag ändrar detta)
+
+I `.env` och `.env.example`: byt `VITE_ENTRA_AUDIENCE` från enbart bas-URI till att inkludera scopet, eller introducera en ny variabel `VITE_ENTRA_SCOPE`. Enklast och minst invasivt:
+
+- Behåll `VITE_ENTRA_AUDIENCE=api://a523e8c6-0ef0-42f3-aa97-4b465bf78642`
+- I `src/lib/auth/msal.ts` ändra:
+
+  ```ts
+  export const apiScopes = audience ? [`${audience}/access_as_user`] : [];
+  ```
+
+  istället för `${audience}/.default`.
+
+- Lägg till `openid`, `profile`, `offline_access` i `buildLoginRequest` så att login-redirect ber om id_token + refresh utöver access_token:
+
+  ```ts
+  scopes: [...apiScopes, "openid", "profile", "offline_access"]
+  ```
+
+  (Eller bara `apiScopes` i `acquireTokenSilent` — OIDC-scopes hör hemma i login, inte token-refresh.)
+
+### Steg 3 — Verifiera
+
+Efter att Entra-ändringen är gjord och frontend-deployen ute:
+1. Tom localStorage (gammal MSAL-cache kan annars hålla kvar fel scope).
+2. Klicka Logga in → Microsoft-redirect ska visa samtycke för "Access Catalogus Musicus API as the signed-in user".
+3. Efter callback → access_token i nätverket mot `api.mediarosenqvist.com` ska ha `aud = api://a523e8c6-...` och `scp = access_as_user`.
+4. `connect.mediarosenqvist.com/auth/me` ska svara 200 med profil.
+
+## Filer som ändras
+
+- `.env` — kommentar/ev. ny `VITE_ENTRA_SCOPE`
+- `.env.example` — samma
+- `src/lib/auth/msal.ts` — `apiScopes` + login-scopes
+
+## Frågor till dig innan jag implementerar
+
+1. Vill du att jag använder scope-namnet **`access_as_user`** (rekommenderat, Microsofts konvention) eller har ni redan ett annat scope exponerat i app-registreringen som jag ska binda mot?
+2. Bekräftar du att du kan göra Entra-portal-stegen ovan (Expose an API + Grant admin consent)? Utan steg 1 funkar inte koden — Entra svarar då med `AADSTS65001 consent_required` eller `invalid_scope`.
