@@ -65,6 +65,7 @@ export const getR2DownloadUrl = createServerFn({ method: "POST" })
 
 // 3 + 4 + 6) Upload completion: verify in R2, update tracks row + status
 export const completeR2Upload = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
     z
       .object({
@@ -75,7 +76,7 @@ export const completeR2Upload = createServerFn({ method: "POST" })
       })
       .parse(input),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const bucket = R2_BUCKETS[data.bucket as R2BucketKind];
 
     // Verify the object actually landed in R2
