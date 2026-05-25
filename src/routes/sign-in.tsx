@@ -11,7 +11,7 @@ export const Route = createFileRoute("/sign-in")({
   component: SignInPage,
 });
 
-const PROVIDERS: Array<{ id: SupportedProvider; label: string; Logo: () => JSX.Element }> = [
+const PROVIDERS: Array<{ id: SupportedProvider; label: string; Logo: () => React.ReactElement }> = [
   { id: "azure", label: "Fortsätt med Microsoft", Logo: MicrosoftLogo },
   { id: "google", label: "Fortsätt med Google", Logo: GoogleLogo },
   { id: "github", label: "Fortsätt med GitHub", Logo: GitHubLogo },

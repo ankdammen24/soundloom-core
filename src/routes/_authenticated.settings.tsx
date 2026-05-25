@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { supabaseConfigured, SUPABASE_URL } from "@/lib/supabase";
 import { API_BASE_URL } from "@/lib/api";
-import { connectConfigured } from "@/lib/connectAuth";
+import { supabaseConfigured as connectConfigured } from "@/lib/supabase";
 import { Database, Cloud, ShieldCheck, KeyRound, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/settings")({
