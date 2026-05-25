@@ -14,13 +14,15 @@ export const Route = createFileRoute("/sign-in")({
 type Mode = "sign-in" | "sign-up";
 
 function SignInPage() {
-  const { isAuthenticated, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple } = useAuth();
+  const { isAuthenticated, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple, signInWithSSO } = useAuth();
   const search = Route.useSearch();
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [busy, setBusy] = useState<"google" | "apple" | "email" | null>(null);
+  const [busy, setBusy] = useState<"google" | "apple" | "email" | "sso" | null>(null);
+  const [showSso, setShowSso] = useState(false);
+  const [ssoEmail, setSsoEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
