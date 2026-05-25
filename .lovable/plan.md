@@ -1,68 +1,89 @@
-## Problem
+# Plan: Connect-baserad autentisering
 
-Entra error **AADSTS90009** = "Application is requesting a token for itself."
+Byter ut hela MSAL/Entra-stacken mot Media Rosenqvist Connect som central auth-gateway. All login går via redirect till Connect; frontend hanterar bara PKCE-codeswitch, tokenförvaring och Bearer-injektion.
 
-Det händer för att MSAL just nu begär scopet:
+## 1. Miljövariabler (.env, .env.example)
 
+Lägg till:
 ```
-api://a523e8c6-0ef0-42f3-aa97-4b465bf78642/.default
+VITE_CONNECT_BASE_URL=https://connect.mediarosenqvist.com
+VITE_CONNECT_CLIENT_ID=music-catalog-frontend
+VITE_CONNECT_REDIRECT_URI=https://catalogusmusicus.mediarosenqvist.com/auth/callback
+VITE_CONNECT_AUDIENCE=music-catalog-core
+VITE_API_BASE_URL=https://api.mediarosenqvist.com   # finns redan
 ```
+Ta bort: `VITE_AUTH_API_URL`, `VITE_ENTRA_CLIENT_ID`, `VITE_ENTRA_AUTHORITY`, `VITE_ENTRA_AUDIENCE`.
 
-…vilket är samma app som klienten själv. Entra tillåter inte `/.default` mot egen app-registrering i en SPA/PKCE-flow — det är ett klassiskt fel när man försöker använda en client-credentials-stil-scope i en delegated user-flow.
+## 2. Ny auth-klient — `src/lib/connectAuth.ts`
 
-## Lösning
+Implementerar OAuth2 Authorization Code + PKCE mot Connect:
 
-I en SPA mot eget API ska man exponera en **delegated scope** i app-registreringen (t.ex. `access_as_user`) och begära den explicit, inte `.default`.
+- `redirectToLogin(returnTo?: string)` — genererar `code_verifier` + `code_challenge` (S256), lagrar verifier + returnTo i `sessionStorage`, redirectar till
+  `${CONNECT_BASE_URL}/login?client_id=...&redirect_uri=...&audience=music-catalog-core&response_type=code&code_challenge=...&code_challenge_method=S256&state=<random>`.
+- `handleCallback()` — läser `code` + `state`, verifierar state, POSTar till `${CONNECT_BASE_URL}/oauth/token` med `grant_type=authorization_code`, `code_verifier`, redirect_uri, client_id. Sparar `{ access_token, refresh_token?, expires_at }` i `localStorage` (key: `connect.session`).
+- `getAccessToken()` — returnerar giltig token, försöker refresh om utgången och `refresh_token` finns; annars `null`.
+- `getCurrentUser()` — dekodar JWT-payload (`atob` på del 2), exponerar `{ sub, email, name, roles, permissions, scp, aud, iss, exp }`.
+- `isAuthenticated()` — token finns och inte utgången.
+- `logout()` — rensar storage, redirectar till `${CONNECT_BASE_URL}/logout?client_id=...&post_logout_redirect_uri=<origin>`.
 
-### Steg 1 — Entra-portalen (du gör detta manuellt)
+Permissions läses **från JWT-claim** (`permissions[]` eller `scp` space-separerad sträng — stöd båda).
 
-I app-registreringen `a523e8c6-0ef0-42f3-aa97-4b465bf78642`:
+## 3. Auth-store + Provider
 
-1. **Expose an API** → bekräfta Application ID URI = `api://a523e8c6-0ef0-42f3-aa97-4b465bf78642`
-2. **Add a scope**:
-   - Scope name: `access_as_user`
-   - Who can consent: Admins and users
-   - Admin/User consent display name + description: "Access Catalogus Musicus API as the signed-in user"
-   - State: Enabled
-3. **API permissions** → Add → My APIs → välj samma app → Delegated → `access_as_user` → Grant admin consent.
-4. (Valfritt men rekommenderat) Lägg även till `openid`, `profile`, `offline_access` under Microsoft Graph delegated om de inte redan finns — krävs för id_token + refresh.
+- Förenkla `src/lib/auth/store.ts` så `AuthUser` får `roles: string[]`, `permissions: string[]`, `claims: { aud, iss, scp, exp }`.
+- Ersätt `src/lib/auth/AuthProvider.tsx`: vid mount, läs token från storage, hydrera store, registrera `setApiTokenGetter(getAccessToken)`. Lyssna inte på MSAL.
+- Ersätt `src/lib/auth/useAuth.ts`: `loginRedirect → redirectToLogin`, `logoutRedirect → logout`. Inga popups.
+- Ta bort `src/lib/auth/msal.ts` och `src/lib/auth/connect.ts` (gamla /auth/me-hjälparen).
+- Avinstallera `@azure/msal-browser`.
 
-### Steg 2 — Frontend (jag ändrar detta)
+## 4. Callback-route — `src/routes/auth.callback.tsx`
 
-I `.env` och `.env.example`: byt `VITE_ENTRA_AUDIENCE` från enbart bas-URI till att inkludera scopet, eller introducera en ny variabel `VITE_ENTRA_SCOPE`. Enklast och minst invasivt:
+Skriv om: vid mount kör `await handleCallback()`, hydrera authStore, navigera till sparad `returnTo` (default `/dashboard`). Vid fel: visa tydligt felmeddelande + knapp "Försök logga in igen".
 
-- Behåll `VITE_ENTRA_AUDIENCE=api://a523e8c6-0ef0-42f3-aa97-4b465bf78642`
-- I `src/lib/auth/msal.ts` ändra:
+## 5. Sign-in-sida
 
-  ```ts
-  export const apiScopes = audience ? [`${audience}/access_as_user`] : [];
-  ```
+`src/routes/sign-in.tsx`: behåll layout, men knappen kallar `redirectToLogin(search.redirect)` istället för popup. Ta bort MSAL-specifika varningar.
 
-  istället för `${audience}/.default`.
+## 6. API-klient — `src/lib/api.ts`
 
-- Lägg till `openid`, `profile`, `offline_access` i `buildLoginRequest` så att login-redirect ber om id_token + refresh utöver access_token:
+Redan tokengetter-baserad. Justeringar:
+- Vid 401: anropa `connectAuth.logout()`-light (rensa storage) och redirecta till `/sign-in?redirect=<current>`.
+- Vid 403: kasta `ApiError` med svenskt meddelande "Du saknar behörighet för den här åtgärden."
+- Vid network-fail: meddelande "Kunde inte nå musikkatalogens API."
+- Behåll alla `api.*` domain-helpers oförändrade.
 
-  ```ts
-  scopes: [...apiScopes, "openid", "profile", "offline_access"]
-  ```
+## 7. Permission-aware UI
 
-  (Eller bara `apiScopes` i `acquireTokenSilent` — OIDC-scopes hör hemma i login, inte token-refresh.)
+Lägg till `src/lib/auth/permissions.ts`:
+```ts
+export function useHasPermission(p: string): boolean
+export function useHasAnyPermission(ps: string[]): boolean
+export const PERMISSIONS = { CATALOG_READ: "catalog.read", ARTISTS_MANAGE: "artists.manage", RELEASES_MANAGE: "releases.manage", TRACKS_UPLOAD: "tracks.upload", TRACKS_PROCESS: "tracks.process", METADATA_EDIT: "metadata.edit", USERS_MANAGE: "users.manage" }
+```
+Wrappa skapa/redigera/upload-knappar i `artists.tsx`, `releases.tsx`, `tracks.tsx`, `uploads.tsx` med `useHasPermission(...)`. Endast UX-skydd; backend är fortsatt sanningskällan.
 
-### Steg 3 — Verifiera
+## 8. User menu
 
-Efter att Entra-ändringen är gjord och frontend-deployen ute:
-1. Tom localStorage (gammal MSAL-cache kan annars hålla kvar fel scope).
-2. Klicka Logga in → Microsoft-redirect ska visa samtycke för "Access Catalogus Musicus API as the signed-in user".
-3. Efter callback → access_token i nätverket mot `api.mediarosenqvist.com` ska ha `aud = api://a523e8c6-...` och `scp = access_as_user`.
-4. `connect.mediarosenqvist.com/auth/me` ska svara 200 med profil.
+I `src/components/layout/AppShell.tsx`: lägg en `DropdownMenu` i headern som visar namn/email, roles som badges, samt "Logga ut"-knapp som kallar `logout()`.
 
-## Filer som ändras
+## 9. Debug-token-sidan
 
-- `.env` — kommentar/ev. ny `VITE_ENTRA_SCOPE`
-- `.env.example` — samma
-- `src/lib/auth/msal.ts` — `apiScopes` + login-scopes
+`src/routes/_authenticated.debug.token.tsx` uppdateras till att läsa claims via `getCurrentUser()` istället för MSAL.
 
-## Frågor till dig innan jag implementerar
+## 10. Behåller
 
-1. Vill du att jag använder scope-namnet **`access_as_user`** (rekommenderat, Microsofts konvention) eller har ni redan ett annat scope exponerat i app-registreringen som jag ska binda mot?
-2. Bekräftar du att du kan göra Entra-portal-stegen ovan (Expose an API + Grant admin consent)? Utan steg 1 funkar inte koden — Entra svarar då med `AADSTS65001 consent_required` eller `invalid_scope`.
+Alla katalogsidor, player, admin-vyer, R2-uppladdning — orörda förutom permission-wrappar runt action-knappar.
+
+---
+
+### Tekniska detaljer
+
+- PKCE: `crypto.subtle.digest("SHA-256", verifier)` → base64url. Verifier: 64-char random från `crypto.getRandomValues`.
+- JWT-decode: ren `atob` + `JSON.parse` — ingen signaturverifiering på klienten (backend gör det).
+- Token-refresh: om Connect returnerar `refresh_token`, kör `grant_type=refresh_token` när token har <60s kvar.
+- `sessionStorage` för PKCE-verifier + returnTo (rensas efter callback). `localStorage` för session (överlever reload).
+- Inga ändringar i routeTree.gen.ts (auto-genereras).
+
+### Sammanfattning till användaren efter implementation
+
+Vid avslut redovisas: ändrade filer, login-flöde steg-för-steg, hur Bearer-token sätts på varje request, var permissions kollas i UI, samt vilka env-vars som måste finnas i prod.
