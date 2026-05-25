@@ -5,7 +5,7 @@ import { clerkConfigured } from "@/lib/auth";
 import { supabaseConfigured, SUPABASE_URL } from "@/lib/supabase";
 import { Database, Cloud, ShieldCheck, KeyRound, AlertTriangle, CheckCircle2 } from "lucide-react";
 
-export const Route = createFileRoute("/settings")({
+export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings – Music Catalog Core" }] }),
   component: SettingsPage,
 });

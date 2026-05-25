@@ -2,7 +2,7 @@ import { SignedIn, SignedOut, UserProfile } from "@clerk/clerk-react";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { clerkConfigured } from "@/lib/auth";
 
-export const Route = createFileRoute("/profile")({ component: ProfilePage });
+export const Route = createFileRoute("/_authenticated/profile")({ component: ProfilePage });
 
 function ProfilePage() {
   if (!clerkConfigured) {

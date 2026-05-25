@@ -3,7 +3,7 @@ import { Boxes, Upload } from "lucide-react";
 
 const URL = "https://catalogusmusicus.mediarosenqvist.com/assets";
 
-export const Route = createFileRoute("/assets")({
+export const Route = createFileRoute("/_authenticated/assets")({
   head: () => ({
     meta: [
       { title: "Assets – Catalogus Musicus" },

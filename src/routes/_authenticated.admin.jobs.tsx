@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { RotateCw, Trash2, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/admin/jobs")({
+export const Route = createFileRoute("/_authenticated/admin/jobs")({
   head: () => ({ meta: [{ title: "Failed jobs – Admin – Catalogus Musicus" }] }),
   component: JobsPage,
 });

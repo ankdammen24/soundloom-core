@@ -5,7 +5,7 @@ import { SetupBanner } from "@/components/Setup";
 import { usePlaylists, usePlaylistTracks, useTracks, useArtists, buildLookup } from "@/lib/catalog";
 import { Plus, ListMusic, Radio } from "lucide-react";
 
-export const Route = createFileRoute("/playlists")({
+export const Route = createFileRoute("/_authenticated/playlists")({
   head: () => ({ meta: [{ title: "Playlists – Music Catalog Core" }] }),
   component: PlaylistsPage,
 });

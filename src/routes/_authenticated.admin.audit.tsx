@@ -6,7 +6,7 @@ import { DataTable, type Column } from "@/components/admin/DataTable";
 import { JsonView } from "@/components/admin/JsonView";
 import { PageHeader } from "@/components/PageHeader";
 
-export const Route = createFileRoute("/admin/audit")({
+export const Route = createFileRoute("/_authenticated/admin/audit")({
   head: () => ({ meta: [{ title: "Audit log – Admin – Catalogus Musicus" }] }),
   component: AuditPage,
 });

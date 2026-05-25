@@ -11,7 +11,7 @@ import { Plus, Users, AlertTriangle } from "lucide-react";
 
 const URL = "https://catalogusmusicus.mediarosenqvist.com/artists";
 
-export const Route = createFileRoute("/artists")({
+export const Route = createFileRoute("/_authenticated/artists")({
   head: () => ({
     meta: [
       { title: "Artists – Catalogus Musicus" },

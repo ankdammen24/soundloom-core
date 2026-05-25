@@ -8,7 +8,7 @@ import { Toolbar } from "./albums";
 import { useRights, useTracks, useArtists, buildLookup } from "@/lib/catalog";
 import { Check, X, Scale } from "lucide-react";
 
-export const Route = createFileRoute("/rights")({
+export const Route = createFileRoute("/_authenticated/rights")({
   head: () => ({ meta: [{ title: "Rights & ownership – Music Catalog Core" }] }),
   component: RightsPage,
 });

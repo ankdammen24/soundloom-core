@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, AlertTriangle, Loader2, Copy } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/admin/diagnostics")({
+export const Route = createFileRoute("/_authenticated/admin/diagnostics")({
   head: () => ({ meta: [{ title: "Diagnostics – Admin – Catalogus Musicus" }] }),
   component: DiagPage,
 });

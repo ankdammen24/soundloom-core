@@ -9,7 +9,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { uploadFile } from "@/lib/upload";
 import { FileAudio, X, AlertTriangle, CheckCircle2 } from "lucide-react";
 
-export const Route = createFileRoute("/uploads")({
+export const Route = createFileRoute("/_authenticated/uploads")({
   head: () => ({ meta: [{ title: "Uploads – Catalogus Musicus" }] }),
   component: UploadsPage,
 });

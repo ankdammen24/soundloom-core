@@ -12,7 +12,7 @@ const statusFilters: (AlbumStatus | "all")[] = ["all", "draft", "scheduled", "re
 
 const URL = "https://catalogusmusicus.mediarosenqvist.com/albums";
 
-export const Route = createFileRoute("/albums")({
+export const Route = createFileRoute("/_authenticated/albums")({
   head: () => ({
     meta: [
       { title: "Albums – Catalogus Musicus" },

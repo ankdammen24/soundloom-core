@@ -12,7 +12,7 @@ function artistName(a: Artist) {
   return a.displayName ?? a.display_name ?? a.name ?? "Artist";
 }
 
-export const Route = createFileRoute("/artists/$id")({
+export const Route = createFileRoute("/_authenticated/artists/$id")({
   head: () => ({ meta: [{ title: "Artist – Catalogus Musicus" }] }),
   component: ArtistDetail,
   errorComponent: ({ error, reset }) => {

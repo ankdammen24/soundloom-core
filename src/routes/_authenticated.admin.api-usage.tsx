@@ -8,7 +8,7 @@ import { RangePicker, type Range } from "@/components/admin/RangePicker";
 import { PageHeader } from "@/components/PageHeader";
 import { Activity, ShieldAlert } from "lucide-react";
 
-export const Route = createFileRoute("/admin/api-usage")({
+export const Route = createFileRoute("/_authenticated/admin/api-usage")({
   head: () => ({ meta: [{ title: "API usage – Admin – Catalogus Musicus" }] }),
   component: ApiUsagePage,
 });

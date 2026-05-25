@@ -11,7 +11,7 @@ import { useOptimisticPatch } from "@/hooks/useOptimisticList";
 import { ArrowLeft, AlertTriangle, Radio, ExternalLink } from "lucide-react";
 import { useState } from "react";
 
-export const Route = createFileRoute("/releases/$id")({
+export const Route = createFileRoute("/_authenticated/releases/$id")({
   head: ({ params }) => ({
     meta: [
       { title: "Release – Catalogus Musicus" },

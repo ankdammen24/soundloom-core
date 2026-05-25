@@ -10,7 +10,7 @@ import { DetailSkeleton } from "@/components/Skeleton";
 import { useOptimisticPatch } from "@/hooks/useOptimisticList";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 
-export const Route = createFileRoute("/tracks/$id")({
+export const Route = createFileRoute("/_authenticated/tracks/$id")({
   head: () => ({ meta: [{ title: "Track – Catalogus Musicus" }] }),
   component: TrackDetail,
   errorComponent: ({ error, reset }) => {

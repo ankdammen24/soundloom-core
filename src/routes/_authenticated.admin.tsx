@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 const URL = "https://catalogusmusicus.mediarosenqvist.com/admin";
 
-export const Route = createFileRoute("/admin")({
+export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
       { title: "Admin & Operations – Catalogus Musicus" },

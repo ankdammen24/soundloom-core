@@ -8,7 +8,7 @@ import { Btn } from "@/components/Btn";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/catalog";
 
-export const Route = createFileRoute("/processing")({
+export const Route = createFileRoute("/_authenticated/processing")({
   head: () => ({ meta: [{ title: "Processing status – Music Catalog Core" }] }),
   component: ProcessingPage,
 });

@@ -3,7 +3,7 @@ import { Building2 } from "lucide-react";
 
 const URL = "https://catalogusmusicus.mediarosenqvist.com/organizations";
 
-export const Route = createFileRoute("/organizations")({
+export const Route = createFileRoute("/_authenticated/organizations")({
   head: () => ({
     meta: [
       { title: "Organizations – Catalogus Musicus" },

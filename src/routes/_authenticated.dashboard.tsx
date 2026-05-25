@@ -7,7 +7,7 @@ import { clerkConfigured } from "@/lib/auth";
 
 const URL = "https://catalogusmusicus.mediarosenqvist.com/dashboard";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
       { title: "Dashboard – Catalogus Musicus" },

@@ -3,7 +3,7 @@ import { Radio } from "lucide-react";
 
 const URL = "https://catalogusmusicus.mediarosenqvist.com/distribution";
 
-export const Route = createFileRoute("/distribution")({
+export const Route = createFileRoute("/_authenticated/distribution")({
   head: () => ({
     meta: [
       { title: "Distribution – Catalogus Musicus" },
