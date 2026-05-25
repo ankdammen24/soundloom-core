@@ -91,9 +91,9 @@ export const completeR2Upload = createServerFn({ method: "POST" })
       throw new Error(`Uploaded object is empty: ${bucket}/${data.key}`);
     }
 
-    // Update Supabase metadata for tracks
+    // Update Supabase metadata for tracks (RLS-scoped to the caller)
     if (data.trackId) {
-      const sb = supabaseServer();
+      const sb = context.supabase;
       const patch: Record<string, unknown> = {};
       switch (data.bucket) {
         case "masters":
