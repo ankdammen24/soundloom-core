@@ -1,35 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { Plus, Users, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/lib/auth/useAuth";
+import { artistsApi, type Artist } from "@/lib/api/catalog";
 
 export const Route = createFileRoute("/_authenticated/artists")({
   head: () => ({ meta: [{ title: "Artists – Music Catalog" }] }),
   component: ArtistsPage,
 });
-
-type Artist = {
-  id: string;
-  name: string;
-  slug: string;
-  bio: string | null;
-  image_url: string | null;
-  created_at: string;
-};
-
-function slugify(s: string) {
-  return (
-    s
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || `artist-${Date.now()}`
-  );
-}
 
 function ArtistsPage() {
   const { user } = useAuth();
@@ -38,23 +19,12 @@ function ArtistsPage() {
 
   const list = useQuery({
     queryKey: ["artists"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("artists").select("*").order("name");
-      if (error) throw error;
-      return (data ?? []) as Artist[];
-    },
+    queryFn: () => artistsApi.list(),
   });
 
   const create = useMutation({
-    mutationFn: async (v: { name: string; bio: string }) => {
-      const { error } = await supabase.from("artists").insert({
-        name: v.name,
-        slug: slugify(v.name),
-        bio: v.bio || null,
-        created_by: user?.id,
-      });
-      if (error) throw error;
-    },
+    mutationFn: (v: { name: string; bio: string }) =>
+      artistsApi.create({ name: v.name, bio: v.bio || null }),
     onSuccess: () => {
       setForm({ name: "", bio: "" });
       qc.invalidateQueries({ queryKey: ["artists"] });
@@ -123,7 +93,7 @@ function ArtistsPage() {
 
       {(list.data ?? []).length > 0 && (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {(list.data ?? []).map((a) => (
+          {(list.data ?? []).map((a: Artist) => (
             <div
               key={a.id}
               className="flex items-center gap-3 rounded-lg border border-border bg-card p-4"

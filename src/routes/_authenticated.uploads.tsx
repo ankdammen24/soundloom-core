@@ -1,25 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
 import { Upload, FileAudio, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/lib/auth/useAuth";
+import { artistsApi } from "@/lib/api/catalog";
+import { uploadsApi, uploadToPresignedUrl } from "@/lib/api/uploads";
 
 export const Route = createFileRoute("/_authenticated/uploads")({
   head: () => ({ meta: [{ title: "Upload – Music Catalog" }] }),
   component: UploadsPage,
 });
-
-type Artist = { id: string; name: string };
-type UploadRow = {
-  id: string;
-  track_title: string;
-  status: string;
-  created_at: string;
-  rejection_reason: string | null;
-};
 
 function formatBytes(n: number) {
   if (n < 1024) return `${n} B`;
@@ -29,7 +21,6 @@ function formatBytes(n: number) {
 
 function UploadsPage() {
   const { user } = useAuth();
-  const qc = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
   const [trackTitle, setTrackTitle] = useState("");
   const [artistId, setArtistId] = useState("");
@@ -38,76 +29,36 @@ function UploadsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const artists = useQuery({
-    queryKey: ["artists"],
-    queryFn: async () => {
-      const { data } = await supabase.from("artists").select("id, name").order("name");
-      return (data ?? []) as Artist[];
-    },
-  });
-
-  const myUploads = useQuery({
-    queryKey: ["my-uploads"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("uploads")
-        .select("id, track_title, status, created_at, rejection_reason")
-        .order("created_at", { ascending: false })
-        .limit(20);
-      if (error) throw error;
-      return (data ?? []) as UploadRow[];
-    },
-  });
+  const artists = useQuery({ queryKey: ["artists"], queryFn: () => artistsApi.list() });
 
   const upload = useMutation({
     mutationFn: async () => {
-      if (!file || !trackTitle || !user) throw new Error("Missing required fields");
+      if (!file || !trackTitle) throw new Error("Missing required fields");
       setError(null);
       setSuccess(null);
       setProgress(0);
 
-      // 1. Insert uploads row (status=uploaded)
-      const { data: uploadRow, error: insertError } = await supabase
-        .from("uploads")
-        .insert({
-          track_title: trackTitle,
-          artist_id: artistId || null,
-          genre: genre || null,
-          status: "uploaded",
-          created_by: user.id,
-        })
-        .select("id")
-        .single();
-      if (insertError || !uploadRow) throw insertError ?? new Error("Could not create upload");
+      // 1. Ask the backend for a signed upload URL.
+      const presign = await uploadsApi.presign({
+        kind: "audio",
+        filename: file.name,
+        content_type: file.type || "application/octet-stream",
+        size_bytes: file.size,
+      });
 
-      const uploadId = uploadRow.id;
-      const path = `${user.id}/${uploadId}/${file.name}`;
+      // 2. PUT the file binary straight to R2.
+      await uploadToPresignedUrl(presign, file, (pct) => setProgress(pct));
 
-      // 2. Upload binary to storage
-      setProgress(20);
-      const { error: storageError } = await supabase.storage
-        .from("audio-uploads")
-        .upload(path, file, {
-          contentType: file.type || "application/octet-stream",
-          upsert: false,
-        });
-      if (storageError) throw storageError;
-      setProgress(80);
-
-      // 3. Insert audio_files row (no RLS insert allowed for users — skip; processing job covers stub)
-      // 4. Insert processing_jobs row — also restricted; left for editor/admin via server-side later.
-      // For now the upload itself is the artifact; the processing_job will be created in a later phase.
-
-      setProgress(100);
-      return uploadId;
+      // 3. Metadata is stored via the catalog API — the presign endpoint
+      //    typically already records the upload. Surface the key for the user.
+      return { key: presign.key, uploadId: presign.upload_id };
     },
-    onSuccess: (id) => {
-      setSuccess(`Upload created (${id})`);
+    onSuccess: ({ key, uploadId }) => {
+      setSuccess(`Uploaded ${key}${uploadId ? ` (id ${uploadId})` : ""}`);
       setFile(null);
       setTrackTitle("");
       setGenre("");
       setProgress(null);
-      qc.invalidateQueries({ queryKey: ["my-uploads"] });
     },
     onError: (e: Error) => {
       setError(e.message);
@@ -158,7 +109,7 @@ function UploadsPage() {
                 value={artistId}
                 onChange={(e) => setArtistId(e.target.value)}
               >
-                <option value="">—</option>
+                <option value="">Select artist…</option>
                 {(artists.data ?? []).map((a) => (
                   <option key={a.id} value={a.id}>
                     {a.name}
@@ -219,43 +170,13 @@ function UploadsPage() {
       )}
 
       <section>
-        <h2 className="mb-3 text-base font-semibold">Recent uploads</h2>
-        {myUploads.isLoading && <div className="text-sm text-muted-foreground">Loading…</div>}
-        {!myUploads.isLoading && (myUploads.data ?? []).length === 0 && (
-          <div className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-            <FileAudio className="mx-auto h-6 w-6 mb-2" /> No uploads yet.
-          </div>
-        )}
-        {(myUploads.data ?? []).length > 0 && (
-          <div className="overflow-x-auto rounded-lg border border-border bg-card">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3 text-left font-medium">Title</th>
-                  <th className="px-4 py-3 text-left font-medium">Status</th>
-                  <th className="px-4 py-3 text-left font-medium">Created</th>
-                  <th className="px-4 py-3 text-left font-medium">Reason</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {(myUploads.data ?? []).map((u) => (
-                  <tr key={u.id} className="hover:bg-muted/30">
-                    <td className="px-4 py-3 font-medium">{u.track_title}</td>
-                    <td className="px-4 py-3">
-                      <span className="rounded-full bg-accent px-2 py-0.5 text-xs">{u.status}</span>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {new Date(u.created_at).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {u.rejection_reason ?? "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <h2 className="mb-3 text-base font-semibold flex items-center gap-2">
+          <FileAudio className="h-4 w-4" /> Direct-to-R2 uploads
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Files are streamed straight from your browser to R2 using a signed URL issued by the
+          media-catalog API. soundloom-core never sees the upload bytes.
+        </p>
       </section>
     </div>
   );
