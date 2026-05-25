@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth/useAuth";
 import {
   LayoutDashboard, Users, Send, Music2, Upload, Cpu, ClipboardCheck,
   KeyRound, Settings as SettingsIcon, BookOpen, UserCircle2, LogIn, UserPlus,
-  Menu, X, LogOut, Music2 as Brand,
+  Menu, X, LogOut, Music2 as Brand, ShieldCheck,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,7 @@ const OPS: NavLink[] = [
   { to: "/processing", label: "Processing", icon: Cpu, roles: ["admin", "editor"] },
   { to: "/review", label: "Review", icon: ClipboardCheck, roles: ["admin", "editor"] },
   { to: "/api-keys", label: "API keys", icon: KeyRound, roles: ["admin"] },
+  { to: "/admin/users", label: "Users & roles", icon: ShieldCheck, roles: ["admin"] },
   { to: "/settings", label: "Settings", icon: SettingsIcon, roles: ["admin"] },
   { to: "/system-overview", label: "System Overview", icon: BookOpen, roles: ["admin"] },
 ];

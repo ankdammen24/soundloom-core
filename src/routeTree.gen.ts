@@ -27,6 +27,7 @@ import { Route as AuthenticatedProcessingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedArtistsRouteImport } from './routes/_authenticated.artists'
 import { Route as AuthenticatedApiKeysRouteImport } from './routes/_authenticated.api-keys'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated.admin.users'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -121,6 +122,11 @@ const AuthenticatedApiKeysRoute = AuthenticatedApiKeysRouteImport.update({
   path: '/api-keys',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/tracks': typeof AuthenticatedTracksRoute
   '/uploads': typeof AuthenticatedUploadsRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -178,6 +185,7 @@ export interface FileRoutesByTo {
   '/tracks': typeof AuthenticatedTracksRoute
   '/uploads': typeof AuthenticatedUploadsRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -202,6 +210,7 @@ export interface FileRoutesById {
   '/_authenticated/tracks': typeof AuthenticatedTracksRoute
   '/_authenticated/uploads': typeof AuthenticatedUploadsRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -226,6 +235,7 @@ export interface FileRouteTypes {
     | '/tracks'
     | '/uploads'
     | '/auth/callback'
+    | '/admin/users'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -248,6 +258,7 @@ export interface FileRouteTypes {
     | '/tracks'
     | '/uploads'
     | '/auth/callback'
+    | '/admin/users'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -271,6 +282,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tracks'
     | '/_authenticated/uploads'
     | '/auth/callback'
+    | '/_authenticated/admin/users'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -417,6 +429,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedApiKeysRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
       path: '/lovable/email/queue/process'
@@ -453,6 +472,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSystemOverviewRoute: typeof AuthenticatedSystemOverviewRoute
   AuthenticatedTracksRoute: typeof AuthenticatedTracksRoute
   AuthenticatedUploadsRoute: typeof AuthenticatedUploadsRoute
+  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -467,6 +487,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSystemOverviewRoute: AuthenticatedSystemOverviewRoute,
   AuthenticatedTracksRoute: AuthenticatedTracksRoute,
   AuthenticatedUploadsRoute: AuthenticatedUploadsRoute,
+  AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
