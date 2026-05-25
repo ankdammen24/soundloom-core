@@ -2,6 +2,7 @@ import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-ro
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { authStore } from "@/lib/auth/store";
+import { callbackLanding, fetchUserRoles, landingForRoles, safeInternalTarget } from "@/lib/auth/landing";
 import { supabase } from "@/integrations/supabase/client";
 
 const CANONICAL_URL = "https://catalogusmusicus.mediarosenqvist.com/";
@@ -24,13 +25,6 @@ function hasCallbackTokens(): boolean {
   return Boolean(params.get("access_token") && params.get("refresh_token"));
 }
 
-function safeInternalTarget(value: string | null | undefined): string {
-  if (!value) return "/profile";
-  if (!value.startsWith("/") || value.startsWith("//")) return "/profile";
-  if (value.startsWith("/auth/callback")) return "/profile";
-  return value;
-}
-
 export const Route = createFileRoute("/")({
   validateSearch: (search: Record<string, unknown>) => ({
     next: typeof search.next === "string" ? search.next : "",
@@ -40,9 +34,9 @@ export const Route = createFileRoute("/")({
     // Skip the redirect when an auth callback hash is present so the home page
     // can finish exchanging the tokens before navigating.
     if (typeof window !== "undefined" && hasCallbackTokens()) return;
-    const { status } = authStore.getState();
+    const { status, user } = authStore.getState();
     if (status === "authenticated") {
-      throw redirect({ to: "/profile" });
+      throw redirect({ to: landingForRoles(user?.roles) });
     }
   },
   head: () => ({
@@ -97,9 +91,11 @@ function useAuthCallbackOnRoot(): { processing: boolean; error: string | null } 
 
         const session = data.session ?? (await supabase.auth.getSession()).data.session;
         if (!session) throw new Error("Session error");
-        authStore.setFromSession(session, []);
+        const roles = await fetchUserRoles(session.user.id);
+        if (cancelled) return;
+        authStore.setFromSession(session, roles);
 
-        const target = safeInternalTarget(next);
+        const target = callbackLanding(next, roles);
         await navigate({ to: target });
       } catch (err) {
         if (!cancelled) {
