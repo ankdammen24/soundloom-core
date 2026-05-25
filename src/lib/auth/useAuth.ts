@@ -12,10 +12,15 @@ function safeRedirectTarget(redirectTo?: string) {
   return redirectTo;
 }
 
+// IMPORTANT: redirect callbacks land on the site root ("/"), not on
+// "/auth/callback". Some custom-domain edges return 404 for deep links on
+// initial GET, so the token hash must arrive at a path the edge always serves.
+// The root route detects the hash tokens and forwards to the intended target
+// client-side via router navigation. See src/routes/index.tsx.
 function callbackUrl(redirectTo?: string) {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const safe = safeRedirectTarget(redirectTo) || "/profile";
-  return `${origin}/auth/callback?next=${encodeURIComponent(safe)}`;
+  return `${origin}/?next=${encodeURIComponent(safe)}`;
 }
 
 export function useAuth() {
