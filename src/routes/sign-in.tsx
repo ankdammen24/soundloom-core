@@ -90,6 +90,18 @@ export function AuthForm({ initialMode = "sign-in" }: { initialMode?: Mode }) {
     }
   }
 
+  async function onMicrosoft() {
+    setError(null);
+    setInfo(null);
+    setBusy("microsoft");
+    try {
+      await signInWithMicrosoft(search.redirect);
+    } catch (err) {
+      setError((err as Error)?.message ?? t("errors.microsoftFailed"));
+      setBusy(null);
+    }
+  }
+
   return (
     <AuthShell>
       <h1 className="text-2xl font-bold tracking-tight">
