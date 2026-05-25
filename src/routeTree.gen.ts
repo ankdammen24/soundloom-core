@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as StatusRouteImport } from './routes/status'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as SignInRouteImport } from './routes/sign-in'
@@ -20,6 +19,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AuthenticatedUploadsRouteImport } from './routes/_authenticated.uploads'
 import { Route as AuthenticatedTracksRouteImport } from './routes/_authenticated.tracks'
+import { Route as AuthenticatedStatusRouteImport } from './routes/_authenticated.status'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated.settings'
 import { Route as AuthenticatedRightsRouteImport } from './routes/_authenticated.rights'
 import { Route as AuthenticatedReleasesRouteImport } from './routes/_authenticated.releases'
@@ -51,11 +51,6 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 
-const StatusRoute = StatusRouteImport.update({
-  id: '/status',
-  path: '/status',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -103,6 +98,11 @@ const AuthenticatedUploadsRoute = AuthenticatedUploadsRouteImport.update({
 const AuthenticatedTracksRoute = AuthenticatedTracksRouteImport.update({
   id: '/tracks',
   path: '/tracks',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedStatusRoute = AuthenticatedStatusRouteImport.update({
+  id: '/status',
+  path: '/status',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -272,7 +272,6 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/status': typeof StatusRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/albums': typeof AuthenticatedAlbumsRoute
   '/artists': typeof AuthenticatedArtistsRouteWithChildren
@@ -287,6 +286,7 @@ export interface FileRoutesByFullPath {
   '/releases': typeof AuthenticatedReleasesRouteWithChildren
   '/rights': typeof AuthenticatedRightsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/status': typeof AuthenticatedStatusRoute
   '/tracks': typeof AuthenticatedTracksRouteWithChildren
   '/uploads': typeof AuthenticatedUploadsRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -314,7 +314,6 @@ export interface FileRoutesByTo {
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/status': typeof StatusRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/albums': typeof AuthenticatedAlbumsRoute
   '/artists': typeof AuthenticatedArtistsRouteWithChildren
@@ -329,6 +328,7 @@ export interface FileRoutesByTo {
   '/releases': typeof AuthenticatedReleasesRouteWithChildren
   '/rights': typeof AuthenticatedRightsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/status': typeof AuthenticatedStatusRoute
   '/tracks': typeof AuthenticatedTracksRouteWithChildren
   '/uploads': typeof AuthenticatedUploadsRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -358,7 +358,6 @@ export interface FileRoutesById {
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/status': typeof StatusRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/albums': typeof AuthenticatedAlbumsRoute
   '/_authenticated/artists': typeof AuthenticatedArtistsRouteWithChildren
@@ -373,6 +372,7 @@ export interface FileRoutesById {
   '/_authenticated/releases': typeof AuthenticatedReleasesRouteWithChildren
   '/_authenticated/rights': typeof AuthenticatedRightsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/status': typeof AuthenticatedStatusRoute
   '/_authenticated/tracks': typeof AuthenticatedTracksRouteWithChildren
   '/_authenticated/uploads': typeof AuthenticatedUploadsRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -402,7 +402,6 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/sitemap.xml'
-    | '/status'
     | '/admin'
     | '/albums'
     | '/artists'
@@ -417,6 +416,7 @@ export interface FileRouteTypes {
     | '/releases'
     | '/rights'
     | '/settings'
+    | '/status'
     | '/tracks'
     | '/uploads'
     | '/auth/callback'
@@ -444,7 +444,6 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/sitemap.xml'
-    | '/status'
     | '/admin'
     | '/albums'
     | '/artists'
@@ -459,6 +458,7 @@ export interface FileRouteTypes {
     | '/releases'
     | '/rights'
     | '/settings'
+    | '/status'
     | '/tracks'
     | '/uploads'
     | '/auth/callback'
@@ -487,7 +487,6 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/sitemap.xml'
-    | '/status'
     | '/_authenticated/admin'
     | '/_authenticated/albums'
     | '/_authenticated/artists'
@@ -502,6 +501,7 @@ export interface FileRouteTypes {
     | '/_authenticated/releases'
     | '/_authenticated/rights'
     | '/_authenticated/settings'
+    | '/_authenticated/status'
     | '/_authenticated/tracks'
     | '/_authenticated/uploads'
     | '/auth/callback'
@@ -531,7 +531,6 @@ export interface RootRouteChildren {
   SignInRoute: typeof SignInRoute
   SignUpRoute: typeof SignUpRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  StatusRoute: typeof StatusRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -540,13 +539,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/status': {
-      id: '/status'
-      path: '/status'
-      fullPath: '/status'
-      preLoaderRoute: typeof StatusRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -615,6 +607,13 @@ declare module '@tanstack/react-router' {
       path: '/tracks'
       fullPath: '/tracks'
       preLoaderRoute: typeof AuthenticatedTracksRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/status': {
+      id: '/_authenticated/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof AuthenticatedStatusRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/settings': {
@@ -908,6 +907,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedReleasesRoute: typeof AuthenticatedReleasesRouteWithChildren
   AuthenticatedRightsRoute: typeof AuthenticatedRightsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedStatusRoute: typeof AuthenticatedStatusRoute
   AuthenticatedTracksRoute: typeof AuthenticatedTracksRouteWithChildren
   AuthenticatedUploadsRoute: typeof AuthenticatedUploadsRoute
   AuthenticatedDebugTokenRoute: typeof AuthenticatedDebugTokenRoute
@@ -928,6 +928,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedReleasesRoute: AuthenticatedReleasesRouteWithChildren,
   AuthenticatedRightsRoute: AuthenticatedRightsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedStatusRoute: AuthenticatedStatusRoute,
   AuthenticatedTracksRoute: AuthenticatedTracksRouteWithChildren,
   AuthenticatedUploadsRoute: AuthenticatedUploadsRoute,
   AuthenticatedDebugTokenRoute: AuthenticatedDebugTokenRoute,
@@ -945,7 +946,6 @@ const rootRouteChildren: RootRouteChildren = {
   SignInRoute: SignInRoute,
   SignUpRoute: SignUpRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  StatusRoute: StatusRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
