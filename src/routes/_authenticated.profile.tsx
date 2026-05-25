@@ -51,7 +51,7 @@ function ProfilePage() {
         setError(t("loadError"));
         setLoading(false);
       }
-    })();
+    });
     return () => {
       cancelled = true;
     };
