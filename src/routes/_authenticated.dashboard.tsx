@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Users, Send, Music2, Boxes, Upload, Radio, Plus, Activity } from "lucide-react";
 import { api } from "@/lib/api";
+import { requireRole } from "@/lib/auth/guards";
+import { RoleGuard } from "@/components/auth/RoleGuard";
 
 const URL = "https://catalogusmusicus.mediarosenqvist.com/dashboard";
 
