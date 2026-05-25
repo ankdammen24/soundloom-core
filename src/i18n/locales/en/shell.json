@@ -1,0 +1,33 @@
+{
+  "brand": "Catalogus Musicus",
+  "tagline": "The modern music catalog and distribution platform",
+  "groups": {
+    "catalog": "Catalog",
+    "workspace": "Workspace",
+    "operations": "Operations"
+  },
+  "nav": {
+    "home": "Home",
+    "discover": "Discover",
+    "dashboard": "Dashboard",
+    "status": "Platform status",
+    "artists": "Artists",
+    "releases": "Releases",
+    "tracks": "Tracks",
+    "assets": "Assets",
+    "uploads": "Uploads",
+    "processing": "Processing",
+    "distribution": "Distribution",
+    "organizations": "Organizations",
+    "settings": "Settings",
+    "admin": "Admin",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "profile": "Profile",
+    "tokenClaims": "Token claims",
+    "logout": "Sign out"
+  },
+  "searchPlaceholder": "Search artists, releases, tracks…",
+  "logoutTitle": "Sign out",
+  "toggleNav": "Toggle navigation"
+}

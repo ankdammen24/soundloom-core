@@ -1,0 +1,41 @@
+{
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "continue": "Continue",
+    "retry": "Try again",
+    "refresh": "Refresh",
+    "loading": "Loading…",
+    "search": "Search",
+    "upload": "Upload",
+    "submit": "Submit",
+    "confirm": "Confirm"
+  },
+  "status": {
+    "ok": "OK",
+    "error": "Error",
+    "warning": "Warning",
+    "success": "Done",
+    "pending": "Pending",
+    "processing": "Processing",
+    "done": "Complete",
+    "failed": "Failed"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Check your connection.",
+    "notFound": "Not found.",
+    "unauthorized": "You don't have permission."
+  },
+  "language": {
+    "label": "Language",
+    "sv": "Swedish",
+    "en": "English",
+    "short": { "sv": "SV", "en": "EN" }
+  }
+}
