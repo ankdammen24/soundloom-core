@@ -23,6 +23,7 @@ import {
   Settings as SettingsIcon,
   ShieldAlert,
   LogOut,
+  KeyRound,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
