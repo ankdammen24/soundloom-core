@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { Btn } from "@/components/Btn";
-import { clerkConfigured } from "@/lib/auth";
 import { supabaseConfigured, SUPABASE_URL } from "@/lib/supabase";
+import { API_BASE_URL } from "@/lib/api";
 import { Database, Cloud, ShieldCheck, KeyRound, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -25,9 +25,9 @@ function SettingsPage() {
       status: "not_configured",
     },
     {
-      icon: ShieldCheck, title: "Clerk authentication",
-      desc: "Hosted auth provider. Set VITE_CLERK_PUBLISHABLE_KEY in your environment to activate.",
-      status: clerkConfigured ? "connected" : "not_configured",
+      icon: ShieldCheck, title: "Authentication",
+      desc: `Native auth against ${API_BASE_URL || "the Catalogus Musicus API"} — /auth/login, /auth/register, /auth/me.`,
+      status: API_BASE_URL ? "connected" : "not_configured",
     },
   ] as const;
 
