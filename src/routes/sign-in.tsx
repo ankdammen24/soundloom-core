@@ -1,8 +1,10 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { Music2, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/lib/auth/useAuth";
 import { supabaseConfigured } from "@/lib/supabase";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export const Route = createFileRoute("/sign-in")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -14,6 +16,7 @@ export const Route = createFileRoute("/sign-in")({
 type Mode = "sign-in" | "sign-up";
 
 function SignInPage() {
+  const { t } = useTranslation("auth");
   const { isAuthenticated, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple, signInWithSSO } = useAuth();
   const search = Route.useSearch();
   const [mode, setMode] = useState<Mode>("sign-in");
@@ -38,20 +41,18 @@ function SignInPage() {
         await signInWithEmail(email, password);
       } else {
         await signUpWithEmail(email, password, displayName || undefined);
-        setInfo(
-          "Konto skapat. Kontrollera din e-post och klicka på bekräftelselänken innan du loggar in.",
-        );
+        setInfo(t("signUp.created"));
       }
     } catch (err) {
       const msg = (err as Error)?.message ?? "";
       if (/invalid login credentials/i.test(msg)) {
-        setError("Felaktig e-post eller lösenord.");
+        setError(t("errors.invalidCredentials"));
       } else if (/user already registered/i.test(msg)) {
-        setError("Ett konto med den e-posten finns redan. Logga in istället.");
+        setError(t("errors.userExists"));
       } else if (/email/i.test(msg) && /confirm/i.test(msg)) {
-        setError("Bekräfta din e-postadress innan du loggar in.");
+        setError(t("errors.confirmEmail"));
       } else {
-        setError(msg || "Något gick fel. Försök igen.");
+        setError(msg || t("errors.googleFailed"));
       }
     } finally {
       setBusy(null);
@@ -65,7 +66,7 @@ function SignInPage() {
     try {
       await signInWithGoogle(search.redirect);
     } catch (err) {
-      setError((err as Error)?.message ?? "Google-inloggning misslyckades.");
+      setError((err as Error)?.message ?? t("errors.googleFailed"));
       setBusy(null);
     }
   }
@@ -77,7 +78,7 @@ function SignInPage() {
     try {
       await signInWithApple(search.redirect);
     } catch (err) {
-      setError((err as Error)?.message ?? "Apple-inloggning misslyckades.");
+      setError((err as Error)?.message ?? t("errors.appleFailed"));
       setBusy(null);
     }
   }
@@ -92,9 +93,9 @@ function SignInPage() {
     } catch (err) {
       const msg = (err as Error)?.message ?? "";
       if (/no sso provider/i.test(msg) || /not found/i.test(msg)) {
-        setError("Ingen SSO-leverantör är registrerad för den domänen.");
+        setError(t("errors.ssoNoProvider"));
       } else {
-        setError(msg || "SSO-inloggning misslyckades.");
+        setError(msg || t("errors.ssoFailed"));
       }
       setBusy(null);
     }
@@ -103,12 +104,10 @@ function SignInPage() {
   return (
     <AuthShell>
       <h1 className="text-2xl font-bold tracking-tight">
-        {mode === "sign-in" ? "Logga in" : "Skapa konto"}
+        {mode === "sign-in" ? t("signIn.title") : t("signUp.title")}
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        {mode === "sign-in"
-          ? "Logga in på Music Catalog med e-post och lösenord eller Google."
-          : "Registrera ett nytt Music Catalog-konto."}
+        {mode === "sign-in" ? t("signIn.subtitle") : t("signUp.subtitle")}
       </p>
 
       <div className="mt-6 space-y-2">
@@ -119,7 +118,7 @@ function SignInPage() {
           className="inline-flex w-full items-center justify-center gap-3 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
         >
           {busy === "google" ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleLogo />}
-          Fortsätt med Google
+          {t("signIn.continueWithGoogle")}
         </button>
         <button
           type="button"
@@ -128,7 +127,7 @@ function SignInPage() {
           className="inline-flex w-full items-center justify-center gap-3 rounded-md border border-border bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:opacity-60"
         >
           {busy === "apple" ? <Loader2 className="h-4 w-4 animate-spin" /> : <AppleLogo />}
-          Fortsätt med Apple
+          {t("signIn.continueWithApple")}
         </button>
         <button
           type="button"
@@ -136,19 +135,19 @@ function SignInPage() {
           disabled={busy !== null || !supabaseConfigured}
           className="inline-flex w-full items-center justify-center gap-3 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
         >
-          Logga in med SSO (SAML)
+          {t("signIn.continueWithSso")}
         </button>
         {showSso && (
           <form onSubmit={onSso} className="space-y-2 rounded-md border border-border bg-muted/30 p-3">
             <label className="text-xs font-medium text-muted-foreground" htmlFor="sso-email">
-              Företags-e-post
+              {t("signIn.ssoEmailLabel")}
             </label>
             <input
               id="sso-email"
               type="email"
               required
               autoComplete="email"
-              placeholder="du@dittforetag.se"
+              placeholder={t("signIn.ssoEmailPlaceholder")}
               value={ssoEmail}
               onChange={(e) => setSsoEmail(e.target.value)}
               className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ring"
@@ -159,7 +158,7 @@ function SignInPage() {
               className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
             >
               {busy === "sso" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Fortsätt till din identitetsleverantör
+              {t("signIn.ssoSubmit")}
             </button>
           </form>
         )}
@@ -167,7 +166,7 @@ function SignInPage() {
 
       <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
         <div className="h-px flex-1 bg-border" />
-        eller
+        {t("signIn.or")}
         <div className="h-px flex-1 bg-border" />
       </div>
 
@@ -175,7 +174,7 @@ function SignInPage() {
         {mode === "sign-up" && (
           <div>
             <label className="text-xs font-medium text-muted-foreground" htmlFor="name">
-              Visningsnamn
+              {t("signUp.displayName")}
             </label>
             <input
               id="name"
@@ -189,7 +188,7 @@ function SignInPage() {
         )}
         <div>
           <label className="text-xs font-medium text-muted-foreground" htmlFor="email">
-            E-post
+            {t("signIn.email")}
           </label>
           <input
             id="email"
@@ -203,7 +202,7 @@ function SignInPage() {
         </div>
         <div>
           <label className="text-xs font-medium text-muted-foreground" htmlFor="password">
-            Lösenord
+            {t("signIn.password")}
           </label>
           <input
             id="password"
@@ -223,14 +222,14 @@ function SignInPage() {
           className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
         >
           {busy === "email" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          {mode === "sign-in" ? "Logga in" : "Skapa konto"}
+          {mode === "sign-in" ? t("signIn.submit") : t("signUp.submit")}
         </button>
       </form>
 
       <p className="mt-4 text-xs text-muted-foreground">
         {mode === "sign-in" ? (
           <>
-            Har du inget konto?{" "}
+            {t("signIn.noAccount")}{" "}
             <button
               type="button"
               className="font-medium text-primary hover:underline"
@@ -240,12 +239,12 @@ function SignInPage() {
                 setInfo(null);
               }}
             >
-              Skapa ett här
+              {t("signIn.createAccount")}
             </button>
           </>
         ) : (
           <>
-            Har du redan ett konto?{" "}
+            {t("signUp.haveAccount")}{" "}
             <button
               type="button"
               className="font-medium text-primary hover:underline"
@@ -255,7 +254,7 @@ function SignInPage() {
                 setInfo(null);
               }}
             >
-              Logga in
+              {t("signUp.signInInstead")}
             </button>
           </>
         )}
@@ -263,7 +262,7 @@ function SignInPage() {
 
       {!supabaseConfigured && (
         <p className="mt-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-          Backend är inte konfigurerat.
+          {t("errors.backendNotConfigured")}
         </p>
       )}
       {error && (
@@ -278,7 +277,7 @@ function SignInPage() {
       )}
 
       <p className="mt-8 text-xs text-muted-foreground">
-        Inloggning hanteras säkert via Lovable Cloud.
+        {t("signIn.footer")}
       </p>
     </AuthShell>
   );
@@ -304,27 +303,31 @@ function AppleLogo() {
 }
 
 export function AuthShell({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation("auth");
   return (
-    <div className="grid min-h-[calc(100vh-4rem)] grid-cols-1 lg:grid-cols-2">
+    <div className="relative grid min-h-[calc(100vh-4rem)] grid-cols-1 lg:grid-cols-2">
+      <div className="absolute right-4 top-4 z-10">
+        <LanguageSwitcher variant="compact" />
+      </div>
       <aside className="relative hidden flex-col justify-between overflow-hidden bg-gradient-to-br from-primary via-primary/80 to-accent p-10 text-primary-foreground lg:flex">
         <div className="flex items-center gap-2">
           <span className="grid h-9 w-9 place-items-center rounded-full bg-background/20 backdrop-blur">
             <Music2 className="h-4 w-4" />
           </span>
-          <span className="text-lg font-bold tracking-tight">Catalogus Musicus</span>
+          <span className="text-lg font-bold tracking-tight">{t("shell.brand")}</span>
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-primary-foreground/80">
             Music catalog · distribution
           </p>
           <h2 className="mt-3 text-3xl font-bold leading-tight">
-            The modern music catalog and distribution platform.
+            {t("shell.tagline")}
           </h2>
           <p className="mt-4 max-w-md text-sm text-primary-foreground/80">
-            Manage artists, releases, tracks and assets — and push them out to the world.
+            {t("shell.manageCopy")}
           </p>
         </div>
-        <div className="text-xs text-primary-foreground/60">© Catalogus Musicus</div>
+        <div className="text-xs text-primary-foreground/60">© {t("shell.brand")}</div>
         <div className="pointer-events-none absolute -right-32 -top-32 h-80 w-80 rounded-full bg-background/20 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-40 -left-20 h-96 w-96 rounded-full bg-accent/40 blur-3xl" />
       </aside>
