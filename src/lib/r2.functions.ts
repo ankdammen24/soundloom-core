@@ -14,7 +14,8 @@ const BUCKET_KIND = z.enum(["masters", "previews", "normalized", "artwork", "exp
 
 // Object key builders
 export const r2Keys = {
-  master: (artistId: string, trackId: string, ext = "wav") => `masters/${artistId}/${trackId}.${ext}`,
+  master: (artistId: string, trackId: string, ext = "wav") =>
+    `masters/${artistId}/${trackId}.${ext}`,
   preview: (trackId: string) => `previews/${trackId}.mp3`,
   normalizedRadio: (trackId: string) => `normalized/radio/${trackId}.wav`,
   artworkTrack: (trackId: string, ext = "jpg") => `artwork/tracks/${trackId}.${ext}`,
@@ -113,8 +114,18 @@ export const completeR2Upload = createServerFn({ method: "POST" })
           break;
       }
       if (Object.keys(patch).length > 0) {
-        const { error } = await (sb as unknown as { from: (t: string) => { update: (p: Record<string, unknown>) => { eq: (c: string, v: string) => Promise<{ error: { message: string } | null }> } } })
-          .from("tracks").update(patch).eq("id", data.trackId);
+        const { error } = await (
+          sb as unknown as {
+            from: (t: string) => {
+              update: (p: Record<string, unknown>) => {
+                eq: (c: string, v: string) => Promise<{ error: { message: string } | null }>;
+              };
+            };
+          }
+        )
+          .from("tracks")
+          .update(patch)
+          .eq("id", data.trackId);
         if (error) throw new Error(`Supabase update failed: ${error.message}`);
       }
     }

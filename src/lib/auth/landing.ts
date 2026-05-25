@@ -22,10 +22,7 @@ export function callbackLanding(next: string | null | undefined, roles: string[]
 
 export async function fetchUserRoles(userId: string): Promise<string[]> {
   try {
-    const { data, error } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId);
+    const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId);
     if (error) return [];
     return (data ?? []).map((r) => String((r as { role: string }).role));
   } catch {

@@ -8,7 +8,10 @@ import { authStore } from "@/lib/auth/store";
 export const Route = createFileRoute("/_authenticated/processing")({
   beforeLoad: ({ location }) => {
     const { status, user } = authStore.getState();
-    if (status === "authenticated" && !(user?.roles ?? []).some((r) => ["admin", "editor"].includes(r))) {
+    if (
+      status === "authenticated" &&
+      !(user?.roles ?? []).some((r) => ["admin", "editor"].includes(r))
+    ) {
       throw redirect({ to: "/dashboard", search: { redirect: location.href } as never });
     }
   },
@@ -17,15 +20,25 @@ export const Route = createFileRoute("/_authenticated/processing")({
 });
 
 type Job = {
-  id: string; upload_id: string; status: string; attempts: number;
-  last_error: string | null; started_at: string | null; finished_at: string | null; created_at: string;
+  id: string;
+  upload_id: string;
+  status: string;
+  attempts: number;
+  last_error: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  created_at: string;
 };
 
 function ProcessingPage() {
   const jobs = useQuery({
     queryKey: ["processing_jobs"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("processing_jobs").select("*").order("created_at", { ascending: false }).limit(100);
+      const { data, error } = await supabase
+        .from("processing_jobs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(100);
       if (error) throw error;
       return (data ?? []) as Job[];
     },
@@ -41,13 +54,17 @@ function ProcessingPage() {
 
   return (
     <>
-      <PageHeader title="Processing" description="Audio processing job queue (stub — real analysis comes in Phase 4)." />
+      <PageHeader
+        title="Processing"
+        description="Audio processing job queue (stub — real analysis comes in Phase 4)."
+      />
 
       <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {(["queued", "running", "success", "failed"] as const).map((k) => (
           <div key={k} className="rounded-lg border border-border bg-card p-4">
             <div className="flex items-center justify-between text-xs uppercase text-muted-foreground">
-              <span>{k}</span><Activity className="h-3.5 w-3.5" />
+              <span>{k}</span>
+              <Activity className="h-3.5 w-3.5" />
             </div>
             <div className="mt-2 text-2xl font-semibold">{groups[k]}</div>
           </div>
@@ -66,15 +83,31 @@ function ProcessingPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {jobs.isLoading && <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">Loading…</td></tr>}
-            {!jobs.isLoading && data.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">No jobs yet.</td></tr>}
+            {jobs.isLoading && (
+              <tr>
+                <td colSpan={5} className="p-6 text-center text-muted-foreground">
+                  Loading…
+                </td>
+              </tr>
+            )}
+            {!jobs.isLoading && data.length === 0 && (
+              <tr>
+                <td colSpan={5} className="p-6 text-center text-muted-foreground">
+                  No jobs yet.
+                </td>
+              </tr>
+            )}
             {data.map((j) => (
               <tr key={j.id} className="hover:bg-muted/30">
                 <td className="px-4 py-3 font-mono text-xs">{j.id.slice(0, 8)}…</td>
-                <td className="px-4 py-3"><span className="rounded-full bg-accent px-2 py-0.5 text-xs">{j.status}</span></td>
+                <td className="px-4 py-3">
+                  <span className="rounded-full bg-accent px-2 py-0.5 text-xs">{j.status}</span>
+                </td>
                 <td className="px-4 py-3 text-muted-foreground">{j.attempts}</td>
                 <td className="px-4 py-3 text-muted-foreground">{j.last_error ?? "—"}</td>
-                <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(j.created_at).toLocaleString()}</td>
+                <td className="px-4 py-3 text-xs text-muted-foreground">
+                  {new Date(j.created_at).toLocaleString()}
+                </td>
               </tr>
             ))}
           </tbody>

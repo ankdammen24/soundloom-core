@@ -12,10 +12,23 @@ export const Route = createFileRoute("/_authenticated/artists")({
   component: ArtistsPage,
 });
 
-type Artist = { id: string; name: string; slug: string; bio: string | null; image_url: string | null; created_at: string };
+type Artist = {
+  id: string;
+  name: string;
+  slug: string;
+  bio: string | null;
+  image_url: string | null;
+  created_at: string;
+};
 
 function slugify(s: string) {
-  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || `artist-${Date.now()}`;
+  return (
+    s
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || `artist-${Date.now()}`
+  );
 }
 
 function ArtistsPage() {
@@ -56,7 +69,10 @@ function ArtistsPage() {
 
       {canCreate && (
         <form
-          onSubmit={(e) => { e.preventDefault(); if (form.name) create.mutate(form); }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (form.name) create.mutate(form);
+          }}
           className="flex flex-wrap items-end gap-3 rounded-lg border border-border bg-card p-4"
         >
           <div className="flex-1 min-w-[200px]">
@@ -108,7 +124,10 @@ function ArtistsPage() {
       {(list.data ?? []).length > 0 && (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {(list.data ?? []).map((a) => (
-            <div key={a.id} className="flex items-center gap-3 rounded-lg border border-border bg-card p-4">
+            <div
+              key={a.id}
+              className="flex items-center gap-3 rounded-lg border border-border bg-card p-4"
+            >
               <div className="grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-primary/30 to-accent/30 text-primary">
                 <Users className="h-5 w-5" />
               </div>

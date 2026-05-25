@@ -1,16 +1,16 @@
-import { defineConfig, loadEnv } from 'vite'
-import path from 'node:path'
-import tailwindcss from '@tailwindcss/vite'
-import react from '@vitejs/plugin-react'
-import tsconfigPaths from 'vite-tsconfig-paths'
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
-import { cloudflare } from '@cloudflare/vite-plugin'
+import { defineConfig, loadEnv } from "vite";
+import path from "node:path";
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
+import tsconfigPaths from "vite-tsconfig-paths";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { cloudflare } from "@cloudflare/vite-plugin";
 
 export default defineConfig(({ mode }) => {
   // Load all env vars (no prefix) into process.env so server routes can read
   // SUPABASE_SERVICE_ROLE_KEY, LOVABLE_API_KEY, etc. Do NOT expose to client.
-  const serverEnv = loadEnv(mode, process.cwd(), '')
-  Object.assign(process.env, serverEnv)
+  const serverEnv = loadEnv(mode, process.cwd(), "");
+  Object.assign(process.env, serverEnv);
 
   return {
     plugins: [
@@ -18,19 +18,19 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       tanstackStart(),
       react(),
-      cloudflare({ viteEnvironment: { name: 'ssr' } }),
+      cloudflare({ viteEnvironment: { name: "ssr" } }),
     ],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, 'src'),
+        "@": path.resolve(__dirname, "src"),
         // Pin entities to v4.5.0 (hoisted copy) for @react-email/components SSR
-        'entities/lib/decode.js': path.resolve(__dirname, 'node_modules/entities/lib/decode.js'),
-        'entities/lib/encode.js': path.resolve(__dirname, 'node_modules/entities/lib/encode.js'),
-        entities: path.resolve(__dirname, 'node_modules/entities'),
+        "entities/lib/decode.js": path.resolve(__dirname, "node_modules/entities/lib/decode.js"),
+        "entities/lib/encode.js": path.resolve(__dirname, "node_modules/entities/lib/encode.js"),
+        entities: path.resolve(__dirname, "node_modules/entities"),
       },
     },
     build: {
-      outDir: 'dist/client',
+      outDir: "dist/client",
       emptyOutDir: true,
     },
     server: {
@@ -43,5 +43,5 @@ export default defineConfig(({ mode }) => {
       port: 4173,
       strictPort: true,
     },
-  }
-})
+  };
+});

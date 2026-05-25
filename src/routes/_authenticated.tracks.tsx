@@ -13,8 +13,13 @@ export const Route = createFileRoute("/_authenticated/tracks")({
 });
 
 type Track = {
-  id: string; title: string; artist_id: string; release_id: string | null;
-  isrc: string | null; genre: string | null; duration_seconds: number | null;
+  id: string;
+  title: string;
+  artist_id: string;
+  release_id: string | null;
+  isrc: string | null;
+  genre: string | null;
+  duration_seconds: number | null;
 };
 type Artist = { id: string; name: string };
 
@@ -26,7 +31,10 @@ function TracksPage() {
   const tracks = useQuery({
     queryKey: ["tracks"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("tracks").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("tracks")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as Track[];
     },
@@ -65,26 +73,45 @@ function TracksPage() {
 
       {canCreate && (
         <form
-          onSubmit={(e) => { e.preventDefault(); if (form.title && form.artist_id) create.mutate(form); }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (form.title && form.artist_id) create.mutate(form);
+          }}
           className="flex flex-wrap items-end gap-3 rounded-lg border border-border bg-card p-4"
         >
           <div className="flex-1 min-w-[180px]">
             <label className="block text-xs font-medium text-muted-foreground mb-1">Title</label>
-            <input className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required
-              value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+            <input
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              required
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+            />
           </div>
           <div className="w-56">
             <label className="block text-xs font-medium text-muted-foreground mb-1">Artist</label>
-            <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required
-              value={form.artist_id} onChange={(e) => setForm({ ...form, artist_id: e.target.value })}>
+            <select
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              required
+              value={form.artist_id}
+              onChange={(e) => setForm({ ...form, artist_id: e.target.value })}
+            >
               <option value="">Select artist…</option>
-              {(artists.data ?? []).map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+              {(artists.data ?? []).map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
             </select>
           </div>
           <div className="w-44">
             <label className="block text-xs font-medium text-muted-foreground mb-1">ISRC</label>
-            <input className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              value={form.isrc} onChange={(e) => setForm({ ...form, isrc: e.target.value })} placeholder="SE-XXX-25-00001" />
+            <input
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={form.isrc}
+              onChange={(e) => setForm({ ...form, isrc: e.target.value })}
+              placeholder="SE-XXX-25-00001"
+            />
           </div>
           <Btn type="submit" disabled={!form.title || !form.artist_id || create.isPending}>
             <Plus className="h-4 w-4" /> Create
@@ -94,7 +121,8 @@ function TracksPage() {
 
       {create.error && (
         <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
-          <AlertTriangle className="h-4 w-4 mt-0.5" /><div>{(create.error as Error).message}</div>
+          <AlertTriangle className="h-4 w-4 mt-0.5" />
+          <div>{(create.error as Error).message}</div>
         </div>
       )}
 
@@ -120,8 +148,12 @@ function TracksPage() {
               {(tracks.data ?? []).map((t) => (
                 <tr key={t.id} className="hover:bg-muted/30">
                   <td className="px-4 py-3 font-medium">{t.title}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{artistMap.get(t.artist_id) ?? "—"}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{t.isrc ?? "—"}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {artistMap.get(t.artist_id) ?? "—"}
+                  </td>
+                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                    {t.isrc ?? "—"}
+                  </td>
                   <td className="px-4 py-3 text-muted-foreground">{t.genre ?? "—"}</td>
                 </tr>
               ))}

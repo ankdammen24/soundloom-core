@@ -91,7 +91,6 @@ function ProfilePage() {
         <div className="flex items-center gap-4">
           <div className="grid h-14 w-14 place-items-center overflow-hidden rounded-full bg-primary/15 text-primary">
             {avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
               <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
             ) : (
               <span className="text-lg font-semibold">{initial}</span>
@@ -190,7 +189,11 @@ function ProfilePage() {
 
             <div className="flex flex-wrap items-center gap-2 pt-2">
               <Btn type="submit" disabled={saving}>
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserIcon className="h-4 w-4" />}
+                {saving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <UserIcon className="h-4 w-4" />
+                )}
                 {saving ? t("saving") : t("save")}
               </Btn>
               <Btn variant="outline" type="button" onClick={() => void logoutRedirect()}>

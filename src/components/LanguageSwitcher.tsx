@@ -3,9 +3,17 @@ import { Languages } from "lucide-react";
 import { SUPPORTED_LANGS, type SupportedLang } from "@/i18n";
 import { cn } from "@/lib/utils";
 
-export function LanguageSwitcher({ className, variant = "default" }: { className?: string; variant?: "default" | "compact" }) {
+export function LanguageSwitcher({
+  className,
+  variant = "default",
+}: {
+  className?: string;
+  variant?: "default" | "compact";
+}) {
   const { i18n, t } = useTranslation("common");
-  const current = (SUPPORTED_LANGS as readonly string[]).includes(i18n.language?.split("-")[0] ?? "")
+  const current = (SUPPORTED_LANGS as readonly string[]).includes(
+    i18n.language?.split("-")[0] ?? "",
+  )
     ? (i18n.language.split("-")[0] as SupportedLang)
     : "en";
 
@@ -15,7 +23,10 @@ export function LanguageSwitcher({ className, variant = "default" }: { className
   }
 
   return (
-    <label className={cn("inline-flex items-center gap-1.5 text-xs", className)} aria-label={t("language.label")}>
+    <label
+      className={cn("inline-flex items-center gap-1.5 text-xs", className)}
+      aria-label={t("language.label")}
+    >
       <Languages className="h-4 w-4 text-muted-foreground" aria-hidden />
       <select
         value={current}

@@ -38,7 +38,15 @@ const ROLE_STYLES: Record<AppRole, string> = {
   viewer: "bg-muted text-muted-foreground border-border",
 };
 
-function RoleBadge({ role, onRemove, disabled }: { role: AppRole; onRemove: () => void; disabled?: boolean }) {
+function RoleBadge({
+  role,
+  onRemove,
+  disabled,
+}: {
+  role: AppRole;
+  onRemove: () => void;
+  disabled?: boolean;
+}) {
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${ROLE_STYLES[role]}`}
@@ -121,9 +129,13 @@ function AdminUsersPage() {
         </div>
         <div className="text-xs text-muted-foreground">
           {usersQuery.isFetching ? (
-            <span className="inline-flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Uppdaterar…</span>
+            <span className="inline-flex items-center gap-1">
+              <Loader2 className="h-3 w-3 animate-spin" /> Uppdaterar…
+            </span>
           ) : (
-            <span>{filtered.length} av {rows.length} konton</span>
+            <span>
+              {filtered.length} av {rows.length} konton
+            </span>
           )}
         </div>
       </div>
@@ -162,7 +174,9 @@ function AdminUsersPage() {
                   <tr key={u.id} className="border-b border-border/60 last:border-0 align-top">
                     <td className="px-4 py-3">
                       <div className="font-medium">{u.display_name ?? "—"}</div>
-                      <div className="text-xs text-muted-foreground break-all">{u.email ?? u.id}</div>
+                      <div className="text-xs text-muted-foreground break-all">
+                        {u.email ?? u.id}
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       {u.roles.length === 0 ? (
@@ -202,7 +216,9 @@ function AdminUsersPage() {
                               </SelectTrigger>
                               <SelectContent>
                                 {available.map((r) => (
-                                  <SelectItem key={r} value={r}>{r}</SelectItem>
+                                  <SelectItem key={r} value={r}>
+                                    {r}
+                                  </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
@@ -210,9 +226,7 @@ function AdminUsersPage() {
                               size="sm"
                               variant="outline"
                               disabled={busy}
-                              onClick={() =>
-                                addMutation.mutate({ user_id: u.id, role: selected })
-                              }
+                              onClick={() => addMutation.mutate({ user_id: u.id, role: selected })}
                             >
                               <Plus className="mr-1 h-3.5 w-3.5" /> Lägg till
                             </Button>

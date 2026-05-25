@@ -28,7 +28,9 @@ type State = {
 let state: State = { status: "loading", user: null };
 
 const listeners = new Set<() => void>();
-function emit() { for (const l of listeners) l(); }
+function emit() {
+  for (const l of listeners) l();
+}
 
 function mapUser(u: User, session?: Session | null, roles: string[] = []): AuthUser {
   const meta = (u.user_metadata ?? {}) as Record<string, unknown>;

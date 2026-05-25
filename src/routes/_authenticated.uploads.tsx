@@ -14,7 +14,11 @@ export const Route = createFileRoute("/_authenticated/uploads")({
 
 type Artist = { id: string; name: string };
 type UploadRow = {
-  id: string; track_title: string; status: string; created_at: string; rejection_reason: string | null;
+  id: string;
+  track_title: string;
+  status: string;
+  created_at: string;
+  rejection_reason: string | null;
 };
 
 function formatBytes(n: number) {
@@ -83,7 +87,10 @@ function UploadsPage() {
       setProgress(20);
       const { error: storageError } = await supabase.storage
         .from("audio-uploads")
-        .upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
+        .upload(path, file, {
+          contentType: file.type || "application/octet-stream",
+          upsert: false,
+        });
       if (storageError) throw storageError;
       setProgress(80);
 
@@ -112,46 +119,65 @@ function UploadsPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <PageHeader title="Upload audio" description="Upload a master audio file. It enters the review queue." />
+      <PageHeader
+        title="Upload audio"
+        description="Upload a master audio file. It enters the review queue."
+      />
 
       {!canUpload && (
         <div className="rounded-md border border-warning/30 bg-warning/5 p-3 text-sm">
-          You need the <code>artist</code>, <code>editor</code>, or <code>admin</code> role to upload.
+          You need the <code>artist</code>, <code>editor</code>, or <code>admin</code> role to
+          upload.
         </div>
       )}
 
       {canUpload && (
         <form
-          onSubmit={(e) => { e.preventDefault(); upload.mutate(); }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            upload.mutate();
+          }}
           className="space-y-4 rounded-lg border border-border bg-card p-5"
         >
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1">Track title *</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">
+                Track title *
+              </label>
               <input
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={trackTitle} onChange={(e) => setTrackTitle(e.target.value)} required
+                value={trackTitle}
+                onChange={(e) => setTrackTitle(e.target.value)}
+                required
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">Artist</label>
               <select
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={artistId} onChange={(e) => setArtistId(e.target.value)}
+                value={artistId}
+                onChange={(e) => setArtistId(e.target.value)}
               >
                 <option value="">—</option>
-                {(artists.data ?? []).map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                {(artists.data ?? []).map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">Genre</label>
               <input
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={genre} onChange={(e) => setGenre(e.target.value)}
+                value={genre}
+                onChange={(e) => setGenre(e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1">Audio file *</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">
+                Audio file *
+              </label>
               <input
                 type="file"
                 accept="audio/*,.wav,.flac,.mp3,.m4a,.aiff"
@@ -159,7 +185,11 @@ function UploadsPage() {
                 required
                 className="w-full text-sm"
               />
-              {file && <div className="mt-1 text-xs text-muted-foreground">{file.name} · {formatBytes(file.size)}</div>}
+              {file && (
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {file.name} · {formatBytes(file.size)}
+                </div>
+              )}
             </div>
           </div>
 
@@ -171,12 +201,14 @@ function UploadsPage() {
 
           {error && (
             <div className="flex items-start gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
-              <AlertTriangle className="h-3.5 w-3.5 mt-0.5" /><div>{error}</div>
+              <AlertTriangle className="h-3.5 w-3.5 mt-0.5" />
+              <div>{error}</div>
             </div>
           )}
           {success && (
             <div className="flex items-start gap-2 rounded-md bg-success/10 px-3 py-2 text-xs text-success">
-              <CheckCircle2 className="h-3.5 w-3.5 mt-0.5" /><div>{success}</div>
+              <CheckCircle2 className="h-3.5 w-3.5 mt-0.5" />
+              <div>{success}</div>
             </div>
           )}
 
@@ -209,9 +241,15 @@ function UploadsPage() {
                 {(myUploads.data ?? []).map((u) => (
                   <tr key={u.id} className="hover:bg-muted/30">
                     <td className="px-4 py-3 font-medium">{u.track_title}</td>
-                    <td className="px-4 py-3"><span className="rounded-full bg-accent px-2 py-0.5 text-xs">{u.status}</span></td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(u.created_at).toLocaleString()}</td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">{u.rejection_reason ?? "—"}</td>
+                    <td className="px-4 py-3">
+                      <span className="rounded-full bg-accent px-2 py-0.5 text-xs">{u.status}</span>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">
+                      {new Date(u.created_at).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">
+                      {u.rejection_reason ?? "—"}
+                    </td>
                   </tr>
                 ))}
               </tbody>

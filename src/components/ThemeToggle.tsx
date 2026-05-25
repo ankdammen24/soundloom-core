@@ -10,7 +10,11 @@ export function ThemeToggle({ className }: { className?: string }) {
     { value: "system", Icon: Monitor, label: "System" },
   ];
   return (
-    <div className={cn("inline-flex rounded-full bg-sidebar-accent/40 p-1", className)} role="radiogroup" aria-label="Theme">
+    <div
+      className={cn("inline-flex rounded-full bg-sidebar-accent/40 p-1", className)}
+      role="radiogroup"
+      aria-label="Theme"
+    >
       {opts.map(({ value, Icon, label }) => (
         <button
           key={value}

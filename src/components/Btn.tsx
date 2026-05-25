@@ -17,8 +17,16 @@ const sizes: Record<Size, string> = {
 };
 
 export function Btn({
-  variant = "primary", size = "md", className, children, ...rest
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; size?: Size; children: ReactNode }) {
+  variant = "primary",
+  size = "md",
+  className,
+  children,
+  ...rest
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: Variant;
+  size?: Size;
+  children: ReactNode;
+}) {
   return (
     <button
       {...rest}

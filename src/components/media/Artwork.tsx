@@ -43,7 +43,10 @@ export function Artwork({
           loading="lazy"
           onLoad={() => setLoaded(true)}
           onError={() => setErrored(true)}
-          className={cn("h-full w-full object-cover transition-opacity", loaded ? "opacity-100" : "opacity-0")}
+          className={cn(
+            "h-full w-full object-cover transition-opacity",
+            loaded ? "opacity-100" : "opacity-0",
+          )}
         />
       </div>
     );
@@ -54,7 +57,12 @@ export function Artwork({
       style={{ background: bg }}
       aria-label={alt ?? "artwork placeholder"}
     >
-      <Music2 className={cn(size === "xl" ? "h-12 w-12" : size === "lg" ? "h-8 w-8" : "h-5 w-5", "opacity-80")} />
+      <Music2
+        className={cn(
+          size === "xl" ? "h-12 w-12" : size === "lg" ? "h-8 w-8" : "h-5 w-5",
+          "opacity-80",
+        )}
+      />
     </div>
   );
 }

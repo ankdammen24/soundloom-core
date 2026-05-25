@@ -10,10 +10,20 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 async function fetchStats() {
-  const tables = ["artists", "releases", "tracks", "uploads", "processing_jobs", "review_items"] as const;
+  const tables = [
+    "artists",
+    "releases",
+    "tracks",
+    "uploads",
+    "processing_jobs",
+    "review_items",
+  ] as const;
   const results = await Promise.all(
     tables.map((t) =>
-      supabase.from(t).select("*", { count: "exact", head: true }).then((r) => r.count ?? 0),
+      supabase
+        .from(t)
+        .select("*", { count: "exact", head: true })
+        .then((r) => r.count ?? 0),
     ),
   );
   const [artists, releases, tracks, uploads, jobs, reviews] = results;
@@ -54,13 +64,19 @@ function DashboardPage() {
             className="group rounded-xl bg-card border border-border/60 p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{s.label}</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {s.label}
+              </span>
               <span className="grid h-8 w-8 place-items-center rounded-full bg-primary/10 text-primary">
                 <s.icon className="h-4 w-4" />
               </span>
             </div>
             <div className="mt-3 text-3xl font-bold tracking-tight">
-              {s.value === undefined ? <span className="text-muted-foreground/40">—</span> : s.value}
+              {s.value === undefined ? (
+                <span className="text-muted-foreground/40">—</span>
+              ) : (
+                s.value
+              )}
             </div>
           </Link>
         ))}
@@ -72,7 +88,9 @@ function DashboardPage() {
             <h2 className="text-xl font-bold tracking-tight">Recent releases</h2>
             <p className="text-sm text-muted-foreground">Latest entries in the catalog</p>
           </div>
-          <Link to="/releases" className="text-sm font-medium text-primary hover:underline">View all →</Link>
+          <Link to="/releases" className="text-sm font-medium text-primary hover:underline">
+            View all →
+          </Link>
         </div>
         {recent.isLoading ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -88,13 +106,18 @@ function DashboardPage() {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {(recent.data ?? []).map((r) => (
-              <div key={r.id} className="flex items-center gap-3 rounded-xl bg-card border border-border/60 p-3">
+              <div
+                key={r.id}
+                className="flex items-center gap-3 rounded-xl bg-card border border-border/60 p-3"
+              >
                 <div className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-lg bg-gradient-to-br from-primary/30 to-accent/30 text-primary">
                   <Music2 className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
                   <div className="truncate font-semibold">{r.title}</div>
-                  <div className="truncate text-xs text-muted-foreground capitalize">{r.type ?? "—"} · {r.release_date ?? "no date"}</div>
+                  <div className="truncate text-xs text-muted-foreground capitalize">
+                    {r.type ?? "—"} · {r.release_date ?? "no date"}
+                  </div>
                 </div>
               </div>
             ))}

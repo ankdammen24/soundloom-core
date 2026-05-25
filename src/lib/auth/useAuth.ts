@@ -67,7 +67,6 @@ export function useAuth() {
     if (result.error) throw result.error;
   }, []);
 
-
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
   }, []);

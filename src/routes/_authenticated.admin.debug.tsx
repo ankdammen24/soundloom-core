@@ -2,7 +2,12 @@ import { createFileRoute, Navigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuthState } from "@/lib/auth/store";
-import { callbackLanding, fetchUserRoles, landingForRoles, safeInternalTarget } from "@/lib/auth/landing";
+import {
+  callbackLanding,
+  fetchUserRoles,
+  landingForRoles,
+  safeInternalTarget,
+} from "@/lib/auth/landing";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 
@@ -108,8 +113,8 @@ function AdminDebugPage() {
         <div>
           <h1 className="text-2xl font-semibold">Auth debug</h1>
           <p className="text-sm text-muted-foreground">
-            Snapshot of the current session, roles and the redirect target the
-            auth callback would compute for a given <code>next</code>.
+            Snapshot of the current session, roles and the redirect target the auth callback would
+            compute for a given <code>next</code>.
           </p>
         </div>
         <Button onClick={() => void load()} disabled={loading} variant="outline" size="sm">
@@ -146,9 +151,7 @@ function AdminDebugPage() {
       </Section>
 
       <Section title="Supabase session (live fetch)">
-        {snap?.error && (
-          <p className="text-sm text-destructive">Error: {snap.error}</p>
-        )}
+        {snap?.error && <p className="text-sm text-destructive">Error: {snap.error}</p>}
         <Row label="taken at" value={snap?.takenAt ?? "—"} />
         <Row label="has session" value={String(snap?.hasSession ?? false)} />
         <Row label="user.id" value={snap?.userId ?? "—"} />
@@ -161,7 +164,11 @@ function AdminDebugPage() {
 
       <Section title="Raw metadata">
         <pre className="overflow-auto rounded bg-muted p-3 text-xs">
-{JSON.stringify({ app_metadata: snap?.appMetadata, user_metadata: snap?.userMetadata }, null, 2)}
+          {JSON.stringify(
+            { app_metadata: snap?.appMetadata, user_metadata: snap?.userMetadata },
+            null,
+            2,
+          )}
         </pre>
       </Section>
     </div>
@@ -183,7 +190,9 @@ function Row({ label, value, highlight }: { label: string; value: string; highli
   return (
     <div className="grid grid-cols-[200px_1fr] items-baseline gap-3 border-b border-border/40 py-1 last:border-0">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <code className={`text-sm break-all ${highlight ? "font-semibold text-primary" : ""}`}>{value}</code>
+      <code className={`text-sm break-all ${highlight ? "font-semibold text-primary" : ""}`}>
+        {value}
+      </code>
     </div>
   );
 }
