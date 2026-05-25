@@ -29,5 +29,12 @@
   },
   "searchPlaceholder": "Search artists, releases, tracks…",
   "logoutTitle": "Sign out",
-  "toggleNav": "Toggle navigation"
+  "toggleNav": "Toggle navigation",
+  "access": {
+    "title": "Access",
+    "roles": "Roles",
+    "permissions": "Permissions",
+    "noRoles": "No roles assigned",
+    "noPermissions": "No special permissions"
+  }
 }
