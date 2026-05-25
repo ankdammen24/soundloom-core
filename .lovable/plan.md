@@ -1,25 +1,25 @@
-Jag hittade orsaken: backend-triggern finns, är aktiv och har skapat profil korrekt. Det finns just nu 1 auth-användare, 1 profil och 0 användare utan profil. Din senaste SSO-inloggning har alltså profilrad och roller: `admin` + `viewer`.
-
-Problemet är därför inte att profilen aldrig skapas, utan att appflödet kan landa på profilsidan innan klientens auth/session och profilhämtning är färdiga eller innan en saknad profil självläker.
+Jag hittade en konkret orsak: `catalog.mediarosenqvist.com` svarar `404` direkt på både `/auth/callback` och `/profile`, medan `/` svarar `200`. Det betyder att felet sker innan React-routen får chans att köra. Appens route finns i koden, men custom domain släpper inte igenom deep links just nu.
 
 Plan:
 
-1. Gör `/profile` självläkande
-   - Om profilsidan inte hittar en profilrad för inloggad användare ska den skapa/upserta den direkt med användarens id, e-post, namn och avatar från auth-sessionen.
-   - Därefter läser den tillbaka profilen och visar den.
+1. Lägg in en root-baserad auth-callback fallback
+   - Ändra Google/SSO `redirect_uri` till root-URL (`/`) med `next=/profile` i queryn i stället för `/auth/callback`.
+   - Root-URL fungerar redan på custom domain, så token-hashen når appen i stället för att fastna i en server-404.
 
-2. Flytta profilhämtningen till en skyddad serverfunktion
-   - Använd en backend-funktion som kör som inloggad användare och respekterar åtkomstregler.
-   - Det gör att profilskapande/läsning blir deterministiskt och inte beroende av timing i React-effekter.
+2. Gör index-routen kapabel att slutföra auth-callback
+   - Om `/` laddas med `#access_token=...&refresh_token=...`, ska index-sidan konsumera token, köra `supabase.auth.setSession()`, verifiera med `getUser()`, rensa URL:en och navigera klient-side till `/profile`.
+   - Detta undviker full page reload till `/profile`, som också 404:ar på custom domain vid direkt serverträff.
 
-3. Hårdgör auth-laddningen före profilsidan
-   - Lägg en `beforeLoad` på profilrouten som väntar på `supabase.auth.getUser()` innan sidan försöker läsa profilen.
-   - Om ingen verifierad användare finns skickas man till `/sign-in`.
+3. Behåll `/auth/callback` som sekundär fallback
+   - Lämna befintlig `/auth/callback` kvar för miljöer där deep links fungerar.
+   - Men nya login-flöden ska inte vara beroende av den routen på custom domain.
 
-4. Behåll databastriggern men gör den mer felsäker vid behov
-   - Triggern `on_auth_user_created` finns redan på auth-användare och kör `public.handle_new_user()`.
-   - Jag lägger bara till en migration om vi behöver förstärka triggern/backfill, inte ändra fungerande schema i onödan.
+4. Gör redirect-mål säkrare och konsekventa
+   - Fortsätt endast till interna path-värden (`/profile` som default).
+   - Blockera callback-loopar och externa URL:er.
 
-5. Verifiera med riktiga databassignaler
-   - Kontrollera efter ändringen att antalet auth-användare utan profil är `0`.
-   - Kontrollera att profilsidan visar raden efter SSO/Google utan manuell refresh.
+5. Verifiera mot riktiga domänen
+   - Kontrollera att `https://catalog.mediarosenqvist.com/` är enda serverträffen efter SSO/Google.
+   - Kontrollera att appen därefter klientnavigerar till profilsidan och att profilen visas.
+
+Viktigt: token/refresh token har återigen klistrats in i chatten. Efter att fixen är publicerad bör du logga ut och logga in igen så att den exponerade refresh-token roteras.
