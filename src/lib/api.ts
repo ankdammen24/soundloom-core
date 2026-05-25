@@ -1,5 +1,5 @@
 // Central API client for the music-catalog-core backend.
-// All requests target VITE_API_BASE_URL and attach a Clerk Bearer token only for protected calls.
+// All requests target VITE_API_BASE_URL and attach a Bearer token (from the app's auth module) only for protected calls.
 
 const BASE_URL = ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "").trim().replace(/\/+$/, "");
 export const API_BASE_URL = BASE_URL;
@@ -17,8 +17,8 @@ export function apiUrl(path: string) {
   return `${BASE_URL}${normalizedPath}`;
 }
 
-// Token getter is injected at runtime by AuthProvider (Clerk).
-// Keeping it as a mutable holder avoids importing Clerk into SSR/server code.
+// Token getter is injected at runtime by AuthProvider.
+// Keeping it as a mutable holder avoids importing auth state into SSR/server code.
 type TokenGetter = () => Promise<string | null>;
 let tokenGetter: TokenGetter | null = null;
 
