@@ -1,27 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useRef } from "react";
-import { api, ApiError } from "@/lib/api";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
-import { DropZone } from "@/components/uploads/DropZone";
-import { Waveform } from "@/components/audio/Waveform";
-import { ProcessingTimeline, timelineFromStatus } from "@/components/ProcessingTimeline";
-import { StatusBadge } from "@/components/StatusBadge";
-import { uploadFile } from "@/lib/upload";
-import { FileAudio, X, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Btn } from "@/components/Btn";
+import { Upload, FileAudio, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { useAuth } from "@/lib/auth/useAuth";
 
 export const Route = createFileRoute("/_authenticated/uploads")({
-  head: () => ({ meta: [{ title: "Uploads – Catalogus Musicus" }] }),
+  head: () => ({ meta: [{ title: "Upload – Music Catalog" }] }),
   component: UploadsPage,
 });
 
-type QueueItem = {
-  id: string;
-  file: File;
-  progress: number;
-  status: "queued" | "uploading" | "finalizing" | "ready" | "failed";
-  error?: string;
-  assetId?: string;
-  controller: AbortController;
+type Artist = { id: string; name: string };
+type UploadRow = {
+  id: string; track_title: string; status: string; created_at: string; rejection_reason: string | null;
 };
 
 function formatBytes(n: number) {
@@ -31,138 +24,201 @@ function formatBytes(n: number) {
 }
 
 function UploadsPage() {
-  const [items, setItems] = useState<QueueItem[]>([]);
-  const itemsRef = useRef(items);
-  itemsRef.current = items;
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const [file, setFile] = useState<File | null>(null);
+  const [trackTitle, setTrackTitle] = useState("");
+  const [artistId, setArtistId] = useState("");
+  const [genre, setGenre] = useState("");
+  const [progress, setProgress] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  function patch(id: string, p: Partial<QueueItem>) {
-    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...p } : it)));
-  }
+  const artists = useQuery({
+    queryKey: ["artists"],
+    queryFn: async () => {
+      const { data } = await supabase.from("artists").select("id, name").order("name");
+      return (data ?? []) as Artist[];
+    },
+  });
 
-  async function runOne(item: QueueItem) {
-    try {
-      patch(item.id, { status: "uploading", progress: 0 });
-      const init = await api.initUpload({
-        filename: item.file.name,
-        contentType: item.file.type || "application/octet-stream",
-        size: item.file.size,
-      });
-      patch(item.id, { assetId: init.assetId });
-      await uploadFile(item.file, init, (p) => patch(item.id, { progress: p.pct }), item.controller.signal);
-      patch(item.id, { status: "finalizing", progress: 100 });
-      await api.completeUpload(init.assetId);
-      patch(item.id, { status: "ready" });
-    } catch (e) {
-      const msg = e instanceof ApiError ? `${e.status} — ${e.message}` : e instanceof Error ? e.message : "Upload failed";
-      patch(item.id, { status: "failed", error: msg });
-    }
-  }
+  const myUploads = useQuery({
+    queryKey: ["my-uploads"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("uploads")
+        .select("id, track_title, status, created_at, rejection_reason")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return (data ?? []) as UploadRow[];
+    },
+  });
 
-  async function onFiles(files: File[]) {
-    const created: QueueItem[] = files.map((f) => ({
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      file: f,
-      progress: 0,
-      status: "queued",
-      controller: new AbortController(),
-    }));
-    setItems((prev) => [...created, ...prev]);
-    // serial uploads
-    for (const it of created) {
-      await runOne(it);
-    }
-  }
+  const upload = useMutation({
+    mutationFn: async () => {
+      if (!file || !trackTitle || !user) throw new Error("Missing required fields");
+      setError(null);
+      setSuccess(null);
+      setProgress(0);
 
-  function cancel(id: string) {
-    const it = itemsRef.current.find((x) => x.id === id);
-    if (it && (it.status === "uploading" || it.status === "queued")) it.controller.abort();
-    setItems((prev) => prev.filter((x) => x.id !== id));
-  }
+      // 1. Insert uploads row (status=uploaded)
+      const { data: uploadRow, error: insertError } = await supabase
+        .from("uploads")
+        .insert({
+          track_title: trackTitle,
+          artist_id: artistId || null,
+          genre: genre || null,
+          status: "uploaded",
+          created_by: user.id,
+        })
+        .select("id")
+        .single();
+      if (insertError || !uploadRow) throw insertError ?? new Error("Could not create upload");
 
-  const totalBytes = items.reduce((sum, i) => sum + i.file.size, 0);
-  const uploadedBytes = items.reduce((sum, i) => sum + (i.file.size * i.progress) / 100, 0);
-  const overall = totalBytes > 0 ? Math.round((uploadedBytes / totalBytes) * 100) : 0;
-  const active = items.some((i) => i.status === "uploading" || i.status === "finalizing");
+      const uploadId = uploadRow.id;
+      const path = `${user.id}/${uploadId}/${file.name}`;
+
+      // 2. Upload binary to storage
+      setProgress(20);
+      const { error: storageError } = await supabase.storage
+        .from("audio-uploads")
+        .upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
+      if (storageError) throw storageError;
+      setProgress(80);
+
+      // 3. Insert audio_files row (no RLS insert allowed for users — skip; processing job covers stub)
+      // 4. Insert processing_jobs row — also restricted; left for editor/admin via server-side later.
+      // For now the upload itself is the artifact; the processing_job will be created in a later phase.
+
+      setProgress(100);
+      return uploadId;
+    },
+    onSuccess: (id) => {
+      setSuccess(`Upload created (${id})`);
+      setFile(null);
+      setTrackTitle("");
+      setGenre("");
+      setProgress(null);
+      qc.invalidateQueries({ queryKey: ["my-uploads"] });
+    },
+    onError: (e: Error) => {
+      setError(e.message);
+      setProgress(null);
+    },
+  });
+
+  const canUpload = (user?.roles ?? []).some((r) => ["admin", "editor", "artist"].includes(r));
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <PageHeader title="Uploads" description="Drag and drop audio assets — they're uploaded via signed URL to music-catalog-core." />
+      <PageHeader title="Upload audio" description="Upload a master audio file. It enters the review queue." />
 
-      <DropZone onFiles={onFiles} />
-
-      {items.length > 0 && (
-        <div className="rounded-lg border border-border bg-card overflow-hidden">
-          <div className="border-b border-border px-4 py-3 flex items-center justify-between">
-            <div className="text-sm font-medium">
-              {items.length} file{items.length === 1 ? "" : "s"}{" "}
-              <span className="text-muted-foreground">· {formatBytes(totalBytes)}</span>
-            </div>
-            {active && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>{overall}%</span>
-                <div className="h-1.5 w-40 overflow-hidden rounded bg-muted">
-                  <div className="h-full bg-primary transition-all" style={{ width: `${overall}%` }} />
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="divide-y divide-border">
-            {items.map((it) => (
-              <div key={it.id} className="p-4 space-y-2">
-                <div className="flex items-center gap-3">
-                  <FileAudio className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate font-medium text-sm">{it.file.name}</span>
-                      <StatusBadge status={it.status} size="sm" />
-                    </div>
-                    <div className="text-xs text-muted-foreground">{formatBytes(it.file.size)}</div>
-                  </div>
-                  <button
-                    onClick={() => cancel(it.id)}
-                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
-                    aria-label="Remove"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-                {(it.status === "uploading" || it.status === "finalizing") && (
-                  <div className="h-1 w-full overflow-hidden rounded bg-muted">
-                    <div className="h-full bg-primary transition-all" style={{ width: `${it.progress}%` }} />
-                  </div>
-                )}
-                <Waveform file={it.file} height={36} buckets={150} />
-                {it.status === "failed" && it.error && (
-                  <div className="flex items-start gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
-                    <AlertTriangle className="h-3.5 w-3.5 mt-0.5" />
-                    <div>{it.error}</div>
-                  </div>
-                )}
-                {it.status === "ready" && (
-                  <div className="flex items-start gap-2 rounded-md bg-success/10 px-3 py-2 text-xs text-success">
-                    <CheckCircle2 className="h-3.5 w-3.5 mt-0.5" />
-                    <div>
-                      Asset created — <code className="font-mono">{it.assetId}</code>
-                    </div>
-                  </div>
-                )}
-                {(it.status === "uploading" || it.status === "finalizing" || it.status === "ready") && (
-                  <details className="text-xs">
-                    <summary className="cursor-pointer text-muted-foreground hover:text-foreground">Processing timeline</summary>
-                    <div className="mt-3">
-                      <ProcessingTimeline
-                        steps={timelineFromStatus(
-                          it.status === "ready" ? "ready" : it.status === "finalizing" ? "processing" : "uploaded",
-                        )}
-                      />
-                    </div>
-                  </details>
-                )}
-              </div>
-            ))}
-          </div>
+      {!canUpload && (
+        <div className="rounded-md border border-warning/30 bg-warning/5 p-3 text-sm">
+          You need the <code>artist</code>, <code>editor</code>, or <code>admin</code> role to upload.
         </div>
       )}
+
+      {canUpload && (
+        <form
+          onSubmit={(e) => { e.preventDefault(); upload.mutate(); }}
+          className="space-y-4 rounded-lg border border-border bg-card p-5"
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Track title *</label>
+              <input
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={trackTitle} onChange={(e) => setTrackTitle(e.target.value)} required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Artist</label>
+              <select
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={artistId} onChange={(e) => setArtistId(e.target.value)}
+              >
+                <option value="">—</option>
+                {(artists.data ?? []).map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Genre</label>
+              <input
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={genre} onChange={(e) => setGenre(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Audio file *</label>
+              <input
+                type="file"
+                accept="audio/*,.wav,.flac,.mp3,.m4a,.aiff"
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                required
+                className="w-full text-sm"
+              />
+              {file && <div className="mt-1 text-xs text-muted-foreground">{file.name} · {formatBytes(file.size)}</div>}
+            </div>
+          </div>
+
+          {progress !== null && (
+            <div className="h-2 w-full overflow-hidden rounded bg-muted">
+              <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+            </div>
+          )}
+
+          {error && (
+            <div className="flex items-start gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              <AlertTriangle className="h-3.5 w-3.5 mt-0.5" /><div>{error}</div>
+            </div>
+          )}
+          {success && (
+            <div className="flex items-start gap-2 rounded-md bg-success/10 px-3 py-2 text-xs text-success">
+              <CheckCircle2 className="h-3.5 w-3.5 mt-0.5" /><div>{success}</div>
+            </div>
+          )}
+
+          <Btn type="submit" disabled={!file || !trackTitle || upload.isPending}>
+            <Upload className="h-4 w-4" /> {upload.isPending ? "Uploading…" : "Upload"}
+          </Btn>
+        </form>
+      )}
+
+      <section>
+        <h2 className="mb-3 text-base font-semibold">Recent uploads</h2>
+        {myUploads.isLoading && <div className="text-sm text-muted-foreground">Loading…</div>}
+        {!myUploads.isLoading && (myUploads.data ?? []).length === 0 && (
+          <div className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+            <FileAudio className="mx-auto h-6 w-6 mb-2" /> No uploads yet.
+          </div>
+        )}
+        {(myUploads.data ?? []).length > 0 && (
+          <div className="overflow-x-auto rounded-lg border border-border bg-card">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-3 text-left font-medium">Title</th>
+                  <th className="px-4 py-3 text-left font-medium">Status</th>
+                  <th className="px-4 py-3 text-left font-medium">Created</th>
+                  <th className="px-4 py-3 text-left font-medium">Reason</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {(myUploads.data ?? []).map((u) => (
+                  <tr key={u.id} className="hover:bg-muted/30">
+                    <td className="px-4 py-3 font-medium">{u.track_title}</td>
+                    <td className="px-4 py-3"><span className="rounded-full bg-accent px-2 py-0.5 text-xs">{u.status}</span></td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(u.created_at).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">{u.rejection_reason ?? "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

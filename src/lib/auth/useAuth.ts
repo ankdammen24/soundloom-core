@@ -3,8 +3,6 @@ import { useAuthState } from "./store";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
 import { lovable } from "@/integrations/lovable";
 
-export type SupportedProvider = "google" | "apple";
-
 function safeRedirectTarget(redirectTo?: string) {
   if (!redirectTo) return "";
   if (!redirectTo.startsWith("/") || redirectTo.startsWith("//")) return "";
@@ -12,14 +10,9 @@ function safeRedirectTarget(redirectTo?: string) {
   return redirectTo;
 }
 
-// IMPORTANT: redirect callbacks land on the site root ("/"), not on
-// "/auth/callback". Some custom-domain edges return 404 for deep links on
-// initial GET, so the token hash must arrive at a path the edge always serves.
-// The root route detects the hash tokens and forwards to the intended target
-// client-side via router navigation. See src/routes/index.tsx.
 function callbackUrl(redirectTo?: string) {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const safe = safeRedirectTarget(redirectTo) || "/profile";
+  const safe = safeRedirectTarget(redirectTo) || "/dashboard";
   return `${origin}/?next=${encodeURIComponent(safe)}`;
 }
 
@@ -40,7 +33,7 @@ export function useAuth() {
         email,
         password,
         options: {
-          emailRedirectTo: `${origin}/?next=%2Fprofile`,
+          emailRedirectTo: `${origin}/?next=%2Fdashboard`,
           data: displayName ? { display_name: displayName } : undefined,
         },
       });
@@ -84,12 +77,11 @@ export function useAuth() {
     await supabase.auth.signOut();
   }, []);
 
-  // Back-compat shim for older callers.
   const signInWith = useCallback(
-    async (provider: SupportedProvider, redirectTo?: string) => {
+    async (provider: "google" | "apple", redirectTo?: string) => {
       if (provider === "google") return signInWithGoogle(redirectTo);
       if (provider === "apple") return signInWithApple(redirectTo);
-      throw new Error(`Provider ${provider} stöds inte längre.`);
+      throw new Error(`Provider ${provider} stöds inte.`);
     },
     [signInWithGoogle, signInWithApple],
   );
@@ -106,11 +98,9 @@ export function useAuth() {
     signInWithSSO,
     signInWith,
     signOut,
-    loginRedirect: (_redirect?: string) =>
-      Promise.reject(new Error("Use signInWithEmail, signInWithGoogle or signInWithApple.")),
+    loginRedirect: signOut,
     logoutRedirect: signOut,
-    login: (_redirect?: string) =>
-      Promise.reject(new Error("Use signInWithEmail, signInWithGoogle or signInWithApple.")),
+    login: signOut,
     logout: signOut,
   };
 }
