@@ -44,6 +44,15 @@ export function useAuth() {
     await initMsal();
     const account = getActiveAccount();
     authStore.signOut();
+    const inIframe = typeof window !== "undefined" && window.self !== window.top;
+    if (inIframe) {
+      try {
+        await msalInstance.logoutPopup({ account: account ?? undefined });
+        return;
+      } catch {
+        // fall through to redirect
+      }
+    }
     await msalInstance.logoutRedirect({
       account: account ?? undefined,
       postLogoutRedirectUri: typeof window !== "undefined" ? window.location.origin : "/",
