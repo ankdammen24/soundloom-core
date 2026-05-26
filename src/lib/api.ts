@@ -9,6 +9,12 @@ export const API_BASE_URL = (env.VITE_API_BASE_URL ?? "https://api.mediarosenqvi
   "",
 );
 
+// TEMP debug: confirm which API base the bundle is actually using.
+if (typeof window !== "undefined") {
+  // eslint-disable-next-line no-console
+  console.info("[api] resolved API_BASE_URL =", API_BASE_URL);
+}
+
 export class ApiError extends Error {
   status: number;
   body?: unknown;
