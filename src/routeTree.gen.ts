@@ -10,59 +10,14 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as SignUpRouteImport } from './routes/sign-up'
-import { Route as SignInRouteImport } from './routes/sign-in'
-import { Route as McLoginRouteImport } from './routes/mc-login'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForbiddenRouteImport } from './routes/forbidden'
 import { Route as CatalogRouteImport } from './routes/catalog'
-import { Route as McAuthenticatedRouteImport } from './routes/_mc-authenticated'
-import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TracksIdRouteImport } from './routes/tracks.$id'
-import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
-import { Route as AuthenticatedUploadsRouteImport } from './routes/_authenticated.uploads'
-import { Route as AuthenticatedTracksRouteImport } from './routes/_authenticated.tracks'
-import { Route as AuthenticatedSystemOverviewRouteImport } from './routes/_authenticated.system-overview'
-import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated.settings'
-import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated.review'
-import { Route as AuthenticatedReleasesRouteImport } from './routes/_authenticated.releases'
-import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated.profile'
-import { Route as AuthenticatedProcessingRouteImport } from './routes/_authenticated.processing'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
-import { Route as AuthenticatedArtistsRouteImport } from './routes/_authenticated.artists'
-import { Route as AuthenticatedApiKeysRouteImport } from './routes/_authenticated.api-keys'
-import { Route as McAuthenticatedAdminMcRouteImport } from './routes/_mc-authenticated.admin.mc'
-import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated.admin.users'
-import { Route as AuthenticatedAdminHealthRouteImport } from './routes/_authenticated.admin.health'
-import { Route as AuthenticatedAdminDebugRouteImport } from './routes/_authenticated.admin.debug'
-import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
-import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
-import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SignUpRoute = SignUpRouteImport.update({
-  id: '/sign-up',
-  path: '/sign-up',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SignInRoute = SignInRouteImport.update({
-  id: '/sign-in',
-  path: '/sign-in',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const McLoginRoute = McLoginRouteImport.update({
-  id: '/mc-login',
-  path: '/mc-login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForbiddenRoute = ForbiddenRouteImport.update({
@@ -75,14 +30,6 @@ const CatalogRoute = CatalogRouteImport.update({
   path: '/catalog',
   getParentRoute: () => rootRouteImport,
 } as any)
-const McAuthenticatedRoute = McAuthenticatedRouteImport.update({
-  id: '/_mc-authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -93,309 +40,49 @@ const TracksIdRoute = TracksIdRouteImport.update({
   path: '/tracks/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthCallbackRoute = AuthCallbackRouteImport.update({
-  id: '/auth/callback',
-  path: '/auth/callback',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedUploadsRoute = AuthenticatedUploadsRouteImport.update({
-  id: '/uploads',
-  path: '/uploads',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedTracksRoute = AuthenticatedTracksRouteImport.update({
-  id: '/tracks',
-  path: '/tracks',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedSystemOverviewRoute =
-  AuthenticatedSystemOverviewRouteImport.update({
-    id: '/system-overview',
-    path: '/system-overview',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedReviewRoute = AuthenticatedReviewRouteImport.update({
-  id: '/review',
-  path: '/review',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedReleasesRoute = AuthenticatedReleasesRouteImport.update({
-  id: '/releases',
-  path: '/releases',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedProcessingRoute = AuthenticatedProcessingRouteImport.update({
-  id: '/processing',
-  path: '/processing',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedArtistsRoute = AuthenticatedArtistsRouteImport.update({
-  id: '/artists',
-  path: '/artists',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedApiKeysRoute = AuthenticatedApiKeysRouteImport.update({
-  id: '/api-keys',
-  path: '/api-keys',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const McAuthenticatedAdminMcRoute = McAuthenticatedAdminMcRouteImport.update({
-  id: '/admin/mc',
-  path: '/admin/mc',
-  getParentRoute: () => McAuthenticatedRoute,
-} as any)
-const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
-  id: '/admin/users',
-  path: '/admin/users',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedAdminHealthRoute =
-  AuthenticatedAdminHealthRouteImport.update({
-    id: '/admin/health',
-    path: '/admin/health',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedAdminDebugRoute = AuthenticatedAdminDebugRouteImport.update({
-  id: '/admin/debug',
-  path: '/admin/debug',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const LovableEmailQueueProcessRoute =
-  LovableEmailQueueProcessRouteImport.update({
-    id: '/lovable/email/queue/process',
-    path: '/lovable/email/queue/process',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
-  id: '/lovable/email/auth/webhook',
-  path: '/lovable/email/auth/webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
-  id: '/lovable/email/auth/preview',
-  path: '/lovable/email/auth/preview',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/catalog': typeof CatalogRoute
   '/forbidden': typeof ForbiddenRoute
-  '/login': typeof LoginRoute
-  '/mc-login': typeof McLoginRoute
-  '/sign-in': typeof SignInRoute
-  '/sign-up': typeof SignUpRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/api-keys': typeof AuthenticatedApiKeysRoute
-  '/artists': typeof AuthenticatedArtistsRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
-  '/processing': typeof AuthenticatedProcessingRoute
-  '/profile': typeof AuthenticatedProfileRoute
-  '/releases': typeof AuthenticatedReleasesRoute
-  '/review': typeof AuthenticatedReviewRoute
-  '/settings': typeof AuthenticatedSettingsRoute
-  '/system-overview': typeof AuthenticatedSystemOverviewRoute
-  '/tracks': typeof AuthenticatedTracksRoute
-  '/uploads': typeof AuthenticatedUploadsRoute
-  '/auth/callback': typeof AuthCallbackRoute
   '/tracks/$id': typeof TracksIdRoute
-  '/admin/debug': typeof AuthenticatedAdminDebugRoute
-  '/admin/health': typeof AuthenticatedAdminHealthRoute
-  '/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/admin/mc': typeof McAuthenticatedAdminMcRoute
-  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
-  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/catalog': typeof CatalogRoute
   '/forbidden': typeof ForbiddenRoute
-  '/login': typeof LoginRoute
-  '/mc-login': typeof McLoginRoute
-  '/sign-in': typeof SignInRoute
-  '/sign-up': typeof SignUpRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/api-keys': typeof AuthenticatedApiKeysRoute
-  '/artists': typeof AuthenticatedArtistsRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
-  '/processing': typeof AuthenticatedProcessingRoute
-  '/profile': typeof AuthenticatedProfileRoute
-  '/releases': typeof AuthenticatedReleasesRoute
-  '/review': typeof AuthenticatedReviewRoute
-  '/settings': typeof AuthenticatedSettingsRoute
-  '/system-overview': typeof AuthenticatedSystemOverviewRoute
-  '/tracks': typeof AuthenticatedTracksRoute
-  '/uploads': typeof AuthenticatedUploadsRoute
-  '/auth/callback': typeof AuthCallbackRoute
   '/tracks/$id': typeof TracksIdRoute
-  '/admin/debug': typeof AuthenticatedAdminDebugRoute
-  '/admin/health': typeof AuthenticatedAdminHealthRoute
-  '/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/admin/mc': typeof McAuthenticatedAdminMcRoute
-  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
-  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/_mc-authenticated': typeof McAuthenticatedRouteWithChildren
   '/catalog': typeof CatalogRoute
   '/forbidden': typeof ForbiddenRoute
-  '/login': typeof LoginRoute
-  '/mc-login': typeof McLoginRoute
-  '/sign-in': typeof SignInRoute
-  '/sign-up': typeof SignUpRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/_authenticated/api-keys': typeof AuthenticatedApiKeysRoute
-  '/_authenticated/artists': typeof AuthenticatedArtistsRoute
-  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/processing': typeof AuthenticatedProcessingRoute
-  '/_authenticated/profile': typeof AuthenticatedProfileRoute
-  '/_authenticated/releases': typeof AuthenticatedReleasesRoute
-  '/_authenticated/review': typeof AuthenticatedReviewRoute
-  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
-  '/_authenticated/system-overview': typeof AuthenticatedSystemOverviewRoute
-  '/_authenticated/tracks': typeof AuthenticatedTracksRoute
-  '/_authenticated/uploads': typeof AuthenticatedUploadsRoute
-  '/auth/callback': typeof AuthCallbackRoute
   '/tracks/$id': typeof TracksIdRoute
-  '/_authenticated/admin/debug': typeof AuthenticatedAdminDebugRoute
-  '/_authenticated/admin/health': typeof AuthenticatedAdminHealthRoute
-  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/_mc-authenticated/admin/mc': typeof McAuthenticatedAdminMcRoute
-  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
-  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/catalog'
-    | '/forbidden'
-    | '/login'
-    | '/mc-login'
-    | '/sign-in'
-    | '/sign-up'
-    | '/sitemap.xml'
-    | '/api-keys'
-    | '/artists'
-    | '/dashboard'
-    | '/processing'
-    | '/profile'
-    | '/releases'
-    | '/review'
-    | '/settings'
-    | '/system-overview'
-    | '/tracks'
-    | '/uploads'
-    | '/auth/callback'
-    | '/tracks/$id'
-    | '/admin/debug'
-    | '/admin/health'
-    | '/admin/users'
-    | '/admin/mc'
-    | '/lovable/email/auth/preview'
-    | '/lovable/email/auth/webhook'
-    | '/lovable/email/queue/process'
+  fullPaths: '/' | '/catalog' | '/forbidden' | '/sitemap.xml' | '/tracks/$id'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/catalog'
-    | '/forbidden'
-    | '/login'
-    | '/mc-login'
-    | '/sign-in'
-    | '/sign-up'
-    | '/sitemap.xml'
-    | '/api-keys'
-    | '/artists'
-    | '/dashboard'
-    | '/processing'
-    | '/profile'
-    | '/releases'
-    | '/review'
-    | '/settings'
-    | '/system-overview'
-    | '/tracks'
-    | '/uploads'
-    | '/auth/callback'
-    | '/tracks/$id'
-    | '/admin/debug'
-    | '/admin/health'
-    | '/admin/users'
-    | '/admin/mc'
-    | '/lovable/email/auth/preview'
-    | '/lovable/email/auth/webhook'
-    | '/lovable/email/queue/process'
+  to: '/' | '/catalog' | '/forbidden' | '/sitemap.xml' | '/tracks/$id'
   id:
     | '__root__'
     | '/'
-    | '/_authenticated'
-    | '/_mc-authenticated'
     | '/catalog'
     | '/forbidden'
-    | '/login'
-    | '/mc-login'
-    | '/sign-in'
-    | '/sign-up'
     | '/sitemap.xml'
-    | '/_authenticated/api-keys'
-    | '/_authenticated/artists'
-    | '/_authenticated/dashboard'
-    | '/_authenticated/processing'
-    | '/_authenticated/profile'
-    | '/_authenticated/releases'
-    | '/_authenticated/review'
-    | '/_authenticated/settings'
-    | '/_authenticated/system-overview'
-    | '/_authenticated/tracks'
-    | '/_authenticated/uploads'
-    | '/auth/callback'
     | '/tracks/$id'
-    | '/_authenticated/admin/debug'
-    | '/_authenticated/admin/health'
-    | '/_authenticated/admin/users'
-    | '/_mc-authenticated/admin/mc'
-    | '/lovable/email/auth/preview'
-    | '/lovable/email/auth/webhook'
-    | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
-  McAuthenticatedRoute: typeof McAuthenticatedRouteWithChildren
   CatalogRoute: typeof CatalogRoute
   ForbiddenRoute: typeof ForbiddenRoute
-  LoginRoute: typeof LoginRoute
-  McLoginRoute: typeof McLoginRoute
-  SignInRoute: typeof SignInRoute
-  SignUpRoute: typeof SignUpRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  AuthCallbackRoute: typeof AuthCallbackRoute
   TracksIdRoute: typeof TracksIdRoute
-  LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
-  LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
-  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -405,34 +92,6 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sign-up': {
-      id: '/sign-up'
-      path: '/sign-up'
-      fullPath: '/sign-up'
-      preLoaderRoute: typeof SignUpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sign-in': {
-      id: '/sign-in'
-      path: '/sign-in'
-      fullPath: '/sign-in'
-      preLoaderRoute: typeof SignInRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mc-login': {
-      id: '/mc-login'
-      path: '/mc-login'
-      fullPath: '/mc-login'
-      preLoaderRoute: typeof McLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forbidden': {
@@ -449,20 +108,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CatalogRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_mc-authenticated': {
-      id: '/_mc-authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof McAuthenticatedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -477,208 +122,15 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TracksIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/callback': {
-      id: '/auth/callback'
-      path: '/auth/callback'
-      fullPath: '/auth/callback'
-      preLoaderRoute: typeof AuthCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/uploads': {
-      id: '/_authenticated/uploads'
-      path: '/uploads'
-      fullPath: '/uploads'
-      preLoaderRoute: typeof AuthenticatedUploadsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/tracks': {
-      id: '/_authenticated/tracks'
-      path: '/tracks'
-      fullPath: '/tracks'
-      preLoaderRoute: typeof AuthenticatedTracksRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/system-overview': {
-      id: '/_authenticated/system-overview'
-      path: '/system-overview'
-      fullPath: '/system-overview'
-      preLoaderRoute: typeof AuthenticatedSystemOverviewRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/settings': {
-      id: '/_authenticated/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/review': {
-      id: '/_authenticated/review'
-      path: '/review'
-      fullPath: '/review'
-      preLoaderRoute: typeof AuthenticatedReviewRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/releases': {
-      id: '/_authenticated/releases'
-      path: '/releases'
-      fullPath: '/releases'
-      preLoaderRoute: typeof AuthenticatedReleasesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/profile': {
-      id: '/_authenticated/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AuthenticatedProfileRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/processing': {
-      id: '/_authenticated/processing'
-      path: '/processing'
-      fullPath: '/processing'
-      preLoaderRoute: typeof AuthenticatedProcessingRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/artists': {
-      id: '/_authenticated/artists'
-      path: '/artists'
-      fullPath: '/artists'
-      preLoaderRoute: typeof AuthenticatedArtistsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/api-keys': {
-      id: '/_authenticated/api-keys'
-      path: '/api-keys'
-      fullPath: '/api-keys'
-      preLoaderRoute: typeof AuthenticatedApiKeysRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_mc-authenticated/admin/mc': {
-      id: '/_mc-authenticated/admin/mc'
-      path: '/admin/mc'
-      fullPath: '/admin/mc'
-      preLoaderRoute: typeof McAuthenticatedAdminMcRouteImport
-      parentRoute: typeof McAuthenticatedRoute
-    }
-    '/_authenticated/admin/users': {
-      id: '/_authenticated/admin/users'
-      path: '/admin/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/admin/health': {
-      id: '/_authenticated/admin/health'
-      path: '/admin/health'
-      fullPath: '/admin/health'
-      preLoaderRoute: typeof AuthenticatedAdminHealthRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/admin/debug': {
-      id: '/_authenticated/admin/debug'
-      path: '/admin/debug'
-      fullPath: '/admin/debug'
-      preLoaderRoute: typeof AuthenticatedAdminDebugRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/lovable/email/queue/process': {
-      id: '/lovable/email/queue/process'
-      path: '/lovable/email/queue/process'
-      fullPath: '/lovable/email/queue/process'
-      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/auth/webhook': {
-      id: '/lovable/email/auth/webhook'
-      path: '/lovable/email/auth/webhook'
-      fullPath: '/lovable/email/auth/webhook'
-      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/auth/preview': {
-      id: '/lovable/email/auth/preview'
-      path: '/lovable/email/auth/preview'
-      fullPath: '/lovable/email/auth/preview'
-      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
-interface AuthenticatedRouteChildren {
-  AuthenticatedApiKeysRoute: typeof AuthenticatedApiKeysRoute
-  AuthenticatedArtistsRoute: typeof AuthenticatedArtistsRoute
-  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedProcessingRoute: typeof AuthenticatedProcessingRoute
-  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
-  AuthenticatedReleasesRoute: typeof AuthenticatedReleasesRoute
-  AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
-  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
-  AuthenticatedSystemOverviewRoute: typeof AuthenticatedSystemOverviewRoute
-  AuthenticatedTracksRoute: typeof AuthenticatedTracksRoute
-  AuthenticatedUploadsRoute: typeof AuthenticatedUploadsRoute
-  AuthenticatedAdminDebugRoute: typeof AuthenticatedAdminDebugRoute
-  AuthenticatedAdminHealthRoute: typeof AuthenticatedAdminHealthRoute
-  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
-}
-
-const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedApiKeysRoute: AuthenticatedApiKeysRoute,
-  AuthenticatedArtistsRoute: AuthenticatedArtistsRoute,
-  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedProcessingRoute: AuthenticatedProcessingRoute,
-  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
-  AuthenticatedReleasesRoute: AuthenticatedReleasesRoute,
-  AuthenticatedReviewRoute: AuthenticatedReviewRoute,
-  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
-  AuthenticatedSystemOverviewRoute: AuthenticatedSystemOverviewRoute,
-  AuthenticatedTracksRoute: AuthenticatedTracksRoute,
-  AuthenticatedUploadsRoute: AuthenticatedUploadsRoute,
-  AuthenticatedAdminDebugRoute: AuthenticatedAdminDebugRoute,
-  AuthenticatedAdminHealthRoute: AuthenticatedAdminHealthRoute,
-  AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
-}
-
-const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
-  AuthenticatedRouteChildren,
-)
-
-interface McAuthenticatedRouteChildren {
-  McAuthenticatedAdminMcRoute: typeof McAuthenticatedAdminMcRoute
-}
-
-const McAuthenticatedRouteChildren: McAuthenticatedRouteChildren = {
-  McAuthenticatedAdminMcRoute: McAuthenticatedAdminMcRoute,
-}
-
-const McAuthenticatedRouteWithChildren = McAuthenticatedRoute._addFileChildren(
-  McAuthenticatedRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AuthenticatedRoute: AuthenticatedRouteWithChildren,
-  McAuthenticatedRoute: McAuthenticatedRouteWithChildren,
   CatalogRoute: CatalogRoute,
   ForbiddenRoute: ForbiddenRoute,
-  LoginRoute: LoginRoute,
-  McLoginRoute: McLoginRoute,
-  SignInRoute: SignInRoute,
-  SignUpRoute: SignUpRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  AuthCallbackRoute: AuthCallbackRoute,
   TracksIdRoute: TracksIdRoute,
-  LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
-  LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
-  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
