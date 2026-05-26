@@ -78,20 +78,13 @@ export function useAuthState(): State {
 
 // ---------- low-level fetch helpers (no dependency on api.ts to avoid cycles) ----------
 
-function getStoredRefreshToken(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return window.localStorage.getItem(MC_REFRESH_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function setStoredRefreshToken(token: string | null) {
+// Refresh tokens are intentionally NOT persisted in localStorage. They must
+// be carried in an httpOnly, Secure cookie set by the backend. We also
+// proactively clear any legacy value that older builds may have written.
+function clearLegacyStoredRefreshToken() {
   if (typeof window === "undefined") return;
   try {
-    if (token) window.localStorage.setItem(MC_REFRESH_KEY, token);
-    else window.localStorage.removeItem(MC_REFRESH_KEY);
+    window.localStorage.removeItem(MC_REFRESH_KEY);
   } catch {
     /* ignore */
   }
@@ -171,7 +164,9 @@ export async function login(email: string, password: string): Promise<AuthUser> 
   const data = (await parseJson<LoginResponse>(res)) ?? ({} as LoginResponse);
   if (!data.access_token) throw new Error("Login response missing access_token");
 
-  if (data.refresh_token) setStoredRefreshToken(data.refresh_token);
+  // Refresh token MUST come back as an httpOnly cookie; we intentionally
+  // do not persist it client-side even if the backend echoes it in JSON.
+  clearLegacyStoredRefreshToken();
 
   let user = data.user ?? null;
   if (!user) user = await fetchMe(data.access_token);
@@ -194,19 +189,19 @@ export async function fetchMe(accessToken?: string): Promise<AuthUser | null> {
 
 /** Refresh the access token; returns the new token or null on failure. */
 export async function refreshSession(): Promise<string | null> {
-  const stored = getStoredRefreshToken();
-  const body = stored ? JSON.stringify({ refresh_token: stored }) : undefined;
-  const res = await authFetch("/auth/refresh", { method: "POST", body });
+  // Refresh token is expected exclusively from the httpOnly cookie
+  // (credentials: "include" attaches it). Never sent from JS-readable storage.
+  const res = await authFetch("/auth/refresh", { method: "POST" });
   if (!res.ok) {
     if (res.status === 401 || res.status === 403) {
-      setStoredRefreshToken(null);
+      clearLegacyStoredRefreshToken();
       authStore.setUnauthenticated();
     }
     return null;
   }
   const data = (await parseJson<LoginResponse>(res)) ?? ({} as LoginResponse);
   if (!data.access_token) return null;
-  if (data.refresh_token) setStoredRefreshToken(data.refresh_token);
+  clearLegacyStoredRefreshToken();
 
   let user = data.user ?? authStore.getState().user;
   if (!user) user = await fetchMe(data.access_token);
@@ -228,7 +223,7 @@ export async function logout(): Promise<void> {
   } catch {
     /* best effort */
   }
-  setStoredRefreshToken(null);
+  clearLegacyStoredRefreshToken();
   authStore.setUnauthenticated();
 }
 
