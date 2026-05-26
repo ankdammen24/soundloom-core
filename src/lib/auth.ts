@@ -189,19 +189,19 @@ export async function fetchMe(accessToken?: string): Promise<AuthUser | null> {
 
 /** Refresh the access token; returns the new token or null on failure. */
 export async function refreshSession(): Promise<string | null> {
-  const stored = getStoredRefreshToken();
-  const body = stored ? JSON.stringify({ refresh_token: stored }) : undefined;
-  const res = await authFetch("/auth/refresh", { method: "POST", body });
+  // Refresh token is expected exclusively from the httpOnly cookie
+  // (credentials: "include" attaches it). Never sent from JS-readable storage.
+  const res = await authFetch("/auth/refresh", { method: "POST" });
   if (!res.ok) {
     if (res.status === 401 || res.status === 403) {
-      setStoredRefreshToken(null);
+      clearLegacyStoredRefreshToken();
       authStore.setUnauthenticated();
     }
     return null;
   }
   const data = (await parseJson<LoginResponse>(res)) ?? ({} as LoginResponse);
   if (!data.access_token) return null;
-  if (data.refresh_token) setStoredRefreshToken(data.refresh_token);
+  clearLegacyStoredRefreshToken();
 
   let user = data.user ?? authStore.getState().user;
   if (!user) user = await fetchMe(data.access_token);
