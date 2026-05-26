@@ -28,8 +28,18 @@ export async function apiFetch<T = unknown>(path: string): Promise<T> {
 
 function asArray<T>(value: unknown): T[] {
   if (Array.isArray(value)) return value as T[];
-  if (value && typeof value === "object" && Array.isArray((value as { data?: unknown }).data)) {
-    return (value as { data: T[] }).data;
+  if (value && typeof value === "object") {
+    const v = value as Record<string, unknown>;
+    for (const key of ["data", "items", "results", "tracks", "artists", "releases"]) {
+      if (Array.isArray(v[key])) return v[key] as T[];
+    }
+    // paginated: { data: { items: [...] } }
+    if (v.data && typeof v.data === "object") {
+      const d = v.data as Record<string, unknown>;
+      for (const key of ["items", "results"]) {
+        if (Array.isArray(d[key])) return d[key] as T[];
+      }
+    }
   }
   return [];
 }
