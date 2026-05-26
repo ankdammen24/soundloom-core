@@ -28,8 +28,18 @@ export async function apiFetch<T = unknown>(path: string): Promise<T> {
 
 function asArray<T>(value: unknown): T[] {
   if (Array.isArray(value)) return value as T[];
-  if (value && typeof value === "object" && Array.isArray((value as { data?: unknown }).data)) {
-    return (value as { data: T[] }).data;
+  if (value && typeof value === "object") {
+    const v = value as Record<string, unknown>;
+    for (const key of ["data", "items", "results", "tracks", "artists", "releases"]) {
+      if (Array.isArray(v[key])) return v[key] as T[];
+    }
+    // paginated: { data: { items: [...] } }
+    if (v.data && typeof v.data === "object") {
+      const d = v.data as Record<string, unknown>;
+      for (const key of ["items", "results"]) {
+        if (Array.isArray(d[key])) return d[key] as T[];
+      }
+    }
   }
   return [];
 }
@@ -39,7 +49,16 @@ export type CatalogTrack = {
   title?: string | null;
   status?: string | null;
   artist_name?: string | null;
+  artist?: string | null;
   release_title?: string | null;
+  release?: string | null;
+  artwork_url?: string | null;
+  image_url?: string | null;
+  cover_url?: string | null;
+  duration_seconds?: number | null;
+  duration?: number | null;
+  isrc?: string | null;
+  genre?: string | null;
   [key: string]: unknown;
 };
 
@@ -48,3 +67,4 @@ export const getTracks = async () => asArray<CatalogTrack>(await apiFetch("/api/
 export const getTrackById = (id: string) => apiFetch<CatalogTrack>(`/api/v1/music/tracks/${id}`);
 export const getArtists = async () => asArray(await apiFetch("/api/v1/music/artists"));
 export const getReleases = async () => asArray(await apiFetch("/api/v1/music/releases"));
+export const getPreviewUrl = (trackId: string) => `${API_BASE_URL}/playback/${trackId}/preview`;

@@ -1,19 +1,33 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Search } from "lucide-react";
 import { getTracks, type CatalogTrack } from "@/lib/api";
+import { Artwork } from "@/components/catalog/Artwork";
 
 export const Route = createFileRoute("/catalog")({ component: CatalogPage });
+
+function getArtist(t: CatalogTrack) {
+  return t.artist_name ?? t.artist ?? "Unknown artist";
+}
+function getRelease(t: CatalogTrack) {
+  return t.release_title ?? t.release ?? null;
+}
+function getArtwork(t: CatalogTrack) {
+  return t.artwork_url ?? t.image_url ?? t.cover_url ?? null;
+}
 
 function CatalogPage() {
   const [tracks, setTracks] = useState<CatalogTrack[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         setLoading(true);
+        setError(null);
         const data = await getTracks();
         if (!cancelled) setTracks(data);
       } catch (e) {
@@ -27,35 +41,113 @@ function CatalogPage() {
     };
   }, []);
 
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return tracks;
+    return tracks.filter((t) =>
+      [t.title, getArtist(t), getRelease(t)]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(q)),
+    );
+  }, [tracks, query]);
+
   return (
-    <div className="mx-auto max-w-5xl space-y-4 p-4 md:p-6">
-      <h1 className="text-2xl font-bold">Catalog</h1>
-      {loading && <div className="rounded border p-4 text-sm text-muted-foreground">Loading tracks…</div>}
-      {error && <div className="rounded border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">{error}</div>}
-      {!loading && !error && tracks.length === 0 && (
-        <div className="rounded border p-4 text-sm text-muted-foreground">No tracks found.</div>
-      )}
-      {!loading && !error && tracks.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="min-w-full text-sm">
-            <thead className="bg-muted/40 text-left">
-              <tr>
-                <th className="p-3">Title</th><th className="p-3">Artist</th><th className="p-3">Release</th><th className="p-3">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tracks.map((track) => (
-                <tr key={track.id} className="border-t">
-                  <td className="p-3"><Link className="text-primary underline" to="/tracks/$id" params={{ id: track.id }}>{track.title ?? "Untitled"}</Link></td>
-                  <td className="p-3">{track.artist_name ?? "—"}</td>
-                  <td className="p-3">{track.release_title ?? "—"}</td>
-                  <td className="p-3">{track.status ?? "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="mx-auto max-w-7xl px-4 py-8 md:px-6 md:py-10">
+        <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Soundloom · Catalog
+            </p>
+            <h1 className="mt-2 text-4xl font-bold tracking-tight md:text-5xl">
+              Browse the catalog
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {loading ? "Loading tracks…" : `${tracks.length} track${tracks.length === 1 ? "" : "s"}`}
+            </p>
+          </div>
+          <div className="relative w-full md:w-80">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search tracks, artists, releases"
+              className="h-10 w-full rounded-full border border-border/60 bg-card pl-9 pr-4 text-sm outline-none ring-primary/50 placeholder:text-muted-foreground/70 focus:ring-2"
+            />
+          </div>
+        </header>
+
+        {error && (
+          <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+            {error}
+          </div>
+        )}
+
+        {loading && <CatalogGridSkeleton />}
+
+        {!loading && !error && tracks.length === 0 && (
+          <EmptyState
+            title="Your catalog is empty"
+            description="No tracks have been published yet. Once tracks are added through media-catalog they will show up here."
+          />
+        )}
+
+        {!loading && !error && tracks.length > 0 && filtered.length === 0 && (
+          <EmptyState
+            title="No matches"
+            description={`Nothing matches “${query}”. Try a different search.`}
+          />
+        )}
+
+        {!loading && !error && filtered.length > 0 && (
+          <ul className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            {filtered.map((track) => (
+              <li key={track.id}>
+                <Link
+                  to="/tracks/$id"
+                  params={{ id: track.id }}
+                  className="group block focus:outline-none"
+                >
+                  <Artwork src={getArtwork(track)} alt={track.title ?? ""} />
+                  <div className="mt-3 space-y-1">
+                    <p className="truncate text-sm font-semibold leading-tight group-hover:text-primary">
+                      {track.title ?? "Untitled"}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">{getArtist(track)}</p>
+                    {getRelease(track) && (
+                      <p className="truncate text-xs text-muted-foreground/70">{getRelease(track)}</p>
+                    )}
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CatalogGridSkeleton() {
+  return (
+    <ul className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+      {Array.from({ length: 12 }).map((_, i) => (
+        <li key={i}>
+          <div className="aspect-square w-full animate-pulse rounded-md bg-muted" />
+          <div className="mt-3 h-3 w-3/4 animate-pulse rounded bg-muted" />
+          <div className="mt-2 h-3 w-1/2 animate-pulse rounded bg-muted/70" />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function EmptyState({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-card/40 px-6 py-20 text-center">
+      <h2 className="text-lg font-semibold">{title}</h2>
+      <p className="mt-2 max-w-md text-sm text-muted-foreground">{description}</p>
     </div>
   );
 }
