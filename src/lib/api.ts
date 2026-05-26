@@ -9,6 +9,12 @@ export const API_BASE_URL = (env.VITE_API_BASE_URL ?? "https://api.mediarosenqvi
   "",
 );
 
+// TEMP debug: confirm which API base the bundle is actually using.
+if (typeof window !== "undefined") {
+  // eslint-disable-next-line no-console
+  console.info("[api] resolved API_BASE_URL =", API_BASE_URL);
+}
+
 export class ApiError extends Error {
   status: number;
   body?: unknown;
@@ -64,13 +70,24 @@ export async function apiRequest<T = unknown>(path: string, opts: ApiOptions = {
     }
   }
 
-  const res = await fetch(buildUrl(path, query), {
-    method,
-    headers: finalHeaders,
-    body: payload,
-    signal,
-    credentials: credentials ? "include" : "same-origin",
-  });
+  const fullUrl = buildUrl(path, query);
+  // eslint-disable-next-line no-console
+  console.info(`[api] → ${method} ${fullUrl}`);
+
+  let res: Response;
+  try {
+    res = await fetch(fullUrl, {
+      method,
+      headers: finalHeaders,
+      body: payload,
+      signal,
+      credentials: credentials ? "include" : "same-origin",
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(`[api] ✗ ${method} ${fullUrl} — network/CORS error:`, err);
+    throw err;
+  }
 
   let parsed: unknown = undefined;
   const text = await res.text();
@@ -81,6 +98,9 @@ export async function apiRequest<T = unknown>(path: string, opts: ApiOptions = {
       parsed = text;
     }
   }
+
+  // eslint-disable-next-line no-console
+  console.info(`[api] ← ${method} ${fullUrl} [${res.status}]`, parsed);
 
   if (res.ok) return parsed as T;
 
@@ -151,3 +171,7 @@ export const getArtists = async () =>
 export const getReleases = async () =>
   asArray(await apiRequest("/api/v1/music/releases", { skipAuth: true }));
 export const getPreviewUrl = (trackId: string) => `${API_BASE_URL}/playback/${trackId}/preview`;
+
+/** Azuracast "now playing" — public, no auth. */
+export const getNowPlaying = () =>
+  apiRequest("/integrations/azuracast/nowplaying", { skipAuth: true });

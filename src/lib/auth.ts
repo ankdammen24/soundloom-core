@@ -108,17 +108,29 @@ async function parseJson<T>(res: Response): Promise<T | null> {
 }
 
 async function authFetch(path: string, init: RequestInit): Promise<Response> {
-  return fetch(`${API_BASE_URL}${path}`, {
-    ...init,
-    credentials: "include",
-    headers: {
-      Accept: "application/json",
-      ...(init.body && !(init.body instanceof FormData)
-        ? { "Content-Type": "application/json" }
-        : {}),
-      ...(init.headers ?? {}),
-    },
-  });
+  const url = `${API_BASE_URL}${path}`;
+  // eslint-disable-next-line no-console
+  console.info(`[auth] → ${init.method ?? "GET"} ${url}`);
+  try {
+    const res = await fetch(url, {
+      ...init,
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        ...(init.body && !(init.body instanceof FormData)
+          ? { "Content-Type": "application/json" }
+          : {}),
+        ...(init.headers ?? {}),
+      },
+    });
+    // eslint-disable-next-line no-console
+    console.info(`[auth] ← ${init.method ?? "GET"} ${url} [${res.status}]`);
+    return res;
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(`[auth] ✗ ${init.method ?? "GET"} ${url} — network/CORS error:`, err);
+    throw err;
+  }
 }
 
 type LoginResponse = {
