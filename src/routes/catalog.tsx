@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { getTracks, type CatalogTrack } from "@/lib/api";
 import { Artwork } from "@/components/catalog/Artwork";
+import { StatusBadge } from "@/components/StatusBadge";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/catalog")({ component: CatalogPage });
 
@@ -21,6 +23,7 @@ function CatalogPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   useEffect(() => {
     let cancelled = false;
@@ -41,15 +44,33 @@ function CatalogPage() {
     };
   }, []);
 
+  const statusCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const t of tracks) {
+      const s = (t.status ?? "unknown").toString();
+      counts.set(s, (counts.get(s) ?? 0) + 1);
+    }
+    return counts;
+  }, [tracks]);
+
+  const statusOptions = useMemo(
+    () => Array.from(statusCounts.keys()).sort(),
+    [statusCounts],
+  );
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return tracks;
-    return tracks.filter((t) =>
-      [t.title, getArtist(t), getRelease(t)]
+    return tracks.filter((t) => {
+      if (statusFilter !== "all") {
+        const s = (t.status ?? "unknown").toString();
+        if (s !== statusFilter) return false;
+      }
+      if (!q) return true;
+      return [t.title, getArtist(t), getRelease(t)]
         .filter(Boolean)
-        .some((v) => String(v).toLowerCase().includes(q)),
-    );
-  }, [tracks, query]);
+        .some((v) => String(v).toLowerCase().includes(q));
+    });
+  }, [tracks, query, statusFilter]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -63,7 +84,9 @@ function CatalogPage() {
               Browse the catalog
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              {loading ? "Loading tracks…" : `${tracks.length} track${tracks.length === 1 ? "" : "s"}`}
+              {loading
+                ? "Loading tracks…"
+                : `${filtered.length} of ${tracks.length} track${tracks.length === 1 ? "" : "s"}`}
             </p>
           </div>
           <div className="relative w-full md:w-80">
@@ -77,6 +100,38 @@ function CatalogPage() {
             />
           </div>
         </header>
+
+        {!loading && !error && statusOptions.length > 0 && (
+          <div className="mb-6 flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Status
+            </span>
+            <FilterChip
+              label={`All (${tracks.length})`}
+              active={statusFilter === "all"}
+              onClick={() => setStatusFilter("all")}
+            />
+            {statusOptions.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setStatusFilter(s)}
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-full p-0.5 pr-2 transition focus:outline-none focus:ring-2 focus:ring-primary/50",
+                  statusFilter === s
+                    ? "ring-2 ring-primary/70"
+                    : "opacity-70 hover:opacity-100",
+                )}
+                aria-pressed={statusFilter === s}
+              >
+                <StatusBadge status={s} size="sm" />
+                <span className="text-[10px] text-muted-foreground">
+                  {statusCounts.get(s)}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
 
         {error && (
           <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
@@ -96,7 +151,11 @@ function CatalogPage() {
         {!loading && !error && tracks.length > 0 && filtered.length === 0 && (
           <EmptyState
             title="No matches"
-            description={`Nothing matches “${query}”. Try a different search.`}
+            description={
+              query
+                ? `Nothing matches “${query}”${statusFilter !== "all" ? ` in “${statusFilter.replace(/_/g, " ")}”` : ""}. Try a different search or status.`
+                : `No tracks with status “${statusFilter.replace(/_/g, " ")}”.`
+            }
           />
         )}
 
@@ -109,7 +168,14 @@ function CatalogPage() {
                   params={{ id: track.id }}
                   className="group block focus:outline-none"
                 >
-                  <Artwork src={getArtwork(track)} alt={track.title ?? ""} />
+                  <div className="relative">
+                    <Artwork src={getArtwork(track)} alt={track.title ?? ""} />
+                    {track.status && (
+                      <div className="absolute left-2 top-2">
+                        <StatusBadge status={String(track.status)} size="sm" />
+                      </div>
+                    )}
+                  </div>
                   <div className="mt-3 space-y-1">
                     <p className="truncate text-sm font-semibold leading-tight group-hover:text-primary">
                       {track.title ?? "Untitled"}
@@ -149,5 +215,31 @@ function EmptyState({ title, description }: { title: string; description: string
       <h2 className="text-lg font-semibold">{title}</h2>
       <p className="mt-2 max-w-md text-sm text-muted-foreground">{description}</p>
     </div>
+  );
+}
+
+function FilterChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "rounded-full border px-3 py-1 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-primary/50",
+        active
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-border/60 bg-card text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {label}
+    </button>
   );
 }
