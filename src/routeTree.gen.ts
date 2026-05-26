@@ -12,9 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as McLoginRouteImport } from './routes/mc-login'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForbiddenRouteImport } from './routes/forbidden'
 import { Route as CatalogRouteImport } from './routes/catalog'
+import { Route as McAuthenticatedRouteImport } from './routes/_mc-authenticated'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TracksIdRouteImport } from './routes/tracks.$id'
@@ -30,6 +32,7 @@ import { Route as AuthenticatedProcessingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedArtistsRouteImport } from './routes/_authenticated.artists'
 import { Route as AuthenticatedApiKeysRouteImport } from './routes/_authenticated.api-keys'
+import { Route as McAuthenticatedAdminMcRouteImport } from './routes/_mc-authenticated.admin.mc'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated.admin.users'
 import { Route as AuthenticatedAdminHealthRouteImport } from './routes/_authenticated.admin.health'
 import { Route as AuthenticatedAdminDebugRouteImport } from './routes/_authenticated.admin.debug'
@@ -52,6 +55,11 @@ const SignInRoute = SignInRouteImport.update({
   path: '/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McLoginRoute = McLoginRouteImport.update({
+  id: '/mc-login',
+  path: '/mc-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -65,6 +73,10 @@ const ForbiddenRoute = ForbiddenRouteImport.update({
 const CatalogRoute = CatalogRouteImport.update({
   id: '/catalog',
   path: '/catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McAuthenticatedRoute = McAuthenticatedRouteImport.update({
+  id: '/_mc-authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -142,6 +154,11 @@ const AuthenticatedApiKeysRoute = AuthenticatedApiKeysRouteImport.update({
   path: '/api-keys',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const McAuthenticatedAdminMcRoute = McAuthenticatedAdminMcRouteImport.update({
+  id: '/admin/mc',
+  path: '/admin/mc',
+  getParentRoute: () => McAuthenticatedRoute,
+} as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   id: '/admin/users',
   path: '/admin/users',
@@ -180,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/catalog': typeof CatalogRoute
   '/forbidden': typeof ForbiddenRoute
   '/login': typeof LoginRoute
+  '/mc-login': typeof McLoginRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -199,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/admin/debug': typeof AuthenticatedAdminDebugRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/admin/mc': typeof McAuthenticatedAdminMcRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -208,6 +227,7 @@ export interface FileRoutesByTo {
   '/catalog': typeof CatalogRoute
   '/forbidden': typeof ForbiddenRoute
   '/login': typeof LoginRoute
+  '/mc-login': typeof McLoginRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -227,6 +247,7 @@ export interface FileRoutesByTo {
   '/admin/debug': typeof AuthenticatedAdminDebugRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/admin/mc': typeof McAuthenticatedAdminMcRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -235,9 +256,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/_mc-authenticated': typeof McAuthenticatedRouteWithChildren
   '/catalog': typeof CatalogRoute
   '/forbidden': typeof ForbiddenRoute
   '/login': typeof LoginRoute
+  '/mc-login': typeof McLoginRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -257,6 +280,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/debug': typeof AuthenticatedAdminDebugRoute
   '/_authenticated/admin/health': typeof AuthenticatedAdminHealthRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/_mc-authenticated/admin/mc': typeof McAuthenticatedAdminMcRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -268,6 +292,7 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/forbidden'
     | '/login'
+    | '/mc-login'
     | '/sign-in'
     | '/sign-up'
     | '/sitemap.xml'
@@ -287,6 +312,7 @@ export interface FileRouteTypes {
     | '/admin/debug'
     | '/admin/health'
     | '/admin/users'
+    | '/admin/mc'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -296,6 +322,7 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/forbidden'
     | '/login'
+    | '/mc-login'
     | '/sign-in'
     | '/sign-up'
     | '/sitemap.xml'
@@ -315,6 +342,7 @@ export interface FileRouteTypes {
     | '/admin/debug'
     | '/admin/health'
     | '/admin/users'
+    | '/admin/mc'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -322,9 +350,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/_mc-authenticated'
     | '/catalog'
     | '/forbidden'
     | '/login'
+    | '/mc-login'
     | '/sign-in'
     | '/sign-up'
     | '/sitemap.xml'
@@ -344,6 +374,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/debug'
     | '/_authenticated/admin/health'
     | '/_authenticated/admin/users'
+    | '/_mc-authenticated/admin/mc'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -352,9 +383,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  McAuthenticatedRoute: typeof McAuthenticatedRouteWithChildren
   CatalogRoute: typeof CatalogRoute
   ForbiddenRoute: typeof ForbiddenRoute
   LoginRoute: typeof LoginRoute
+  McLoginRoute: typeof McLoginRoute
   SignInRoute: typeof SignInRoute
   SignUpRoute: typeof SignUpRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -388,6 +421,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignInRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mc-login': {
+      id: '/mc-login'
+      path: '/mc-login'
+      fullPath: '/mc-login'
+      preLoaderRoute: typeof McLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -407,6 +447,13 @@ declare module '@tanstack/react-router' {
       path: '/catalog'
       fullPath: '/catalog'
       preLoaderRoute: typeof CatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_mc-authenticated': {
+      id: '/_mc-authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof McAuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -514,6 +561,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedApiKeysRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_mc-authenticated/admin/mc': {
+      id: '/_mc-authenticated/admin/mc'
+      path: '/admin/mc'
+      fullPath: '/admin/mc'
+      preLoaderRoute: typeof McAuthenticatedAdminMcRouteImport
+      parentRoute: typeof McAuthenticatedRoute
+    }
     '/_authenticated/admin/users': {
       id: '/_authenticated/admin/users'
       path: '/admin/users'
@@ -597,12 +651,26 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface McAuthenticatedRouteChildren {
+  McAuthenticatedAdminMcRoute: typeof McAuthenticatedAdminMcRoute
+}
+
+const McAuthenticatedRouteChildren: McAuthenticatedRouteChildren = {
+  McAuthenticatedAdminMcRoute: McAuthenticatedAdminMcRoute,
+}
+
+const McAuthenticatedRouteWithChildren = McAuthenticatedRoute._addFileChildren(
+  McAuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  McAuthenticatedRoute: McAuthenticatedRouteWithChildren,
   CatalogRoute: CatalogRoute,
   ForbiddenRoute: ForbiddenRoute,
   LoginRoute: LoginRoute,
+  McLoginRoute: McLoginRoute,
   SignInRoute: SignInRoute,
   SignUpRoute: SignUpRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
