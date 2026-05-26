@@ -70,13 +70,24 @@ export async function apiRequest<T = unknown>(path: string, opts: ApiOptions = {
     }
   }
 
-  const res = await fetch(buildUrl(path, query), {
-    method,
-    headers: finalHeaders,
-    body: payload,
-    signal,
-    credentials: credentials ? "include" : "same-origin",
-  });
+  const fullUrl = buildUrl(path, query);
+  // eslint-disable-next-line no-console
+  console.info(`[api] → ${method} ${fullUrl}`);
+
+  let res: Response;
+  try {
+    res = await fetch(fullUrl, {
+      method,
+      headers: finalHeaders,
+      body: payload,
+      signal,
+      credentials: credentials ? "include" : "same-origin",
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(`[api] ✗ ${method} ${fullUrl} — network/CORS error:`, err);
+    throw err;
+  }
 
   let parsed: unknown = undefined;
   const text = await res.text();
@@ -87,6 +98,9 @@ export async function apiRequest<T = unknown>(path: string, opts: ApiOptions = {
       parsed = text;
     }
   }
+
+  // eslint-disable-next-line no-console
+  console.info(`[api] ← ${method} ${fullUrl} [${res.status}]`, parsed);
 
   if (res.ok) return parsed as T;
 
