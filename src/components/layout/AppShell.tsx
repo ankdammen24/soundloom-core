@@ -1,53 +1,26 @@
-import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
-import { useAuth } from "@/lib/auth/useAuth";
-import { useMcAuth } from "@/lib/mc-auth/useMcAuth";
+import { Link, Outlet, useLocation } from "@tanstack/react-router";
 import {
-  LayoutDashboard,
-  Users,
-  Send,
   Music2,
-  Upload,
-  Cpu,
-  ClipboardCheck,
-  KeyRound,
-  Settings as SettingsIcon,
-  BookOpen,
-  UserCircle2,
   LogIn,
-  UserPlus,
+  LogOut,
   Menu,
   X,
-  LogOut,
-  Music2 as Brand,
   ShieldCheck,
-  Bug,
-  Activity,
+  Music2 as Brand,
+  UserCircle2,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from "@/context/AuthContext";
 
 const ORG_NAME = "Media Rosenqvist";
 
-type NavLink = { to: string; label: string; icon: typeof Users; roles?: string[] };
+type NavLink = { to: string; label: string; icon: typeof Music2 };
 
-const PRIMARY: NavLink[] = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/artists", label: "Artists", icon: Users },
-  { to: "/releases", label: "Releases", icon: Send },
-  { to: "/tracks", label: "Tracks", icon: Music2 },
-  { to: "/uploads", label: "Upload", icon: Upload },
-];
-
-const OPS: NavLink[] = [
-  { to: "/processing", label: "Processing", icon: Cpu, roles: ["admin", "editor"] },
-  { to: "/review", label: "Review", icon: ClipboardCheck, roles: ["admin", "editor"] },
-  { to: "/api-keys", label: "API access", icon: KeyRound, roles: ["admin"] },
-  { to: "/admin/users", label: "Users & roles", icon: ShieldCheck, roles: ["admin"] },
-  { to: "/admin/health", label: "API health", icon: Activity, roles: ["admin"] },
-  { to: "/admin/debug", label: "Auth debug", icon: Bug, roles: ["admin"] },
-  { to: "/settings", label: "Settings", icon: SettingsIcon, roles: ["admin"] },
-  { to: "/system-overview", label: "System Overview", icon: BookOpen, roles: ["admin"] },
+const PUBLIC_NAV: NavLink[] = [
+  { to: "/", label: "Home", icon: Brand },
+  { to: "/catalog", label: "Catalog", icon: Music2 },
 ];
 
 function NavItem({
@@ -59,7 +32,7 @@ function NavItem({
 }: {
   to: string;
   label: string;
-  Icon: typeof Users;
+  Icon: typeof Music2;
   active: boolean;
   onClick?: () => void;
 }) {
@@ -80,27 +53,15 @@ function NavItem({
   );
 }
 
-function filterByRole(items: NavLink[], roles: string[]): NavLink[] {
-  return items.filter((i) => !i.roles || i.roles.some((r) => roles.includes(r)));
-}
-
 export function AppShell() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { isAuthenticated, user, signOut } = useAuth();
-  const { isAuthenticated: mcAuthed, user: mcUser, logout: mcLogout } = useMcAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const [open, setOpen] = useState(false);
 
-  const roles = user?.roles ?? [];
   const isActive = (to: string) =>
-    location.pathname === to || location.pathname.startsWith(to + "/");
-  const primaryNav = filterByRole(PRIMARY, roles);
-  const opsNav = filterByRole(OPS, roles);
+    location.pathname === to || (to !== "/" && location.pathname.startsWith(to + "/"));
 
-  async function onLogout() {
-    await signOut();
-    navigate({ to: "/" });
-  }
+  const displayName = user?.displayName ?? user?.name ?? user?.email ?? user?.id;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -111,9 +72,21 @@ export function AppShell() {
           </span>
           Music Catalog
         </div>
-        <button onClick={() => setOpen((v) => !v)} aria-label="Toggle navigation">
-          {open ? <X /> : <Menu />}
-        </button>
+        <div className="flex items-center gap-2">
+          {isAuthenticated ? (
+            <span className="text-xs text-foreground/80">
+              <UserCircle2 className="mr-1 inline h-4 w-4" />
+              {displayName}
+            </span>
+          ) : (
+            <Link to="/login" className="text-xs font-medium text-primary">
+              Sign in
+            </Link>
+          )}
+          <button onClick={() => setOpen((v) => !v)} aria-label="Toggle navigation">
+            {open ? <X /> : <Menu />}
+          </button>
+        </div>
       </header>
 
       <div className="md:grid md:grid-cols-[260px_1fr] md:gap-2 md:p-2">
@@ -136,7 +109,7 @@ export function AppShell() {
           </div>
 
           <nav className="px-2 py-2 space-y-1">
-            {primaryNav.map((i) => (
+            {PUBLIC_NAV.map((i) => (
               <NavItem
                 key={i.to}
                 to={i.to}
@@ -146,145 +119,74 @@ export function AppShell() {
                 onClick={() => setOpen(false)}
               />
             ))}
+            {isAuthenticated && (
+              <NavItem
+                to="/admin"
+                label="Admin"
+                Icon={ShieldCheck}
+                active={isActive("/admin")}
+                onClick={() => setOpen(false)}
+              />
+            )}
           </nav>
-
-          {opsNav.length > 0 && (
-            <div className="mx-2 my-2 rounded-lg bg-sidebar-accent/40 p-2">
-              <div className="px-2 py-1 text-xs uppercase tracking-wider text-sidebar-foreground/60">
-                Operations
-              </div>
-              <nav className="mt-1 space-y-1">
-                {opsNav.map((i) => (
-                  <NavItem
-                    key={i.to}
-                    to={i.to}
-                    label={i.label}
-                    Icon={i.icon}
-                    active={isActive(i.to)}
-                    onClick={() => setOpen(false)}
-                  />
-                ))}
-              </nav>
-            </div>
-          )}
 
           <div className="mt-auto border-t border-sidebar-border p-3 space-y-2">
             <div className="flex items-center justify-center">
               <ThemeToggle />
             </div>
 
-            {mcAuthed && mcUser && (
+            {isAuthenticated && user ? (
               <div className="rounded-md border border-sidebar-border/60 bg-sidebar-accent/30 p-2 text-sidebar-foreground">
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
-                      Media Catalog
+                      Signed in
                     </div>
-                    <div className="truncate text-xs font-medium">
-                      {mcUser.displayName ?? mcUser.name ?? mcUser.email ?? mcUser.id}
-                    </div>
-                    {mcUser.email && (
+                    <div className="truncate text-xs font-medium">{displayName}</div>
+                    {user.email && (
                       <div className="truncate text-[11px] text-sidebar-foreground/60">
-                        {mcUser.email}
+                        {user.email}
                       </div>
                     )}
                   </div>
                   <button
                     type="button"
-                    onClick={() => mcLogout()}
-                    title="Sign out (media-catalog)"
+                    onClick={() => {
+                      void logout();
+                      setOpen(false);
+                    }}
+                    title="Sign out"
                     className="rounded p-1 text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
                   >
                     <LogOut className="h-4 w-4" />
                   </button>
                 </div>
-                <div className="mt-2 flex flex-wrap gap-1">
-                  <Link
-                    to="/admin/mc"
-                    onClick={() => setOpen(false)}
-                    className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary hover:bg-primary/25"
-                  >
-                    Admin
-                  </Link>
-                  {(mcUser.roles ?? []).map((r) => (
-                    <span
-                      key={r}
-                      className="rounded-full bg-sidebar-accent/60 px-1.5 py-0.5 text-[10px] font-medium"
-                    >
-                      {r}
-                    </span>
-                  ))}
-                </div>
+                {user.roles && user.roles.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {user.roles.map((r: string) => (
+                      <span
+                        key={r}
+                        className="rounded-full bg-sidebar-accent/60 px-1.5 py-0.5 text-[10px] font-medium"
+                      >
+                        {r}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-
-            {!mcAuthed && (
+            ) : (
               <Link
-                to="/mc-login"
+                to="/login"
                 onClick={() => setOpen(false)}
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-xs font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
               >
-                <LogIn className="h-4 w-4" /> Media Catalog sign-in
+                <LogIn className="h-4 w-4" /> Sign in
               </Link>
-            )}
-
-
-            {!isAuthenticated ? (
-              <div className="space-y-1">
-                <NavItem to="/sign-in" label="Sign in" Icon={LogIn} active={isActive("/sign-in")} />
-                <NavItem
-                  to="/sign-up"
-                  label="Sign up"
-                  Icon={UserPlus}
-                  active={isActive("/sign-up")}
-                />
-              </div>
-            ) : (
-              <div className="space-y-1">
-                <NavItem
-                  to="/profile"
-                  label="Profile"
-                  Icon={UserCircle2}
-                  active={isActive("/profile")}
-                />
-                <button
-                  type="button"
-                  onClick={onLogout}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
-                >
-                  <LogOut className="h-5 w-5" /> <span>Sign out</span>
-                </button>
-                <div className="px-3 pt-2 space-y-1.5">
-                  <div className="text-xs font-medium text-sidebar-foreground truncate">
-                    {user?.displayName ?? user?.email}
-                  </div>
-                  {user?.email && (
-                    <div className="text-[11px] text-sidebar-foreground/60 truncate">
-                      {user.email}
-                    </div>
-                  )}
-                  <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/50">
-                    {ORG_NAME}
-                  </div>
-                  {roles.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {roles.map((r) => (
-                        <span
-                          key={r}
-                          className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-medium text-primary"
-                        >
-                          {r}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
             )}
           </div>
         </aside>
 
-        <main className="md:rounded-xl md:bg-card md:min-h-[calc(100vh-1rem)] p-4 md:p-6 lg:p-8">
+        <main className="min-w-0 p-4 md:p-6">
           <Outlet />
         </main>
       </div>
