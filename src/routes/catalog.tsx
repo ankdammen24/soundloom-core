@@ -151,7 +151,11 @@ function CatalogPage() {
         {!loading && !error && tracks.length > 0 && filtered.length === 0 && (
           <EmptyState
             title="No matches"
-            description={`Nothing matches “${query}”. Try a different search.`}
+            description={
+              query
+                ? `Nothing matches “${query}”${statusFilter !== "all" ? ` in “${statusFilter.replace(/_/g, " ")}”` : ""}. Try a different search or status.`
+                : `No tracks with status “${statusFilter.replace(/_/g, " ")}”.`
+            }
           />
         )}
 
@@ -164,7 +168,14 @@ function CatalogPage() {
                   params={{ id: track.id }}
                   className="group block focus:outline-none"
                 >
-                  <Artwork src={getArtwork(track)} alt={track.title ?? ""} />
+                  <div className="relative">
+                    <Artwork src={getArtwork(track)} alt={track.title ?? ""} />
+                    {track.status && (
+                      <div className="absolute left-2 top-2">
+                        <StatusBadge status={String(track.status)} size="sm" />
+                      </div>
+                    )}
+                  </div>
                   <div className="mt-3 space-y-1">
                     <p className="truncate text-sm font-semibold leading-tight group-hover:text-primary">
                       {track.title ?? "Untitled"}
