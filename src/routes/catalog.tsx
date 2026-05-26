@@ -75,6 +75,31 @@ function CatalogPage() {
     });
   }, [tracks, query, statusFilter]);
 
+  // Reset paging when the filtered set changes.
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [query, statusFilter, tracks]);
+
+  const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
+  const hasMore = visibleCount < filtered.length;
+
+  // Infinite scroll: load more when the sentinel becomes visible.
+  useEffect(() => {
+    if (!hasMore) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setVisibleCount((c) => Math.min(c + PAGE_SIZE, filtered.length));
+        }
+      },
+      { rootMargin: "400px 0px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, filtered.length]);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-7xl px-4 py-8 md:px-6 md:py-10">
