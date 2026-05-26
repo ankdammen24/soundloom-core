@@ -101,6 +101,38 @@ function CatalogPage() {
           </div>
         </header>
 
+        {!loading && !error && statusOptions.length > 0 && (
+          <div className="mb-6 flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Status
+            </span>
+            <FilterChip
+              label={`All (${tracks.length})`}
+              active={statusFilter === "all"}
+              onClick={() => setStatusFilter("all")}
+            />
+            {statusOptions.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setStatusFilter(s)}
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-full p-0.5 pr-2 transition focus:outline-none focus:ring-2 focus:ring-primary/50",
+                  statusFilter === s
+                    ? "ring-2 ring-primary/70"
+                    : "opacity-70 hover:opacity-100",
+                )}
+                aria-pressed={statusFilter === s}
+              >
+                <StatusBadge status={s} size="sm" />
+                <span className="text-[10px] text-muted-foreground">
+                  {statusCounts.get(s)}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {error && (
           <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
             {error}
