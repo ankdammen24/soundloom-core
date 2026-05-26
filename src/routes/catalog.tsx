@@ -44,15 +44,33 @@ function CatalogPage() {
     };
   }, []);
 
+  const statusCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const t of tracks) {
+      const s = (t.status ?? "unknown").toString();
+      counts.set(s, (counts.get(s) ?? 0) + 1);
+    }
+    return counts;
+  }, [tracks]);
+
+  const statusOptions = useMemo(
+    () => Array.from(statusCounts.keys()).sort(),
+    [statusCounts],
+  );
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return tracks;
-    return tracks.filter((t) =>
-      [t.title, getArtist(t), getRelease(t)]
+    return tracks.filter((t) => {
+      if (statusFilter !== "all") {
+        const s = (t.status ?? "unknown").toString();
+        if (s !== statusFilter) return false;
+      }
+      if (!q) return true;
+      return [t.title, getArtist(t), getRelease(t)]
         .filter(Boolean)
-        .some((v) => String(v).toLowerCase().includes(q)),
-    );
-  }, [tracks, query]);
+        .some((v) => String(v).toLowerCase().includes(q));
+    });
+  }, [tracks, query, statusFilter]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
