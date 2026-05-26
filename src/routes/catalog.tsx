@@ -217,3 +217,29 @@ function EmptyState({ title, description }: { title: string; description: string
     </div>
   );
 }
+
+function FilterChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "rounded-full border px-3 py-1 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-primary/50",
+        active
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-border/60 bg-card text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {label}
+    </button>
+  );
+}
