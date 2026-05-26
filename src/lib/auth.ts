@@ -164,7 +164,9 @@ export async function login(email: string, password: string): Promise<AuthUser> 
   const data = (await parseJson<LoginResponse>(res)) ?? ({} as LoginResponse);
   if (!data.access_token) throw new Error("Login response missing access_token");
 
-  if (data.refresh_token) setStoredRefreshToken(data.refresh_token);
+  // Refresh token MUST come back as an httpOnly cookie; we intentionally
+  // do not persist it client-side even if the backend echoes it in JSON.
+  clearLegacyStoredRefreshToken();
 
   let user = data.user ?? null;
   if (!user) user = await fetchMe(data.access_token);
