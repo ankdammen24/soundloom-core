@@ -188,35 +188,59 @@ function CatalogPage() {
         )}
 
         {!loading && !error && filtered.length > 0 && (
-          <ul className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-            {filtered.map((track) => (
-              <li key={track.id}>
-                <Link
-                  to="/tracks/$id"
-                  params={{ id: track.id }}
-                  className="group block focus:outline-none"
+          <>
+            <ul className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+              {visible.map((track) => (
+                <li key={track.id}>
+                  <Link
+                    to="/tracks/$id"
+                    params={{ id: track.id }}
+                    className="group block focus:outline-none"
+                  >
+                    <div className="relative">
+                      <Artwork src={getArtwork(track)} alt={track.title ?? ""} />
+                      {track.status && (
+                        <div className="absolute left-2 top-2">
+                          <StatusBadge status={String(track.status)} size="sm" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-3 space-y-1">
+                      <p className="truncate text-sm font-semibold leading-tight group-hover:text-primary">
+                        {track.title ?? "Untitled"}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">{getArtist(track)}</p>
+                      {getRelease(track) && (
+                        <p className="truncate text-xs text-muted-foreground/70">{getRelease(track)}</p>
+                      )}
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            {hasMore ? (
+              <div
+                ref={sentinelRef}
+                className="mt-10 flex flex-col items-center gap-3 py-6"
+              >
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-primary" />
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((c) => Math.min(c + PAGE_SIZE, filtered.length))}
+                  className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                 >
-                  <div className="relative">
-                    <Artwork src={getArtwork(track)} alt={track.title ?? ""} />
-                    {track.status && (
-                      <div className="absolute left-2 top-2">
-                        <StatusBadge status={String(track.status)} size="sm" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-3 space-y-1">
-                    <p className="truncate text-sm font-semibold leading-tight group-hover:text-primary">
-                      {track.title ?? "Untitled"}
-                    </p>
-                    <p className="truncate text-xs text-muted-foreground">{getArtist(track)}</p>
-                    {getRelease(track) && (
-                      <p className="truncate text-xs text-muted-foreground/70">{getRelease(track)}</p>
-                    )}
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
+                  Load more ({filtered.length - visibleCount} remaining)
+                </button>
+              </div>
+            ) : (
+              filtered.length > PAGE_SIZE && (
+                <p className="mt-10 py-6 text-center text-xs text-muted-foreground">
+                  You've reached the end · {filtered.length} tracks
+                </p>
+              )
+            )}
+          </>
         )}
       </div>
     </div>
