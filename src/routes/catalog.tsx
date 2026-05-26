@@ -84,7 +84,9 @@ function CatalogPage() {
               Browse the catalog
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              {loading ? "Loading tracks…" : `${tracks.length} track${tracks.length === 1 ? "" : "s"}`}
+              {loading
+                ? "Loading tracks…"
+                : `${filtered.length} of ${tracks.length} track${tracks.length === 1 ? "" : "s"}`}
             </p>
           </div>
           <div className="relative w-full md:w-80">
