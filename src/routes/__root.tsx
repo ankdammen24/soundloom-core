@@ -4,6 +4,7 @@ import { Link, createRootRouteWithContext, useRouter } from "@tanstack/react-rou
 import "../styles.css";
 import { AppShell } from "@/components/layout/AppShell";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
+import { McAuthProvider } from "@/lib/mc-auth/McAuthProvider";
 import { ThemeProvider } from "@/lib/theme";
 
 function NotFoundComponent() {
@@ -63,9 +64,11 @@ function RootComponent() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <QueryClientProvider client={queryClient}>
-          <AppShell />
-        </QueryClientProvider>
+        <McAuthProvider>
+          <QueryClientProvider client={queryClient}>
+            <AppShell />
+          </QueryClientProvider>
+        </McAuthProvider>
       </AuthProvider>
     </ThemeProvider>
   );

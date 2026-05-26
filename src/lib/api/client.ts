@@ -7,6 +7,7 @@
 //   429 → RateLimitError, other non-2xx → ApiError
 
 import { supabase } from "@/integrations/supabase/client";
+import { mcAuthStore } from "@/lib/mc-auth/store";
 
 const env = import.meta.env as Record<string, string | undefined>;
 export const API_BASE_URL = (env.VITE_API_BASE_URL ?? "https://api.mediarosenqvist.com").replace(
@@ -62,6 +63,9 @@ export type ApiRequestOptions = {
 };
 
 async function getAccessToken(): Promise<string | null> {
+  // Prefer the media-catalog backend token when present, fall back to Supabase.
+  const mcToken = mcAuthStore.getAccessToken();
+  if (mcToken) return mcToken;
   const { data } = await supabase.auth.getSession();
   return data.session?.access_token ?? null;
 }
