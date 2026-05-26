@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { getTracks, type CatalogTrack } from "@/lib/api";
 import { Artwork } from "@/components/catalog/Artwork";
+import { StatusBadge } from "@/components/StatusBadge";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/catalog")({ component: CatalogPage });
 
