@@ -14,8 +14,10 @@ import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForbiddenRouteImport } from './routes/forbidden'
+import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TracksIdRouteImport } from './routes/tracks.$id'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AuthenticatedUploadsRouteImport } from './routes/_authenticated.uploads'
 import { Route as AuthenticatedTracksRouteImport } from './routes/_authenticated.tracks'
@@ -60,6 +62,11 @@ const ForbiddenRoute = ForbiddenRouteImport.update({
   path: '/forbidden',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CatalogRoute = CatalogRouteImport.update({
+  id: '/catalog',
+  path: '/catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -67,6 +74,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TracksIdRoute = TracksIdRouteImport.update({
+  id: '/tracks/$id',
+  path: '/tracks/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
@@ -165,6 +177,7 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/catalog': typeof CatalogRoute
   '/forbidden': typeof ForbiddenRoute
   '/login': typeof LoginRoute
   '/sign-in': typeof SignInRoute
@@ -182,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/tracks': typeof AuthenticatedTracksRoute
   '/uploads': typeof AuthenticatedUploadsRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/tracks/$id': typeof TracksIdRoute
   '/admin/debug': typeof AuthenticatedAdminDebugRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -191,6 +205,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/catalog': typeof CatalogRoute
   '/forbidden': typeof ForbiddenRoute
   '/login': typeof LoginRoute
   '/sign-in': typeof SignInRoute
@@ -208,6 +223,7 @@ export interface FileRoutesByTo {
   '/tracks': typeof AuthenticatedTracksRoute
   '/uploads': typeof AuthenticatedUploadsRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/tracks/$id': typeof TracksIdRoute
   '/admin/debug': typeof AuthenticatedAdminDebugRoute
   '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -219,6 +235,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/catalog': typeof CatalogRoute
   '/forbidden': typeof ForbiddenRoute
   '/login': typeof LoginRoute
   '/sign-in': typeof SignInRoute
@@ -236,6 +253,7 @@ export interface FileRoutesById {
   '/_authenticated/tracks': typeof AuthenticatedTracksRoute
   '/_authenticated/uploads': typeof AuthenticatedUploadsRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/tracks/$id': typeof TracksIdRoute
   '/_authenticated/admin/debug': typeof AuthenticatedAdminDebugRoute
   '/_authenticated/admin/health': typeof AuthenticatedAdminHealthRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -247,6 +265,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/catalog'
     | '/forbidden'
     | '/login'
     | '/sign-in'
@@ -264,6 +283,7 @@ export interface FileRouteTypes {
     | '/tracks'
     | '/uploads'
     | '/auth/callback'
+    | '/tracks/$id'
     | '/admin/debug'
     | '/admin/health'
     | '/admin/users'
@@ -273,6 +293,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/catalog'
     | '/forbidden'
     | '/login'
     | '/sign-in'
@@ -290,6 +311,7 @@ export interface FileRouteTypes {
     | '/tracks'
     | '/uploads'
     | '/auth/callback'
+    | '/tracks/$id'
     | '/admin/debug'
     | '/admin/health'
     | '/admin/users'
@@ -300,6 +322,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/catalog'
     | '/forbidden'
     | '/login'
     | '/sign-in'
@@ -317,6 +340,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tracks'
     | '/_authenticated/uploads'
     | '/auth/callback'
+    | '/tracks/$id'
     | '/_authenticated/admin/debug'
     | '/_authenticated/admin/health'
     | '/_authenticated/admin/users'
@@ -328,12 +352,14 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  CatalogRoute: typeof CatalogRoute
   ForbiddenRoute: typeof ForbiddenRoute
   LoginRoute: typeof LoginRoute
   SignInRoute: typeof SignInRoute
   SignUpRoute: typeof SignUpRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
+  TracksIdRoute: typeof TracksIdRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -376,6 +402,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForbiddenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/catalog': {
+      id: '/catalog'
+      path: '/catalog'
+      fullPath: '/catalog'
+      preLoaderRoute: typeof CatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -388,6 +421,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tracks/$id': {
+      id: '/tracks/$id'
+      path: '/tracks/$id'
+      fullPath: '/tracks/$id'
+      preLoaderRoute: typeof TracksIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/callback': {
@@ -560,12 +600,14 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  CatalogRoute: CatalogRoute,
   ForbiddenRoute: ForbiddenRoute,
   LoginRoute: LoginRoute,
   SignInRoute: SignInRoute,
   SignUpRoute: SignUpRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   AuthCallbackRoute: AuthCallbackRoute,
+  TracksIdRoute: TracksIdRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
