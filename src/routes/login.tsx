@@ -1,5 +1,9 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import LoginPage from "@/pages/Login";
 
 export const Route = createFileRoute("/login")({
-  component: () => <Navigate to="/sign-in" />,
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+  }),
+  component: LoginPage,
 });
