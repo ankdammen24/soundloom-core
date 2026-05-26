@@ -3,8 +3,7 @@ import { Link, createRootRouteWithContext, useRouter } from "@tanstack/react-rou
 
 import "../styles.css";
 import { AppShell } from "@/components/layout/AppShell";
-import { AuthProvider } from "@/lib/auth/AuthProvider";
-import { McAuthProvider } from "@/lib/mc-auth/McAuthProvider";
+import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/lib/theme";
 
 function NotFoundComponent() {
@@ -21,7 +20,7 @@ function NotFoundComponent() {
             to="/"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Back to dashboard
+            Back to home
           </Link>
         </div>
       </div>
@@ -64,11 +63,9 @@ function RootComponent() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <McAuthProvider>
-          <QueryClientProvider client={queryClient}>
-            <AppShell />
-          </QueryClientProvider>
-        </McAuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <AppShell />
+        </QueryClientProvider>
       </AuthProvider>
     </ThemeProvider>
   );
