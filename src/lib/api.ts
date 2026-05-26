@@ -49,7 +49,16 @@ export type CatalogTrack = {
   title?: string | null;
   status?: string | null;
   artist_name?: string | null;
+  artist?: string | null;
   release_title?: string | null;
+  release?: string | null;
+  artwork_url?: string | null;
+  image_url?: string | null;
+  cover_url?: string | null;
+  duration_seconds?: number | null;
+  duration?: number | null;
+  isrc?: string | null;
+  genre?: string | null;
   [key: string]: unknown;
 };
 
@@ -58,3 +67,4 @@ export const getTracks = async () => asArray<CatalogTrack>(await apiFetch("/api/
 export const getTrackById = (id: string) => apiFetch<CatalogTrack>(`/api/v1/music/tracks/${id}`);
 export const getArtists = async () => asArray(await apiFetch("/api/v1/music/artists"));
 export const getReleases = async () => asArray(await apiFetch("/api/v1/music/releases"));
+export const getPreviewUrl = (trackId: string) => `${API_BASE_URL}/playback/${trackId}/preview`;
