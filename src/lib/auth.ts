@@ -223,7 +223,7 @@ export async function logout(): Promise<void> {
   } catch {
     /* best effort */
   }
-  setStoredRefreshToken(null);
+  clearLegacyStoredRefreshToken();
   authStore.setUnauthenticated();
 }
 
