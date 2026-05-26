@@ -78,20 +78,13 @@ export function useAuthState(): State {
 
 // ---------- low-level fetch helpers (no dependency on api.ts to avoid cycles) ----------
 
-function getStoredRefreshToken(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return window.localStorage.getItem(MC_REFRESH_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function setStoredRefreshToken(token: string | null) {
+// Refresh tokens are intentionally NOT persisted in localStorage. They must
+// be carried in an httpOnly, Secure cookie set by the backend. We also
+// proactively clear any legacy value that older builds may have written.
+function clearLegacyStoredRefreshToken() {
   if (typeof window === "undefined") return;
   try {
-    if (token) window.localStorage.setItem(MC_REFRESH_KEY, token);
-    else window.localStorage.removeItem(MC_REFRESH_KEY);
+    window.localStorage.removeItem(MC_REFRESH_KEY);
   } catch {
     /* ignore */
   }
