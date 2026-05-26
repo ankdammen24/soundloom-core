@@ -171,3 +171,7 @@ export const getArtists = async () =>
 export const getReleases = async () =>
   asArray(await apiRequest("/api/v1/music/releases", { skipAuth: true }));
 export const getPreviewUrl = (trackId: string) => `${API_BASE_URL}/playback/${trackId}/preview`;
+
+/** Azuracast "now playing" — public, no auth. */
+export const getNowPlaying = () =>
+  apiRequest("/integrations/azuracast/nowplaying", { skipAuth: true });
