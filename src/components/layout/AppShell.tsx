@@ -1,5 +1,6 @@
 import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth/useAuth";
+import { useMcAuth } from "@/lib/mc-auth/useMcAuth";
 import {
   LayoutDashboard,
   Users,
@@ -87,6 +88,7 @@ export function AppShell() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user, signOut } = useAuth();
+  const { isAuthenticated: mcAuthed, user: mcUser, logout: mcLogout } = useMcAuth();
   const [open, setOpen] = useState(false);
 
   const roles = user?.roles ?? [];
@@ -170,6 +172,63 @@ export function AppShell() {
             <div className="flex items-center justify-center">
               <ThemeToggle />
             </div>
+
+            {mcAuthed && mcUser && (
+              <div className="rounded-md border border-sidebar-border/60 bg-sidebar-accent/30 p-2 text-sidebar-foreground">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
+                      Media Catalog
+                    </div>
+                    <div className="truncate text-xs font-medium">
+                      {mcUser.displayName ?? mcUser.name ?? mcUser.email ?? mcUser.id}
+                    </div>
+                    {mcUser.email && (
+                      <div className="truncate text-[11px] text-sidebar-foreground/60">
+                        {mcUser.email}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => mcLogout()}
+                    title="Sign out (media-catalog)"
+                    className="rounded p-1 text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  <Link
+                    to="/admin/mc"
+                    onClick={() => setOpen(false)}
+                    className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary hover:bg-primary/25"
+                  >
+                    Admin
+                  </Link>
+                  {(mcUser.roles ?? []).map((r) => (
+                    <span
+                      key={r}
+                      className="rounded-full bg-sidebar-accent/60 px-1.5 py-0.5 text-[10px] font-medium"
+                    >
+                      {r}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {!mcAuthed && (
+              <Link
+                to="/mc-login"
+                onClick={() => setOpen(false)}
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-xs font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+              >
+                <LogIn className="h-4 w-4" /> Media Catalog sign-in
+              </Link>
+            )}
+
+
             {!isAuthenticated ? (
               <div className="space-y-1">
                 <NavItem to="/sign-in" label="Sign in" Icon={LogIn} active={isActive("/sign-in")} />
